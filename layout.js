@@ -1,6 +1,5 @@
-// --- CONTROL DE VERSIONES ---
-// He cambiado esto a "3.0" para forzar a los móviles a borrar lo viejo
-const webVersion = "3.0"; 
+// --- CONTROL DE VERSIONES AUTOMÁTICO (ANTI-CACHÉ) ---
+const webVersion = Date.now(); 
 
 // 1. CARGAR EL CSS (style.css)
 const link = document.createElement("link");
@@ -8,7 +7,7 @@ link.rel = "stylesheet";
 link.href = `style.css?v=${webVersion}`; 
 document.head.appendChild(link);
 
-// 2. EL MENÚ (Asegúrate de que este es el código actual)
+// 2. EL MENÚ
 const menuHTML = `
     <nav>
         <a href="index.html" class="nav-logo">
@@ -42,7 +41,7 @@ const footerHTML = `
 
 // 4. INYECTARLO TODO
 document.addEventListener("DOMContentLoaded", function() {
-    // Si ya existe un nav (por error), lo borramos antes de poner el nuevo
+    // Limpieza de seguridad: Si ya existen, los borramos antes de poner los nuevos
     const oldNav = document.querySelector('nav');
     if(oldNav) oldNav.remove();
 
@@ -52,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.body.insertAdjacentHTML('afterbegin', menuHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
     
-    // Marcar activo
+    // Marcar enlace activo
     const currentPage = window.location.pathname.split("/").pop();
     const links = document.querySelectorAll('.nav-links a');
     links.forEach(link => {
