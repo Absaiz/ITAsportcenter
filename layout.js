@@ -8,14 +8,15 @@ link.rel = "stylesheet";
 link.href = `style.css?v=${version}`; 
 document.head.appendChild(link);
 
-// 2. DEFINIR EL MENÚ (Actualizado con enlace a Reservas)
- 
+
+
+// 2. DEFINIR EL MENÚ (CORREGIDO)
 const menuHTML = `
     <nav>  <a href="index.html" class="nav-logo">
             <img src="imagen/logo.png" alt="ITA Logo">
         </a>
         
-        <div class="menu-icon" onclick="toggleMenu()">
+        <div class="menu-icon" onclick="window.toggleMenu()">
             <span></span>
             <span></span>
             <span></span>
