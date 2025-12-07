@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ITA Sport Center | Entrenamiento de Fuerza</title>
+    <title>ITA Sport Center | Imagina, Transforma, Actúa</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,11 +11,12 @@
 
     <style>
         :root {
-            --bg-color: #000000; /* Fondo negro puro para que se fusione con tu logo JPG */
-            --section-bg: #111111;
-            --accent-pink: #C25E75;
-            --text-white: #F5F5F5;
-            --text-gray: #B0B0B0;
+            --bg-color: #050505;       /* Negro profundo */
+            --card-bg: #121212;        /* Gris muy oscuro para tarjetas */
+            --accent-pink: #C25E75;    /* Tu color rosa base */
+            --accent-glow: #ff2a6d;    /* Rosa neón para brillos */
+            --text-white: #ffffff;
+            --text-gray: #cccccc;
         }
 
         html { scroll-behavior: smooth; }
@@ -28,98 +29,301 @@
             line-height: 1.6;
         }
 
-        /* NAVEGACIÓN */
+        /* --- NAVEGACIÓN --- */
         nav {
             position: fixed; top: 0; width: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            padding: 15px 20px;
+            background-color: rgba(5, 5, 5, 0.95);
+            padding: 15px 30px;
             display: flex; justify-content: space-between; align-items: center;
-            z-index: 1000; border-bottom: 1px solid #222;
+            z-index: 1000; border-bottom: 2px solid #222;
+            backdrop-filter: blur(5px);
         }
-        .nav-logo { font-family: 'Oswald', sans-serif; color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
-        .nav-links a { color: var(--text-white); text-decoration: none; margin-left: 20px; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; }
+        .nav-logo { font-family: 'Oswald', sans-serif; color: white; text-decoration: none; font-weight: 700; font-size: 1.8rem; letter-spacing: 1px; }
+        .nav-logo span { color: var(--accent-pink); }
+        
+        .nav-links { display: flex; gap: 25px; }
+        .nav-links a { 
+            color: var(--text-white); text-decoration: none; 
+            font-weight: 700; text-transform: uppercase; font-size: 0.9rem; 
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--accent-glow); }
 
-        /* PORTADA (HERO) CON LOGO IMAGEN */
+        /* --- PORTADA (HERO) --- */
         .hero {
-            height: 100vh;
+            min-height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; padding: 20px;
+            text-align: center; padding: 100px 20px 50px;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 70%);
         }
 
-        /* Estilo para tu imagen de logo */
         .hero-logo-img {
-            max-width: 400px; /* Tamaño máximo */
-            width: 80%;       /* Se adapta en móviles */
+            max-width: 350px; 
+            width: 80%;
             height: auto;
-            margin-bottom: 20px;
-            /* Si el negro del logo no es idéntico al fondo, esto ayuda a disimular bordes */
-            border-radius: 10px; 
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 20px rgba(194, 94, 117, 0.2));
         }
+
+        .hero h1 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 3rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        
+        .hero h1 span { color: var(--accent-pink); }
 
         .cta-button {
-            background-color: var(--accent-pink); color: white; padding: 15px 40px;
-            border-radius: 50px; text-decoration: none; font-weight: 700; text-transform: uppercase;
-            margin-top: 20px; display: inline-block;
+            background-color: transparent; 
+            color: var(--accent-pink);
+            border: 2px solid var(--accent-pink);
+            padding: 15px 40px;
+            border-radius: 5px; 
+            text-decoration: none; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
+            margin-top: 30px; display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            background-color: var(--accent-pink);
+            color: white;
+            box-shadow: 0 0 20px var(--accent-pink);
         }
 
-        /* SECCIONES */
-        section { padding: 80px 20px; max-width: 1000px; margin: 0 auto; }
-        .section-title { font-family: 'Oswald', sans-serif; font-size: 2.5rem; text-align: center; margin-bottom: 40px; text-transform: uppercase; color: var(--accent-pink); }
+        /* --- SECCIONES GENERALES --- */
+        section { padding: 100px 20px; max-width: 1200px; margin: 0 auto; }
         
-        /* PLANES */
-        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .plan-card { background: var(--section-bg); padding: 30px; border: 1px solid #333; border-radius: 8px; }
-        .plan-header { font-family: 'Oswald', sans-serif; font-size: 1.5rem; color: white; margin-bottom: 10px; }
+        .section-title { 
+            font-family: 'Oswald', sans-serif; 
+            font-size: 3rem; 
+            text-align: center; 
+            margin-bottom: 60px; 
+            text-transform: uppercase; 
+            color: white;
+            position: relative;
+        }
         
-        /* CONTACTO */
-        .contact-container { text-align: center; background: var(--section-bg); padding: 40px; border-radius: 10px; }
-        .contact-btn { background-color: #25D366; color: white; padding: 10px 20px; text-decoration: none; border-radius: 50px; font-weight: bold; margin: 5px; display: inline-block;}
+        .section-title::after {
+            content: ''; display: block; width: 60px; height: 4px; 
+            background: var(--accent-pink); margin: 15px auto 0;
+        }
 
-        footer { text-align: center; padding: 20px; font-size: 0.8rem; color: #555; }
+        /* --- GRID Y CARDS --- */
+        .grid-3 {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px;
+        }
+
+        /* Nueva Grid para 4 planes */
+        .grid-4 {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border: 1px solid #333;
+            text-align: left;
+            transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px;
+            background: var(--accent-pink);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-pink);
+            box-shadow: 0 10px 30px rgba(194, 94, 117, 0.15);
+        }
+
+        .card h3 {
+            font-family: 'Oswald', sans-serif; font-size: 2rem; margin-bottom: 20px;
+            color: var(--accent-pink);
+        }
+        
+        .card p { color: var(--text-gray); font-size: 1rem; }
+
+        /* --- PLANES --- */
+        .plan-card {
+            background: var(--card-bg);
+            padding: 30px 20px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            text-align: center;
+            transition: 0.3s;
+            display: flex; flex-direction: column; justify-content: space-between;
+            min-height: 350px; /* Altura mínima para que queden iguales */
+        }
+        
+        .plan-card:hover {
+            border-color: var(--accent-pink);
+            background: #1a1a1a;
+            transform: scale(1.02);
+        }
+
+        .plan-header { 
+            font-family: 'Oswald', sans-serif; font-size: 2rem; color: white; margin-bottom: 5px; 
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        
+        .plan-subtitle {
+            font-size: 1.2rem; color: var(--accent-pink); font-weight: bold; margin-bottom: 15px; display: block; text-transform: uppercase;
+        }
+
+        .plan-features {
+            color: #aaa; margin-bottom: 30px; font-size: 0.9rem;
+        }
+
+        .btn-plan {
+            margin-top: auto; padding: 10px 15px; border: 1px solid #444; color: white; text-decoration: none; border-radius: 5px; transition: 0.3s; font-size: 0.9rem;
+        }
+        .btn-plan:hover { background: var(--accent-pink); border-color: var(--accent-pink); }
+
+        /* Estilo especial para ITA TOTAL */
+        .plan-elite {
+            border: 1px solid var(--accent-pink);
+            box-shadow: 0 0 15px rgba(194, 94, 117, 0.2);
+        }
+        .plan-elite .plan-header { color: var(--accent-glow); }
+
+        /* --- CONTACTO --- */
+        .contact-section {
+            text-align: center; background: #111; padding: 60px; border-radius: 20px; border: 1px solid #222;
+        }
+        
+        .whatsapp-btn {
+            background-color: #25D366; color: white; padding: 15px 35px; 
+            text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 1.2rem;
+            display: inline-flex; align-items: center; gap: 10px;
+            transition: 0.3s; margin-top: 20px;
+        }
+        
+        .whatsapp-btn:hover { background-color: #1ebe57; transform: scale(1.05); }
+
+        footer { 
+            text-align: center; padding: 40px; margin-top: 50px; 
+            border-top: 1px solid #222; color: #666; font-size: 0.9rem; 
+        }
+
+        /* Responsive para móviles */
+        @media (max-width: 768px) {
+            .nav-links { display: none; } /* Ocultar menú en móvil para simplificar */
+        }
     </style>
 </head>
 <body>
 
     <nav>
-        <a href="#" class="nav-logo">ITA</a>
+        <a href="#" class="nav-logo">ITA <span>SPORT</span></a>
         <div class="nav-links">
+            <a href="#filosofia">Filosofía</a>
             <a href="#planes">Planes</a>
             <a href="#contacto">Contacto</a>
         </div>
     </nav>
 
     <header class="hero">
-        <img src="logo.jpg" alt="Logo ITA Sport Center" class="hero-logo-img">
-        
-        <p style="color: #ccc; letter-spacing: 2px; margin-bottom: 20px;">SPORT CENTER</p>
-        <a href="#planes" class="cta-button">Empezar a Entrenar</a>
+        <img src="logo.jpg" alt="ITA Logo" class="hero-logo-img">
+        <h1>TU CENTRO DE<br><span>FUERZA</span></h1>
+        <p style="color: #aaa; max-width: 600px; margin-top: 20px;">
+            Entrenamiento especializado presencial.<br>
+            Disciplina • Técnica • Resultados
+        </p>
+        <a href="#planes" class="cta-button">VER HORARIOS</a>
     </header>
 
+    <section id="filosofia">
+        <h2 class="section-title">El Método ITA</h2>
+        <div class="grid-3">
+            <div class="card">
+                <h3>IMAGINA</h3>
+                <p>Visualiza el cambio. Aquí te damos las herramientas para comenzar tu viaje de fuerza con bases sólidas.</p>
+            </div>
+            <div class="card">
+                <h3>TRANSFORMA</h3>
+                <p>La constancia lo es todo. Aumentamos la frecuencia para transformar tu cuerpo y tu disciplina.</p>
+            </div>
+            <div class="card">
+                <h3>ACTÚA</h3>
+                <p>El máximo nivel. Entrenamiento intensivo para quienes buscan rendimiento puro sin excusas.</p>
+            </div>
+        </div>
+    </section>
+
     <section id="planes">
-        <h2 class="section-title">Nuestros Planes</h2>
-        <div class="plans-grid">
+        <h2 class="section-title">Elige tu Compromiso</h2>
+        <div class="grid-4">
+            
             <div class="plan-card">
-                <div class="plan-header">Online</div>
-                <p style="color:#aaa">Programación y app.</p>
+                <div>
+                    <div class="plan-header">IMAGINA</div>
+                    <span class="plan-subtitle">1 DÍA / SEMANA</span>
+                    <p class="plan-features">
+                        Presencial.<br>
+                        Perfecto para iniciación técnica o mantenimiento.
+                    </p>
+                </div>
+                <a href="#contacto" class="btn-plan">Más info</a>
             </div>
-            <div class="plan-card" style="border-color: var(--accent-pink)">
-                <div class="plan-header">Híbrido</div>
-                <p style="color:#aaa">Online + Correcciones.</p>
-            </div>
+
             <div class="plan-card">
-                <div class="plan-header">Presencial</div>
-                <p style="color:#aaa">Entrenamiento personal.</p>
+                <div>
+                    <div class="plan-header">TRANSFORMA</div>
+                    <span class="plan-subtitle">2 DÍAS / SEMANA</span>
+                    <p class="plan-features">
+                        Presencial.<br>
+                        Frecuencia ideal para progresar y conciliar.
+                    </p>
+                </div>
+                <a href="#contacto" class="btn-plan">Más info</a>
             </div>
+
+            <div class="plan-card">
+                <div>
+                    <div class="plan-header">ACTÚA</div>
+                    <span class="plan-subtitle">3 DÍAS / SEMANA</span>
+                    <p class="plan-features">
+                        Presencial.<br>
+                        Compromiso alto para resultados serios de fuerza.
+                    </p>
+                </div>
+                <a href="#contacto" class="btn-plan">Más info</a>
+            </div>
+
+            <div class="plan-card plan-elite">
+                <div>
+                    <div class="plan-header">ITA TOTAL</div>
+                    <span class="plan-subtitle">4 DÍAS / SEMANA</span>
+                    <p class="plan-features">
+                        Presencial.<br>
+                        Inmersión completa para atletas exigentes.
+                    </p>
+                </div>
+                <a href="#contacto" class="btn-plan" style="background:var(--accent-pink); border-color:var(--accent-pink);">Quiero este</a>
+            </div>
+
         </div>
     </section>
 
     <section id="contacto">
-        <div class="contact-container">
-            <h2 class="section-title">Únete al equipo</h2>
-            <a href="https://wa.me/34000000000" class="contact-btn">WhatsApp</a>
+        <div class="contact-section">
+            <h2 style="font-family:'Oswald'; font-size:2.5rem; margin-bottom:20px;">ENTRENA CON NOSOTROS</h2>
+            <p style="color:#ccc; margin-bottom:30px;">Ven a probar y decide cuál es tu nivel de compromiso.</p>
+            <a href="https://wa.me/34627387758" class="whatsapp-btn">
+                <span>RESERVAR PLAZA</span>
+            </a>
         </div>
     </section>
 
-    <footer>© 2024 ITA Sport Center</footer>
+    <footer>
+        <p>© 2025 ITA Sport Center</p>
+        <p style="margin-top:10px; font-size: 0.8rem; opacity: 0.6;">Imagina • Transforma • Actúa</p>
+    </footer>
+
 </body>
 </html>
