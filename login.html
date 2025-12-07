@@ -15,20 +15,29 @@
     
     <link rel="stylesheet" href="style.css">
     <script>
-        // Generamos la versión una vez (la hora actual)
-        const version = Date.now();
+        // Generamos un número único (la hora actual)
+        const v = Date.now();
 
-        // Función para cargar scripts de forma independiente
-        function cargar(archivo) {
+        // Función para cargar CSS con versión
+        function cargarCSS(archivo) {
+            var link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = archivo + "?v=" + v;
+            document.head.appendChild(link);
+        }
+
+        // Función para cargar JS con versión
+        function cargarJS(archivo) {
             var script = document.createElement('script');
             script.type = 'module';
-            script.src = archivo + '?v=' + version; // Aquí añadimos la versión
+            script.src = archivo + '?v=' + v;
             document.head.appendChild(script);
         }
 
-        // --- TUS DOS LÍNEAS INDEPENDIENTES ---
-        cargar('layout.js');      // Carga el menú
-        cargar('user-logic.js');  // Carga el usuario
+        // --- CARGAMOS TODO FRESCO ---
+        cargarCSS('style.css');       // Estilos
+        cargarJS('layout.js');        // Menú
+        cargarJS('user-logic.js');    // Lógica Usuario
     </script>
 
     <style>

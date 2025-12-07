@@ -13,28 +13,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     
     <script>
+        // Generamos un número único (la hora actual)
         const v = Date.now();
-        
-        // Función para cargar estilos
-        function cargarCSS(src) {
-            const l = document.createElement('link');
-            l.rel = 'stylesheet'; 
-            l.href = src + '?v=' + v;
-            document.head.appendChild(l);
-        }
-        
-        // Función para cargar scripts (Módulos)
-        function cargar(src) {
-            const s = document.createElement('script');
-            s.type = 'module'; 
-            s.src = src + '?v=' + v;
-            document.head.appendChild(s);
+
+        // Función para cargar CSS con versión
+        function cargarCSS(archivo) {
+            var link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = archivo + "?v=" + v;
+            document.head.appendChild(link);
         }
 
-        // Cargamos todo fresco
-        cargarCSS('style.css');
-        cargar('layout.js');
-        cargar('user-logic.js');
+        // Función para cargar JS con versión
+        function cargarJS(archivo) {
+            var script = document.createElement('script');
+            script.type = 'module';
+            script.src = archivo + '?v=' + v;
+            document.head.appendChild(script);
+        }
+
+        // --- CARGAMOS TODO FRESCO ---
+        cargarCSS('style.css');       // Estilos
+        cargarJS('layout.js');        // Menú
+        cargarJS('user-logic.js');    // Lógica Usuario
     </script>
 
     <style>
