@@ -23,7 +23,6 @@
     <style>
         /* ESTILOS DEL PANEL ADMIN AVANZADO */
         .admin-layout { max-width: 1200px; margin: 40px auto; padding: 20px; display: grid; gap: 40px; }
-        
         .panel-card { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 25px; }
         .panel-title { font-family: 'Oswald'; color: var(--accent-pink); margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
@@ -33,42 +32,40 @@
         .user-table td { padding: 15px 10px; border-bottom: 1px solid #222; vertical-align: middle; }
         .user-table tr:hover { background: #222; }
         
-        /* Créditos Mini */
         .credit-tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; margin-right: 5px; margin-bottom: 5px; background: #333; border: 1px solid #444; }
         .tag-fuerza { color: #ff9f43; border-color: #ff9f43; }
         .tag-pilates { color: #54a0ff; border-color: #54a0ff; }
         .tag-personal { color: #ff6b6b; border-color: #ff6b6b; }
         .tag-nutri { color: #1dd1a1; border-color: #1dd1a1; }
 
-        /* Botones de Acción */
         .btn-mini { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; background: #444; color: white; transition: 0.3s; }
         .btn-mini:hover { background: var(--accent-pink); }
         .btn-edit { background: #2e86de; }
+        .btn-delete { background: #ff4444; color: white; margin-left: 5px; }
+        .btn-kick { background: transparent; border: 1px solid #ff4444; color: #ff4444; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; }
+        .btn-kick:hover { background: #ff4444; color: white; }
 
-        /* MODAL DE EDICIÓN */
+        /* MODAL */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: #111; padding: 30px; border-radius: 10px; border: 1px solid var(--accent-pink); width: 90%; max-width: 500px; }
-        
         .credit-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; }
         .btn-circle { width: 30px; height: 30px; border-radius: 50%; border: none; font-weight: bold; cursor: pointer; }
         .btn-minus { background: #444; color: white; }
         .btn-plus { background: #25D366; color: black; }
         
-        /* FORMULARIO CREAR CLASE */
+        /* FORMULARIO Y CALENDARIO */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
         input, select { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
         .btn-create { width: 100%; padding: 12px; background: var(--accent-pink); color: white; border: none; font-weight: bold; cursor: pointer; }
 
-        /* CALENDARIO LISTA */
         .calendar-day { margin-bottom: 20px; }
         .day-header { background: #333; color: white; padding: 10px; font-weight: bold; border-radius: 5px; margin-bottom: 10px; }
         .class-item { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 15px; border-left: 4px solid #555; margin-bottom: 5px; border-radius: 4px; }
         .class-item.type-fuerza { border-color: #ff9f43; }
         .class-item.type-pilates { border-color: #54a0ff; }
-        .class-item.type-personal { border-color: #ff6b6b; }
-        .class-item.type-nutri { border-color: #1dd1a1; }
         
         .attendees-list { display: none; background: #111; padding: 10px; font-size: 0.9rem; color: #ccc; margin-bottom: 15px; border: 1px dashed #444; }
+        .attendee-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
@@ -126,45 +123,32 @@
         <div class="modal-content">
             <h3 id="modalUserNombre" style="margin-top:0;">Editar Saldos</h3>
             <p id="modalUserEmail" style="color:#888; margin-bottom:20px;">...</p>
-
-            <div id="creditEditors">
-                </div>
-
+            <div id="creditEditors"></div>
             <button class="btn-create" style="background:#444; margin-top:20px;" onclick="cerrarModal()">CERRAR</button>
         </div>
     </div>
 
     <script type="module">
         import { db } from "./firebase-config.js";
-        import { collection, getDocs, addDoc, doc, updateDoc, getDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, query, orderBy, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        let allUsers = []; // Caché local de usuarios
+        let allUsers = [];
 
         // --- 1. CARGAR USUARIOS ---
         window.cargarUsuarios = async () => {
             const tbody = document.getElementById('tablaUsuarios');
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Cargando...</td></tr>';
-
             try {
-                // Traemos TODOS los usuarios de golpe
                 const querySnapshot = await getDocs(collection(db, "usuarios"));
                 allUsers = [];
                 let html = "";
-
                 querySnapshot.forEach((docSnap) => {
                     const u = docSnap.data();
                     u.id = docSnap.id;
                     allUsers.push(u);
-
-                    // Preparamos los créditos (si no tiene, es 0)
-                    const creds = u.creditos_detalle || { fuerza: 0, pilates: 0, personal: 0, nutri: 0 };
-                    
-                    // Si tiene el formato antiguo (solo numero), lo mostramos como Fuerza por defecto
-                    const saldoAntiguo = (typeof u.creditos === 'number') ? u.creditos : 0;
-                    const f = creds.fuerza !== undefined ? creds.fuerza : saldoAntiguo; 
-                    const p = creds.pilates || 0;
-                    const ep = creds.personal || 0;
-                    const n = creds.nutri || 0;
+                    const creds = u.creditos_detalle || {};
+                    // Lógica para compatibilidad con saldos viejos
+                    if (typeof u.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = u.creditos;
 
                     html += `
                         <tr>
@@ -173,10 +157,10 @@
                                 <div style="font-size:0.8rem; color:#666;">${u.email}</div>
                             </td>
                             <td>
-                                <span class="credit-tag tag-fuerza">F: ${f}</span>
-                                <span class="credit-tag tag-pilates">P: ${p}</span><br>
-                                <span class="credit-tag tag-personal">EP: ${ep}</span>
-                                <span class="credit-tag tag-nutri">N: ${n}</span>
+                                <span class="credit-tag tag-fuerza">F: ${creds.fuerza||0}</span>
+                                <span class="credit-tag tag-pilates">P: ${creds.pilates||0}</span>
+                                <span class="credit-tag tag-personal">EP: ${creds.personal||0}</span>
+                                <span class="credit-tag tag-nutri">N: ${creds.nutri||0}</span>
                             </td>
                             <td>
                                 <button class="btn-mini btn-edit" onclick="abrirModal('${u.id}')">EDITAR</button>
@@ -184,27 +168,19 @@
                         </tr>
                     `;
                 });
-
                 tbody.innerHTML = html;
-
-            } catch (e) {
-                console.error(e);
-                tbody.innerHTML = `<tr><td colspan="3">Error: ${e.message}</td></tr>`;
-            }
+            } catch (e) { console.error(e); }
         };
 
-        // --- 2. GESTIÓN DE MODAL Y CRÉDITOS ---
+        // --- 2. MODAL Y CRÉDITOS ---
         window.abrirModal = (uid) => {
             const user = allUsers.find(u => u.id === uid);
             if(!user) return;
-
             document.getElementById('modalUserNombre').innerText = user.nombre || 'Usuario';
             document.getElementById('modalUserEmail').innerText = user.email;
             
             const container = document.getElementById('creditEditors');
             container.innerHTML = "";
-
-            // Definimos los 4 tipos
             const tipos = [
                 { id: 'fuerza', label: 'FUERZA', color: '#ff9f43' },
                 { id: 'pilates', label: 'PILATES', color: '#54a0ff' },
@@ -212,10 +188,8 @@
                 { id: 'nutri', label: 'NUTRICIÓN', color: '#1dd1a1' }
             ];
 
-            // Datos actuales
-            const creds = user.creditos_detalle || {};
-            // Compatibilidad con sistema antiguo
-            if (typeof user.creditos === 'number' && !creds.fuerza) creds.fuerza = user.creditos;
+            let creds = user.creditos_detalle || {};
+            if (typeof user.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = user.creditos;
 
             tipos.forEach(t => {
                 const val = creds[t.id] || 0;
@@ -230,44 +204,36 @@
                     </div>
                 `;
             });
-
             document.getElementById('modalCreditos').style.display = 'flex';
         }
 
-        window.cerrarModal = () => {
-            document.getElementById('modalCreditos').style.display = 'none';
-        }
+        window.cerrarModal = () => document.getElementById('modalCreditos').style.display = 'none';
 
         window.cambiarSaldo = async (uid, tipo, cantidad) => {
             try {
                 const userRef = doc(db, "usuarios", uid);
                 const userSnap = await getDoc(userRef);
-                const userData = userSnap.data();
-
-                let newCreds = userData.creditos_detalle || {};
+                let newCreds = userSnap.data().creditos_detalle || {};
                 
-                // Si es el primer uso, inicializamos
-                if(!newCreds.fuerza && typeof userData.creditos === 'number') newCreds.fuerza = userData.creditos;
+                // Inicializar si no existe
+                if (typeof userSnap.data().creditos === 'number' && newCreds.fuerza === undefined) {
+                    newCreds.fuerza = userSnap.data().creditos;
+                }
 
-                const currentVal = newCreds[tipo] || 0;
-                newCreds[tipo] = currentVal + cantidad;
+                const actual = newCreds[tipo] || 0;
+                newCreds[tipo] = actual + cantidad;
                 if(newCreds[tipo] < 0) newCreds[tipo] = 0;
 
                 await updateDoc(userRef, {
                     creditos_detalle: newCreds,
-                    creditos: newCreds.fuerza // Mantenemos compatibilidad con reservas.html por ahora
+                    creditos: newCreds.fuerza // Sincronizar legacy
                 });
-
-                // Refrescamos todo
                 await cargarUsuarios();
-                abrirModal(uid); // Reabrimos para ver el cambio visual
-
-            } catch (e) {
-                alert("Error: " + e.message);
-            }
+                abrirModal(uid);
+            } catch (e) { alert("Error: " + e.message); }
         }
 
-        // --- 3. CREAR CLASE ---
+        // --- 3. CREAR Y BORRAR CLASE ---
         window.crearClase = async () => {
             const nombre = document.getElementById('nombreClase').value;
             const tipo = document.getElementById('tipoClase').value;
@@ -279,121 +245,137 @@
 
             try {
                 await addDoc(collection(db, "clases"), {
-                    nombre: nombre,
-                    tipo: tipo,
-                    fecha: fecha, // "2024-02-01"
-                    hora: hora,
-                    plazas_totales: plazas,
-                    apuntados: [], // Array de IDs de usuarios
-                    timestamp: new Date(fecha + 'T' + hora) // Para ordenar
+                    nombre, tipo, fecha, hora, plazas_totales: plazas,
+                    apuntados: [],
+                    timestamp: new Date(fecha + 'T' + hora)
                 });
                 alert("Clase creada");
                 cargarCalendario();
-            } catch(e) {
-                alert("Error: " + e.message);
-            }
+            } catch(e) { alert("Error: " + e.message); }
         }
 
-        // --- 4. CALENDARIO ---
+        window.eliminarClase = async (id) => {
+            if(!confirm("¿Seguro que quieres borrar esta clase? Se borrará para siempre.")) return;
+            try {
+                await deleteDoc(doc(db, "clases", id));
+                cargarCalendario();
+            } catch(e) { alert("Error al borrar: " + e.message); }
+        }
+
+        // --- 4. CALENDARIO Y EXPULSAR ---
         window.cargarCalendario = async () => {
             const container = document.getElementById('calendarioContainer');
             container.innerHTML = "Cargando...";
-
             try {
-                // Traemos clases ordenadas por fecha (timestamp)
-                // NOTA: Si da error de índice, ve a la consola y pulsa el link
                 const q = query(collection(db, "clases"), orderBy("timestamp", "asc"));
                 const snap = await getDocs(q);
+                if(snap.empty) { container.innerHTML = "No hay clases."; return; }
 
-                if(snap.empty) { container.innerHTML = "No hay clases futuras."; return; }
-
-                // Agrupamos por día
                 const grupos = {};
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    d.id = doc.id;
-                    if(!grupos[d.fecha]) grupos[d.fecha] = [];
-                    grupos[d.fecha].push(d);
+                snap.forEach(d => {
+                    const data = d.data(); data.id = d.id;
+                    if(!grupos[data.fecha]) grupos[data.fecha] = [];
+                    grupos[data.fecha].push(data);
                 });
 
                 let html = "";
-                // Ordenamos las fechas
                 Object.keys(grupos).sort().forEach(fecha => {
-                    html += `<div class="calendar-day">
-                                <div class="day-header">${fecha}</div>`;
-                    
-                    grupos[fecha].forEach(clase => {
-                        const plazasLibres = clase.plazas_totales - (clase.apuntados ? clase.apuntados.length : 0);
+                    html += `<div class="calendar-day"><div class="day-header">${fecha}</div>`;
+                    grupos[fecha].forEach(c => {
+                        const libres = c.plazas_totales - (c.apuntados ? c.apuntados.length : 0);
                         html += `
-                            <div class="class-item type-${clase.tipo}">
+                            <div class="class-item type-${c.tipo}">
                                 <div>
-                                    <strong style="font-size:1.1rem">${clase.hora} - ${clase.nombre}</strong><br>
-                                    <span style="font-size:0.8rem; opacity:0.7">${clase.tipo.toUpperCase()} • Libres: ${plazasLibres}/${clase.plazas_totales}</span>
+                                    <strong>${c.hora} - ${c.nombre}</strong><br>
+                                    <span style="font-size:0.8rem; opacity:0.7">${c.tipo.toUpperCase()} • Libres: ${libres}/${c.plazas_totales}</span>
                                 </div>
-                                <button class="btn-mini" onclick="verAsistentes('${clase.id}')">👥 Ver Usuarios</button>
+                                <div>
+                                    <button class="btn-mini" onclick="verAsistentes('${c.id}', '${c.tipo}')">👥 Ver Usuarios</button>
+                                    <button class="btn-mini btn-delete" onclick="eliminarClase('${c.id}')">🗑️</button>
+                                </div>
                             </div>
-                            <div id="asistentes-${clase.id}" class="attendees-list">Cargando nombres...</div>
+                            <div id="asistentes-${c.id}" class="attendees-list"></div>
                         `;
                     });
                     html += `</div>`;
                 });
-
                 container.innerHTML = html;
-
-            } catch(e) {
-                console.error(e);
-                container.innerHTML = "Error cargando calendario (Revisa la consola por si falta un índice).";
-            }
+            } catch(e) { console.error(e); }
         }
 
-        // --- 5. VER QUIÉN VA A LA CLASE ---
-        window.verAsistentes = async (claseId) => {
+        window.verAsistentes = async (claseId, tipoClase) => {
             const div = document.getElementById(`asistentes-${claseId}`);
+            if(div.style.display === 'block') { div.style.display = 'none'; return; }
             
-            // Toggle (Mostrar/Ocultar)
-            if(div.style.display === 'block') {
-                div.style.display = 'none';
-                return;
-            }
             div.style.display = 'block';
-            div.innerHTML = "Buscando nombres...";
+            div.innerHTML = "Cargando...";
 
             try {
                 const claseRef = doc(db, "clases", claseId);
                 const claseSnap = await getDoc(claseRef);
                 const ids = claseSnap.data().apuntados || [];
 
-                if(ids.length === 0) {
-                    div.innerHTML = "Nadie apuntado aún.";
-                    return;
-                }
+                if(ids.length === 0) { div.innerHTML = "Nadie apuntado."; return; }
 
-                // Buscamos los nombres de esos IDs
-                // (Manera simple: iterar. Para producción se optimiza, pero aquí vale)
-                let nombresHTML = "<ul style='padding-left:20px; margin:0;'>";
-                
+                let html = "";
                 for(const uid of ids) {
-                    const userSnap = await getDoc(doc(db, "usuarios", uid));
-                    if(userSnap.exists()) {
-                        nombresHTML += `<li>${userSnap.data().nombre} (${userSnap.data().email})</li>`;
-                    } else {
-                        nombresHTML += `<li>Usuario desconocido (${uid})</li>`;
-                    }
+                    const uSnap = await getDoc(doc(db, "usuarios", uid));
+                    const nombre = uSnap.exists() ? uSnap.data().nombre : "Desconocido";
+                    const email = uSnap.exists() ? uSnap.data().email : "---";
+                    
+                    html += `
+                        <div class="attendee-row">
+                            <span>${nombre} <small>(${email})</small></span>
+                            <button class="btn-kick" title="Expulsar y Devolver Crédito" 
+                                onclick="expulsarUsuario('${claseId}', '${uid}', '${tipoClase}')">❌</button>
+                        </div>
+                    `;
                 }
-                nombresHTML += "</ul>";
-                div.innerHTML = nombresHTML;
+                div.innerHTML = html;
+            } catch(e) { div.innerHTML = "Error: " + e.message; }
+        }
+
+        window.expulsarUsuario = async (claseId, userId, tipoClase) => {
+            if(!confirm("¿Quitar usuario de la clase y devolverle el crédito?")) return;
+            
+            try {
+                // 1. Quitar de la clase
+                const claseRef = doc(db, "clases", claseId);
+                await updateDoc(claseRef, {
+                    apuntados: arrayRemove(userId)
+                });
+
+                // 2. Devolver Crédito (Según el tipo de clase)
+                const userRef = doc(db, "usuarios", userId);
+                const userSnap = await getDoc(userRef);
+                
+                // Necesitamos la ruta exacta del crédito (ej: creditos_detalle.pilates)
+                // Firestore no deja usar variables dinámicas en claves anidadas fácilmente con 'increment' directo en updateDoc simple
+                // Así que leemos, sumamos y guardamos.
+                let data = userSnap.data();
+                let creds = data.creditos_detalle || {};
+                
+                // Fallback para antiguos
+                if (typeof data.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = data.creditos;
+
+                if (!creds[tipoClase]) creds[tipoClase] = 0;
+                creds[tipoClase] += 1;
+
+                await updateDoc(userRef, {
+                    creditos_detalle: creds,
+                    creditos: creds.fuerza // Sincronizar legacy
+                });
+
+                alert("Usuario expulsado y crédito devuelto.");
+                verAsistentes(claseId, tipoClase); // Refrescar lista visual
+                cargarCalendario(); // Refrescar contadores de plazas
 
             } catch(e) {
-                div.innerHTML = "Error: " + e.message;
+                alert("Error: " + e.message);
             }
         }
 
-        // Arrancamos
-        window.onload = () => {
-            cargarUsuarios();
-            cargarCalendario();
-        };
-
+        window.onload = () => { cargarUsuarios(); cargarCalendario(); };
     </script>
 </body>
 </html>
