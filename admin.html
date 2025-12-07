@@ -4,28 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>ITA | Administración</title>
+    
+    <title>ITA | Panel Admin</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    
     <script>
-        // Generamos la versión una vez (la hora actual)
-        const version = Date.now();
-
-        // Función para cargar scripts de forma independiente
-        function cargar(archivo) {
-            var script = document.createElement('script');
-            script.type = 'module';
-            script.src = archivo + '?v=' + version; // Aquí añadimos la versión
-            document.head.appendChild(script);
+        const v = Date.now();
+        function cargar(src) {
+            const s = document.createElement('script');
+            s.type = 'module';
+            s.src = src + '?v=' + v;
+            document.head.appendChild(s);
         }
-
-        // --- TUS DOS LÍNEAS INDEPENDIENTES ---
-        cargar('layout.js');      // Carga el menú
-        cargar('user-logic.js');  // Carga el usuario
+        cargar('layout.js');     // Menú
+        cargar('user-logic.js'); // Botón Login
     </script>
 
     <style>
+        /* Estilos específicos del Admin */
         .admin-container { max-width: 800px; margin: 50px auto; padding: 20px; }
         .admin-card { background: #1a1a1a; padding: 30px; border-radius: 10px; border: 1px solid #333; margin-bottom: 30px; }
         h2 { font-family: 'Oswald'; color: var(--accent-pink); margin-bottom: 20px; }
@@ -33,56 +31,52 @@
         /* Buscador */
         .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
         input { flex: 1; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
-        .btn-search { padding: 12px 30px; background: #444; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        .btn-search { padding: 12px 30px; background: #444; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
         .btn-search:hover { background: #666; }
 
-        /* Resultado Usuario */
-        .user-result { display: none; background: #222; padding: 20px; border-left: 4px solid var(--accent-pink); animation: fadeIn 0.3s; }
-        .user-info h3 { margin: 0; color: white; }
-        .user-info p { color: #888; margin: 5px 0; }
+        /* Resultado */
+        .user-result { display: none; background: #222; padding: 20px; border-left: 4px solid var(--accent-pink); margin-top: 20px; }
+        .credit-controls { display: flex; align-items: center; gap: 10px; margin-top: 20px; background: #111; padding: 15px; border-radius: 5px; }
+        .current-credits { font-size: 2rem; font-weight: bold; color: white; margin-right: 20px; }
         
-        /* Control de Créditos */
-        .credit-controls { display: flex; align-items: center; gap: 15px; margin-top: 20px; background: #111; padding: 15px; border-radius: 5px; }
-        .current-credits { font-size: 1.5rem; font-weight: bold; color: white; }
-        .btn-action { padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; }
-        .btn-add { background: #25D366; color: white; }
-        .btn-sub { background: #ff4444; color: white; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .btn-action { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-add { background: #25D366; }
+        .btn-sub { background: #ff4444; }
+        .btn-action:hover { opacity: 0.8; }
     </style>
 </head>
 <body>
 
     <div class="admin-container">
-        <h1>PANEL DE CONTROL</h1>
+        <h1 class="section-title" style="font-size: 2.5rem;">PANEL DE CONTROL</h1>
         
         <div class="admin-card">
             <h2>GESTIÓN DE USUARIOS</h2>
+            <p style="color:#888; margin-bottom: 15px;">Busca a un usuario por su correo para gestionarlo.</p>
+            
             <div class="search-box">
-                <input type="email" id="emailInput" placeholder="Buscar usuario por email...">
+                <input type="email" id="emailInput" placeholder="Ej: cliente@correo.com">
                 <button class="btn-search" onclick="buscarUsuario()">BUSCAR</button>
             </div>
 
             <div id="userResult" class="user-result">
-                <div class="user-info">
-                    <h3 id="resNombre">Nombre del Usuario</h3>
-                    <p id="resEmail">email@ejemplo.com</p>
-                    <p style="font-size: 0.8rem; color: #666;">ID: <span id="resUid">...</span></p>
-                </div>
-
+                <h3 id="resNombre" style="margin: 0; color: white;">Nombre del Usuario</h3>
+                <p id="resEmail" style="color: #888;">email@ejemplo.com</p>
+                
                 <div class="credit-controls">
                     <div>
-                        <span style="color:#888; font-size:0.8rem;">SALDO ACTUAL</span><br>
+                        <span style="font-size:0.8rem; color:#aaa;">SALDO ACTUAL:</span><br>
                         <span id="resCreditos" class="current-credits">0</span>
                     </div>
-                    <div style="margin-left: auto; display: flex; gap: 10px;">
-                        <button class="btn-action btn-sub" onclick="cambiarCreditos(-1)">-1</button>
-                        <button class="btn-action btn-add" onclick="cambiarCreditos(1)">+1</button>
-                        <button class="btn-action btn-add" onclick="cambiarCreditos(5)">+5</button>
-                    </div>
+                    
+                    <button class="btn-action btn-sub" onclick="cambiarCreditos(-1)">-1</button>
+                    <button class="btn-action btn-add" onclick="cambiarCreditos(1)">+1</button>
+                    <button class="btn-action btn-add" onclick="cambiarCreditos(5)">+5</button>
+                    <button class="btn-action btn-add" onclick="cambiarCreditos(10)">+10</button>
                 </div>
             </div>
-            <p id="errorMsg" style="color: #ff4444; display: none; margin-top: 10px;"></p>
+
+            <p id="msgBox" style="margin-top: 15px; color: #aaa;"></p>
         </div>
     </div>
 
@@ -90,69 +84,74 @@
         import { db } from "./firebase-config.js";
         import { collection, query, where, getDocs, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        let currentUserDocId = null; // Guardamos el ID del usuario que estamos editando
+        let currentUserId = null; // Aquí guardaremos el ID del usuario que encontremos
 
-        // Hacemos la función global para poder llamarla desde el HTML
+        // Función Global de Búsqueda
         window.buscarUsuario = async () => {
             const email = document.getElementById('emailInput').value;
-            const errorMsg = document.getElementById('errorMsg');
+            const msgBox = document.getElementById('msgBox');
             const resultBox = document.getElementById('userResult');
-            
-            errorMsg.style.display = 'none';
-            resultBox.style.display = 'none';
 
-            if(!email) return;
+            // Limpiamos pantalla
+            msgBox.innerText = "Buscando...";
+            msgBox.style.color = "#aaa";
+            resultBox.style.display = "none";
+
+            if(!email) { msgBox.innerText = "Escribe un correo primero."; return; }
 
             try {
-                // Buscamos en la base de datos alguien con ese email
-                const q = query(collection(db, "usuarios"), where("email", "==", email));
+                // 1. Preguntamos a Firebase: "¿Existe alguien con este email?"
+                const usuariosRef = collection(db, "usuarios");
+                const q = query(usuariosRef, where("email", "==", email));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    errorMsg.innerText = "Usuario no encontrado.";
-                    errorMsg.style.display = 'block';
+                    msgBox.innerText = "Usuario no encontrado. Revisa el correo.";
+                    msgBox.style.color = "#ff4444";
                     return;
                 }
 
-                // Si lo encontramos, mostramos sus datos
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    currentUserDocId = docSnap.id;
+                // 2. Si existe, mostramos sus datos
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    currentUserId = doc.id; // Guardamos su ID secreto para luego
                     
-                    document.getElementById('resNombre').innerText = data.nombre || "Sin nombre";
+                    document.getElementById('resNombre').innerText = data.nombre || "Usuario";
                     document.getElementById('resEmail').innerText = data.email;
-                    document.getElementById('resUid').innerText = docSnap.id;
                     document.getElementById('resCreditos').innerText = data.creditos || 0;
                     
-                    resultBox.style.display = 'block';
+                    resultBox.style.display = "block"; // Enseñamos la caja
+                    msgBox.innerText = "";
                 });
 
             } catch (error) {
                 console.error(error);
-                errorMsg.innerText = "Error al buscar: " + error.message;
-                errorMsg.style.display = 'block';
+                msgBox.innerText = "Error: " + error.message;
             }
         }
 
+        // Función Global para Sumar/Restar Créditos
         window.cambiarCreditos = async (cantidad) => {
-            if (!currentUserDocId) return;
+            if (!currentUserId) return;
 
             try {
-                const userRef = doc(db, "usuarios", currentUserDocId);
+                const userRef = doc(db, "usuarios", currentUserId);
                 
-                // Actualizamos en tiempo real
+                // 1. Mandamos la orden a la base de datos
                 await updateDoc(userRef, {
                     creditos: increment(cantidad)
                 });
 
-                // Actualizamos el número en pantalla (truco visual rápido)
-                const currentVal = parseInt(document.getElementById('resCreditos').innerText);
-                document.getElementById('resCreditos').innerText = currentVal + cantidad;
+                // 2. Actualizamos el número en pantalla al instante (truco visual)
+                const pantalla = document.getElementById('resCreditos');
+                const nuevoValor = parseInt(pantalla.innerText) + cantidad;
+                pantalla.innerText = nuevoValor;
 
             } catch (error) {
-                alert("Error al actualizar créditos: " + error.message);
+                alert("Error al actualizar: " + error.message);
             }
         }
     </script>
+
 </body>
 </html>
