@@ -16,6 +16,9 @@ body {
     font-family: 'Montserrat', sans-serif;
     line-height: 1.6;
     display: flex; flex-direction: column; min-height: 100vh;
+
+    /*Espacio por arriba*/
+    padding-top: 100px;
 }
 
 /* --- TIPOGRAFÍA --- */
@@ -26,24 +29,93 @@ h1, h2, h3, h4 { font-family: 'Oswald', sans-serif; text-transform: uppercase; l
 
 /* --- NAVEGACIÓN --- */
 nav {
-    background-color: rgba(5, 5, 5, 0.95); padding: 10px 30px;
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 2px solid #222; backdrop-filter: blur(5px);
-    position: sticky; top: 0; z-index: 1000;
+    background-color: rgba(5, 5, 5, 0.98); 
+    padding: 10px 40px; /* Un poco más de margen a los lados */
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; /* ESTO MANDA EL LOGO A LA IZQ Y EL MENÚ A LA DER */
+    border-bottom: 2px solid #222; 
+    backdrop-filter: blur(10px);
+    
+    position: fixed;   
+    top: 0;            
+    width: 100%;       
+    z-index: 1000;     
+    height: 120px; /* MÁS ALTURA para que quepa el logo gigante */
 }
-.nav-logo img { height: 50px; width: auto; }
-.nav-links { display: flex; gap: 20px; align-items: center; }
+
+/* LOGO EN ESCRITORIO (IZQUIERDA) */
+.nav-logo {
+    position: static; /* Quitamos el centrado absoluto del paso anterior */
+    transform: none;
+}
+
+.nav-logo img { 
+    height: 100px;      /* ¡TAMAÑO GIGANTE! */
+    width: auto; 
+    transition: transform 0.3s;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+    display: block; /* Asegura que no tenga márgenes extraños */
+}
+
+.nav-logo img:hover { transform: scale(1.05); }
+
+/* ENLACES A LA DERECHA */
+.nav-links { 
+    display: flex; 
+    gap: 25px; 
+    align-items: center;
+}
+
 .nav-links a { 
     color: var(--text-white); text-decoration: none; font-weight: 700; 
     text-transform: uppercase; font-size: 0.85rem; transition: color 0.3s;
 }
 .nav-links a:hover, .nav-links a.active { color: var(--accent-glow); }
 
-/* Botón Login (Área Socios) */
+/* Botón Login */
 .btn-login {
     border: 1px solid var(--text-white); padding: 8px 15px; border-radius: 4px;
 }
 .btn-login:hover { background: white; color: black !important; }
+
+/* --- RESPONSIVE (MÓVIL) --- */
+@media (max-width: 768px) {
+    /* Ajustamos el nav para móvil */
+    nav { 
+        height: 80px; /* Un poco más bajo en móvil */
+        padding: 10px 20px;
+    }
+
+    /* Logo un poco más pequeño en móvil para que no ocupe todo */
+    .nav-logo img { height: 60px; }
+    .nav-logo { top: 10px; }
+
+    /* El menú de tres puntos a la derecha */
+    .menu-icon { 
+        display: flex; 
+        margin-left: auto; /* Empuja el icono a la derecha */
+    }
+
+    /* El menú desplegable */
+    .nav-links {
+        display: none; /* Oculto por defecto */
+        position: absolute;
+        top: 80px; /* Justo debajo del nav */
+        left: 0;
+        width: 100%;
+        flex-direction: column;
+        background-color: rgba(5, 5, 5, 0.98);
+        padding: 20px;
+        text-align: center;
+        border-bottom: 2px solid var(--accent-pink);
+    }
+    
+    .nav-links.active {
+        display: flex;
+        margin-left: 0; /* Reseteamos el margen en móvil */
+    }
+}
 
 /* --- PORTADA (HERO) --- */
 .hero {
@@ -116,7 +188,7 @@ footer { text-align: center; padding: 40px; border-top: 1px solid #222; color: #
 /* 2. Clase para el Logo Grande de la Portada */
 .hero-logo-img {
     max-width: 300px;
-    width: 80%;
+    width: 100%;
     height: auto;
     margin-bottom: 20px;
     filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); /* Sombra para que destaque sobre la foto */
@@ -139,4 +211,102 @@ footer {
     background-color: #080808; /* Un pelín más claro que el negro puro */
     color: #666; 
     margin-top: auto; 
+}
+
+//* --- BOTÓN DE MENÚ (TRES PUNTOS) --- */
+.menu-icon {
+    display: none; /* Oculto en PC */
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* Diseño de los puntitos */
+.menu-icon span {
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-pink); /* Color rosa para los puntos */
+    border-radius: 50%; /* Redondos */
+    margin: 3px 0;
+    transition: 0.3s;
+}
+
+/* Efecto al pasar el ratón por los puntos */
+.menu-icon:hover span {
+    background-color: white;
+    box-shadow: 0 0 5px var(--accent-glow);
+}
+
+ /* --- BOTÓN DE MENÚ (TRES PUNTOS) --- */
+.menu-icon {
+    display: none; /* Oculto en PC */
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* Diseño de los puntitos */
+.menu-icon span {
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-pink); /* Color rosa para los puntos */
+    border-radius: 50%; /* Redondos */
+    margin: 3px 0;
+    transition: 0.3s;
+}
+
+/* Efecto al pasar el ratón por los puntos */
+.menu-icon:hover span {
+    background-color: white;
+    box-shadow: 0 0 5px var(--accent-glow);
+}
+
+/* --- RESPONSIVE (MÓVIL) --- */
+@media (max-width: 768px) {
+    
+    /* 1. Ajustamos la altura de la barra en móvil */
+    nav { 
+        height: 80px; 
+        padding: 10px 20px;
+        justify-content: flex-end; /* Alineamos el icono del menú a la derecha */
+    }
+
+    /* 2. LOGO CENTRADO ABSOLUTO (Solo en móvil) */
+    .nav-logo {
+        position: absolute; /* Lo sacamos del flujo para centrarlo */
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%); /* Centrado matemático perfecto */
+        width: auto;
+    }
+
+    /* En móvil el logo no puede ser TAN gigante o se saldrá, lo bajamos un poco */
+    .nav-logo img { height: 55px; }
+
+    /* 3. El menú de tres puntos (Se queda a la derecha gracias al flex-end del nav) */
+    .menu-icon { 
+        display: flex; 
+        z-index: 1001; /* Aseguramos que esté por encima */
+    }
+
+    /* 4. El menú desplegable */
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 80px; /* Justo debajo del nav móvil */
+        left: 0;
+        width: 100%;
+        flex-direction: column;
+        background-color: rgba(5, 5, 5, 0.98);
+        padding: 30px 20px;
+        text-align: center;
+        border-bottom: 2px solid var(--accent-pink);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+    }
+    
+    .nav-links.active {
+        display: flex;
+    }
 }
