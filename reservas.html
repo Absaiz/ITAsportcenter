@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     
     <title>ITA | Reservas</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
     
     <script>
         const v = Date.now();
@@ -18,42 +20,66 @@
             s.src = src + '?v=' + v;
             document.head.appendChild(s);
         }
+        function cargarCSS(src) {
+            const l = document.createElement('link');
+            l.rel = 'stylesheet'; l.href = src + '?v=' + v;
+            document.head.appendChild(l);
+        }
+        cargarCSS('style.css');
         cargar('layout.js');
         cargar('user-logic.js');
     </script>
 
     <style>
-        .classes-container { max-width: 1000px; margin: 50px auto; padding: 20px; }
+        .classes-container { max-width: 800px; margin: 40px auto; padding: 20px; }
         
+        /* TARJETA DE CLASE */
         .class-card {
             background: #1a1a1a;
             border: 1px solid #333;
-            border-radius: 10px;
+            border-left: 5px solid #555; /* Color por defecto */
+            border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
         }
-        .class-card:hover { border-color: var(--accent-pink); transform: translateX(5px); }
+        .class-card:hover { transform: translateY(-3px); }
 
-        .class-info h3 { margin: 0; color: white; font-family: 'Oswald'; font-size: 1.5rem; }
-        .class-time { color: var(--accent-pink); font-weight: bold; margin-top: 5px; }
-        .class-spots { color: #888; font-size: 0.9rem; margin-top: 5px; }
+        /* Colores por tipo */
+        .type-fuerza { border-left-color: #ff9f43; }
+        .type-pilates { border-left-color: #54a0ff; }
+        .type-personal { border-left-color: #ff6b6b; }
+        .type-nutricion { border-left-color: #1dd1a1; }
+
+        .class-info h3 { margin: 0; color: white; font-family: 'Oswald'; font-size: 1.4rem; text-transform: uppercase; }
+        .class-meta { color: #aaa; font-size: 0.9rem; margin-top: 5px; display: flex; gap: 15px; }
+        .class-meta span { display: flex; align-items: center; gap: 5px; }
         
+        .spots-badge { background: #333; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; color: white; }
+        .spots-full { background: #ff4444; color: white; }
+
+        /* Botón Reservar */
         .btn-book {
             background: white; color: black; border: none;
             padding: 10px 20px; font-weight: bold; cursor: pointer;
             border-radius: 5px; transition: 0.3s;
+            text-transform: uppercase;
+            font-family: 'Oswald';
         }
         .btn-book:hover { background: var(--accent-pink); color: white; }
-        .btn-book:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .btn-book:disabled { background: #333; color: #555; cursor: not-allowed; }
+        
+        /* Fecha separador */
+        .date-divider { color: var(--accent-pink); font-weight: bold; margin: 30px 0 10px; border-bottom: 1px solid #333; padding-bottom: 5px; font-family: 'Oswald'; font-size: 1.2rem; }
 
-        /* Botón Mágico Admin */
-        #btnGenerar { 
-            display: block; margin: 20px auto; background: #333; color: #aaa; 
-            border: 1px dashed #555; padding: 10px; cursor: pointer; 
+        @media (max-width: 600px) {
+            .class-card { flex-direction: column; text-align: center; gap: 15px; }
+            .class-meta { justify-content: center; }
+            .btn-book { width: 100%; }
         }
     </style>
 </head>
@@ -61,17 +87,16 @@
 
     <div class="classes-container">
         <h1 class="section-title">HORARIO DE CLASES</h1>
-        
-        <!-- <button id="btnGenerar" onclick="generarClasesTest()">[ADMIN] GENERAR CLASES DE PRUEBA</button>-->
+        <p style="text-align:center; color:#888; margin-bottom:30px;">Reserva tu plaza y entrena duro.</p>
 
         <div id="listaClases">
-            <p style="text-align: center; color: #666;">Cargando clases disponibles...</p>
+            <p style="text-align: center; margin-top: 50px;">Cargando calendario...</p>
         </div>
     </div>
 
     <script type="module">
         import { db, auth } from "./firebase-config.js";
-        import { collection, getDocs, doc, getDoc, updateDoc, arrayUnion, increment, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { collection, getDocs, doc, getDoc, updateDoc, arrayUnion, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         let currentUser = null;
@@ -79,127 +104,153 @@
         // 1. Detectar usuario
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            cargarClases(); // Cargar la lista al entrar
+            cargarClases();
         });
 
-        // 2. Cargar Clases desde Firebase
+        // 2. Cargar Clases ordenadas por fecha
         async function cargarClases() {
             const container = document.getElementById('listaClases');
-            container.innerHTML = ""; // Limpiar
-
+            
             try {
-                const querySnapshot = await getDocs(collection(db, "clases"));
+                // Traemos clases futuras (ordenadas por timestamp)
+                // SI ESTO FALLA: Mira la consola, te pedirá crear un índice.
+                const q = query(collection(db, "clases"), orderBy("timestamp", "asc"));
+                const querySnapshot = await getDocs(q);
                 
                 if (querySnapshot.empty) {
-                    container.innerHTML = "<p style='text-align:center'>No hay clases programadas.</p>";
+                    container.innerHTML = "<p style='text-align:center'>No hay clases programadas próximamente.</p>";
                     return;
                 }
 
+                container.innerHTML = ""; // Limpiar mensaje de carga
+                let lastDate = "";
+
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
+                    
+                    // Calcular plazas
                     const plazasOcupadas = data.apuntados ? data.apuntados.length : 0;
                     const plazasLibres = data.plazas_totales - plazasOcupadas;
+                    const estaApuntado = currentUser && data.apuntados && data.apuntados.includes(currentUser.uid);
                     
-                    // Crear HTML de la tarjeta
-                    const div = document.createElement('div');
-                    div.className = 'class-card';
-                    div.innerHTML = `
-                        <div class="class-info">
-                            <h3>${data.nombre}</h3>
-                            <div class="class-time">📅 ${data.dia} - ⏰ ${data.hora}</div>
-                            <div class="class-spots">Plazas libres: ${plazasLibres} / ${data.plazas_totales}</div>
+                    // Agrupar por fecha visualmente
+                    if(data.fecha !== lastDate) {
+                        container.innerHTML += `<div class="date-divider">${data.fecha}</div>`;
+                        lastDate = data.fecha;
+                    }
+
+                    // Determinar estado del botón
+                    let btnText = "RESERVAR";
+                    let btnDisabled = false;
+                    
+                    if (estaApuntado) {
+                        btnText = "✅ APUNTADO";
+                        btnDisabled = true;
+                    } else if (plazasLibres <= 0) {
+                        btnText = "⛔ COMPLETO";
+                        btnDisabled = true;
+                    }
+
+                    // HTML de la tarjeta
+                    const html = `
+                        <div class="class-card type-${data.tipo}">
+                            <div class="class-info">
+                                <h3>${data.nombre}</h3>
+                                <div class="class-meta">
+                                    <span>⏰ ${data.hora}</span>
+                                    <span>💪 ${data.tipo.toUpperCase()}</span>
+                                    <span class="spots-badge ${plazasLibres===0 ? 'spots-full':''}">
+                                        Libres: ${plazasLibres}/${data.plazas_totales}
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="btn-book" 
+                                onclick="reservar('${docSnap.id}', '${data.nombre}', '${data.tipo}')" 
+                                ${btnDisabled ? 'disabled' : ''}>
+                                ${btnText}
+                            </button>
                         </div>
-                        <button class="btn-book" onclick="reservar('${docSnap.id}', '${data.nombre}')" 
-                            ${plazasLibres === 0 ? 'disabled' : ''}>
-                            ${plazasLibres === 0 ? 'COMPLETO' : 'RESERVAR'}
-                        </button>
                     `;
-                    container.appendChild(div);
+                    container.innerHTML += html;
                 });
 
             } catch (error) {
                 console.error(error);
-                container.innerHTML = "<p>Error cargando clases.</p>";
+                if(error.message.includes("index")) {
+                    container.innerHTML = "<p style='color:red; text-align:center'>⚠️ ERROR: Falta crear el índice en Firebase. (Abre la consola F12 y pulsa el enlace)</p>";
+                } else {
+                    container.innerHTML = "<p style='text-align:center'>Error cargando el calendario.</p>";
+                }
             }
         }
 
-        // 3. Función para RESERVAR (Global)
-        window.reservar = async (claseId, nombreClase) => {
+        // 3. Función Reservar Inteligente (Multicrédito)
+        window.reservar = async (claseId, nombreClase, tipoClase) => {
             if (!currentUser) {
-                alert("Debes iniciar sesión para reservar.");
-                window.location.href = "login.html";
+                if(confirm("Debes iniciar sesión para reservar. ¿Ir al login?")) {
+                    window.location.href = "login.html";
+                }
                 return;
             }
 
-            const confirmacion = confirm(`¿Gastar 1 crédito para reservar ${nombreClase}?`);
+            const confirmacion = confirm(`¿Gastar 1 crédito de ${tipoClase.toUpperCase()} para esta clase?`);
             if (!confirmacion) return;
 
             try {
-                // A) Comprobar CRÉDITOS del usuario
+                // A) Verificar saldo del usuario
                 const userRef = doc(db, "usuarios", currentUser.uid);
                 const userSnap = await getDoc(userRef);
+                const userData = userSnap.data();
+
+                // Lógica para saber qué saldo mirar
+                // 1. Buscamos en la bolsa nueva 'creditos_detalle'
+                let creditosDisponibles = 0;
+                let bolsaCreditos = userData.creditos_detalle || {};
                 
-                if (userSnap.data().creditos < 1) {
-                    alert("⛔ No tienes créditos suficientes. Contacta con administración.");
+                // Si no tiene bolsa nueva pero tiene saldo antiguo, asumimos que es Fuerza
+                if (typeof userData.creditos === 'number' && bolsaCreditos.fuerza === undefined) {
+                    bolsaCreditos.fuerza = userData.creditos;
+                }
+
+                creditosDisponibles = bolsaCreditos[tipoClase] || 0;
+
+                if (creditosDisponibles < 1) {
+                    alert(`⛔ No tienes créditos de ${tipoClase.toUpperCase()}. Contacta con el centro.`);
                     return;
                 }
 
-                // B) Comprobar PLAZAS de la clase (Doble seguridad)
+                // B) Verificar hueco (Doble check)
                 const claseRef = doc(db, "clases", claseId);
                 const claseSnap = await getDoc(claseRef);
                 const dataClase = claseSnap.data();
                 
-                if (dataClase.apuntados && dataClase.apuntados.includes(currentUser.uid)) {
-                    alert("⚠️ Ya estás apuntado a esta clase.");
-                    return;
-                }
-                
                 if (dataClase.apuntados && dataClase.apuntados.length >= dataClase.plazas_totales) {
-                    alert("⛔ Clase completa.");
+                    alert("⛔ Vaya, alguien se te adelantó. La clase está completa.");
+                    cargarClases(); // Recargar para ver el cambio
                     return;
                 }
 
-                // C) OPERACIÓN FINAL (Restar crédito + Apuntar usuario)
-                // 1. Restar crédito
-                await updateDoc(userRef, { creditos: increment(-1) });
+                // C) EJECUTAR RESERVA
+                // 1. Restamos el crédito específico
+                bolsaCreditos[tipoClase] = creditosDisponibles - 1;
+
+                // Actualizamos usuario (guardamos la bolsa detallada y el total en 'creditos' para compatibilidad)
+                await updateDoc(userRef, { 
+                    creditos_detalle: bolsaCreditos,
+                    creditos: bolsaCreditos.fuerza // Legacy
+                });
                 
-                // 2. Añadir usuario a la lista de la clase
+                // 2. Apuntamos al usuario
                 await updateDoc(claseRef, {
                     apuntados: arrayUnion(currentUser.uid)
                 });
 
-                alert("✅ ¡Reserva confirmada! Te esperamos.");
-                cargarClases(); // Recargar para ver los cambios
+                alert("✅ ¡Reserva confirmada!");
+                cargarClases(); // Recargar la lista
 
             } catch (error) {
                 console.error(error);
                 alert("Error al reservar: " + error.message);
-            }
-        };
-
-        // 4. GENERADOR DE CLASES (Solo para Admin)
-        window.generarClasesTest = async () => {
-            if(!confirm("¿Crear clases de prueba?")) return;
-            try {
-                const clasesRef = collection(db, "clases");
-                
-                await addDoc(clasesRef, {
-                    nombre: "FUERZA ESTRUCTURAL", dia: "Lunes", hora: "18:00",
-                    plazas_totales: 4, apuntados: []
-                });
-                await addDoc(clasesRef, {
-                    nombre: "PILATES REFORMER", dia: "Martes", hora: "10:00",
-                    plazas_totales: 2, apuntados: [] // Solo 2 plazas, se llena rápido
-                });
-                await addDoc(clasesRef, {
-                    nombre: "HYROX TRAINING", dia: "Miércoles", hora: "19:30",
-                    plazas_totales: 6, apuntados: []
-                });
-
-                alert("Clases creadas. Recarga la página.");
-                cargarClases();
-            } catch (e) {
-                alert("Error: " + e.message);
             }
         };
     </script>

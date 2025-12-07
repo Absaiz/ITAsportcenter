@@ -3,141 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     
     <title>ITA | Mi Perfil</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css">
     <script>
-        // Generamos la versión una vez (la hora actual)
-        const version = Date.now();
-
-        // Función para cargar scripts de forma independiente
-        function cargar(archivo) {
-            var script = document.createElement('script');
-            script.type = 'module';
-            script.src = archivo + '?v=' + version; // Aquí añadimos la versión
-            document.head.appendChild(script);
+        const v = Date.now();
+        function cargar(src) {
+            const s = document.createElement('script');
+            s.type = 'module'; s.src = src + '?v=' + v;
+            document.head.appendChild(s);
         }
-
-        // --- TUS DOS LÍNEAS INDEPENDIENTES ---
-        cargar('layout.js');      // Carga el menú
-        cargar('user-logic.js');  // Carga el usuario
+        function cargarCSS(src) {
+            const l = document.createElement('link');
+            l.rel = 'stylesheet'; l.href = src + '?v=' + v;
+            document.head.appendChild(l);
+        }
+        cargarCSS('style.css');
+        cargar('layout.js');
+        cargar('user-logic.js');
     </script>
 
     <style>
-        /* Estilos exclusivos del perfil */
-        .profile-header {
-            background: #111;
-            padding: 40px;
-            border-bottom: 2px solid var(--accent-pink);
-            text-align: center;
-            margin-top: 20px;
-        }
-        .user-name { font-family: 'Oswald'; font-size: 2.5rem; color: white; margin-bottom: 10px; }
-        .user-email { color: #888; margin-bottom: 20px; }
+        .profile-container { max-width: 800px; margin: 40px auto; padding: 20px; }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            max-width: 800px;
-            margin: -30px auto 50px; /* Sube un poco para pisar el header */
-            padding: 0 20px;
-        }
-        
-        .stat-card {
-            background: #1a1a1a;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid #333;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        
-        .stat-number { font-family: 'Oswald'; font-size: 3.5rem; color: var(--accent-pink); line-height: 1; }
-        .stat-label { color: #ccc; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px; }
+        /* CABECERA */
+        .profile-header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        .user-name { font-family: 'Oswald'; font-size: 2.5rem; color: white; margin: 0; }
+        .user-email { color: #888; margin-top: 5px; }
 
-        .action-btn {
-            display: block;
-            width: 100%;
-            max-width: 300px;
-            margin: 50px auto;
-            padding: 15px;
-            background: transparent;
-            border: 1px solid #444;
-            color: #888;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: 0.3s;
-        }
-        .action-btn:hover { border-color: red; color: red; }
+        /* GRID DE CRÉDITOS */
+        .credits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 50px; }
+        
+        .credit-card { background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333; border-top: 4px solid #555; }
+        .credit-number { font-family: 'Oswald'; font-size: 2.5rem; color: white; display: block; }
+        .credit-label { font-size: 0.8rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Colores por tipo */
+        .border-fuerza { border-top-color: #ff9f43; }
+        .text-fuerza { color: #ff9f43; }
+        
+        .border-pilates { border-top-color: #54a0ff; }
+        .text-pilates { color: #54a0ff; }
+        
+        .border-personal { border-top-color: #ff6b6b; }
+        .text-personal { color: #ff6b6b; }
+        
+        .border-nutri { border-top-color: #1dd1a1; }
+        .text-nutri { color: #1dd1a1; }
+
+        /* SECCIÓN RESERVAS */
+        .reservations-section h3 { font-family: 'Oswald'; color: white; margin-bottom: 20px; border-left: 4px solid var(--accent-pink); padding-left: 15px; }
+        
+        .booking-card { background: #222; padding: 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #555; }
+        .booking-info strong { display: block; font-size: 1.1rem; color: white; margin-bottom: 5px; }
+        .booking-info span { color: #aaa; font-size: 0.9rem; }
+        
+        .btn-cancel { background: transparent; border: 1px solid #ff4444; color: #ff4444; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; transition: 0.3s; }
+        .btn-cancel:hover { background: #ff4444; color: white; }
+
+        .empty-msg { text-align: center; color: #666; font-style: italic; padding: 20px; border: 1px dashed #333; border-radius: 10px; }
+
+        .logout-btn { display: block; width: 100%; max-width: 200px; margin: 50px auto 0; padding: 15px; background: #333; color: white; text-align: center; text-decoration: none; border-radius: 5px; transition: 0.3s; font-size: 0.9rem; }
+        .logout-btn:hover { background: #ff4444; }
     </style>
 </head>
 <body>
 
-    <div class="profile-header">
-        <h1 class="user-name" id="userName">Cargando...</h1>
-        <p class="user-email" id="userEmail">...</p>
-    </div>
-
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-number" id="userCredits">-</div>
-            <div class="stat-label">Créditos Disponibles</div>
-        </div>
+    <div class="profile-container">
         
-        <div class="stat-card">
-            <div class="stat-number" style="color: white;">0</div>
-            <div class="stat-label">Próximas Clases</div>
+        <div class="profile-header">
+            <h1 class="user-name" id="userName">Cargando...</h1>
+            <p class="user-email" id="userEmail">...</p>
         </div>
-    </div>
 
-    <div class="container" style="text-align: center;">
-        <h3>¿Quieres entrenar?</h3>
-        <p style="color:#888; margin-bottom: 20px;">Reserva tu plaza en nuestras clases presenciales.</p>
-        <a href="reservas.html" class="cta-button">VER HORARIOS</a> <br><br>
-        <a href="#" id="btnLogout" class="action-btn">CERRAR SESIÓN</a>
+        <h3 style="color:white; font-family:'Oswald'; margin-bottom:15px;">MI SALDO</h3>
+        <div class="credits-grid">
+            <div class="credit-card border-fuerza">
+                <span class="credit-number text-fuerza" id="credFuerza">-</span>
+                <span class="credit-label">Fuerza</span>
+            </div>
+            <div class="credit-card border-pilates">
+                <span class="credit-number text-pilates" id="credPilates">-</span>
+                <span class="credit-label">Pilates</span>
+            </div>
+            <div class="credit-card border-personal">
+                <span class="credit-number text-personal" id="credPersonal">-</span>
+                <span class="credit-label">Personal</span>
+            </div>
+            <div class="credit-card border-nutri">
+                <span class="credit-number text-nutri" id="credNutri">-</span>
+                <span class="credit-label">Nutrición</span>
+            </div>
+        </div>
+
+        <div class="reservations-section">
+            <h3>PRÓXIMAS CLASES</h3>
+            <div id="misReservas">
+                <p class="empty-msg">Cargando reservas...</p>
+            </div>
+        </div>
+
+        <a href="#" id="btnLogout" class="logout-btn">CERRAR SESIÓN</a>
+
     </div>
 
     <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { doc, getDoc, collection, query, where, getDocs, updateDoc, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // 1. Verificar si está logueado
+        let currentUser = null;
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Poner datos básicos
-                document.getElementById('userName').innerText = user.displayName || "Atleta";
+                currentUser = user;
+                document.getElementById('userName').innerText = user.displayName || "Socio ITA";
                 document.getElementById('userEmail').innerText = user.email;
 
-                // 2. Pedir los CRÉDITOS a la base de datos
-                const docRef = doc(db, "usuarios", user.uid);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('userCredits').innerText = data.creditos || 0;
-                } else {
-                    document.getElementById('userCredits').innerText = "0";
-                }
-
+                cargarCreditos(user.uid);
+                cargarReservas(user.uid);
             } else {
-                // Si no está logueado, fuera de aquí
                 window.location.href = "login.html";
             }
         });
 
-        // 3. Botón de salir
+        // 1. CARGAR CRÉDITOS
+        async function cargarCreditos(uid) {
+            const userSnap = await getDoc(doc(db, "usuarios", uid));
+            if (userSnap.exists()) {
+                const data = userSnap.data();
+                const creds = data.creditos_detalle || {};
+                
+                // Compatibilidad con saldo antiguo
+                if (typeof data.creditos === 'number' && creds.fuerza === undefined) {
+                    creds.fuerza = data.creditos;
+                }
+
+                document.getElementById('credFuerza').innerText = creds.fuerza || 0;
+                document.getElementById('credPilates').innerText = creds.pilates || 0;
+                document.getElementById('credPersonal').innerText = creds.personal || 0;
+                document.getElementById('credNutri').innerText = creds.nutri || 0;
+            }
+        }
+
+        // 2. CARGAR RESERVAS
+        async function cargarReservas(uid) {
+            const container = document.getElementById('misReservas');
+            
+            try {
+                // Buscamos clases donde el usuario esté en la lista "apuntados"
+                const q = query(collection(db, "clases"), where("apuntados", "array-contains", uid));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p class="empty-msg">No tienes clases reservadas.</p>';
+                    return;
+                }
+
+                let html = "";
+                // Ordenamos por fecha en el cliente (para evitar líos de índices ahora mismo)
+                const clases = [];
+                querySnapshot.forEach(doc => {
+                    const d = doc.data();
+                    d.id = doc.id;
+                    clases.push(d);
+                });
+
+                // Ordenar: primero las más cercanas
+                clases.sort((a, b) => a.timestamp - b.timestamp);
+
+                clases.forEach(clase => {
+                    // Colores del borde según tipo
+                    const bordeColor = 
+                        clase.tipo === 'fuerza' ? '#ff9f43' :
+                        clase.tipo === 'pilates' ? '#54a0ff' : '#ccc';
+
+                    html += `
+                        <div class="booking-card" style="border-left-color: ${bordeColor}">
+                            <div class="booking-info">
+                                <strong>${clase.nombre}</strong>
+                                <span>📅 ${clase.fecha} - ⏰ ${clase.hora}</span>
+                            </div>
+                            <button class="btn-cancel" onclick="cancelarReserva('${clase.id}', '${clase.tipo}', '${clase.nombre}')">
+                                ❌ CANCELAR
+                            </button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<p class="empty-msg">Error cargando reservas.</p>';
+            }
+        }
+
+        // 3. CANCELAR RESERVA (Devolución automática)
+        window.cancelarReserva = async (claseId, tipoClase, nombreClase) => {
+            if(!confirm(`¿Cancelar tu asistencia a ${nombreClase}? Te devolveremos el crédito.`)) return;
+
+            try {
+                // A) Quitar usuario de la clase
+                const claseRef = doc(db, "clases", claseId);
+                await updateDoc(claseRef, {
+                    apuntados: arrayRemove(currentUser.uid)
+                });
+
+                // B) Devolver crédito al usuario (Lógica manual para estructura anidada)
+                const userRef = doc(db, "usuarios", currentUser.uid);
+                const userSnap = await getDoc(userRef);
+                let data = userSnap.data();
+                let creds = data.creditos_detalle || {};
+                
+                // Fallback antiguo
+                if (typeof data.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = data.creditos;
+
+                if (!creds[tipoClase]) creds[tipoClase] = 0;
+                creds[tipoClase] += 1; // DEVOLUCIÓN
+
+                await updateDoc(userRef, {
+                    creditos_detalle: creds,
+                    creditos: creds.fuerza // Sync legacy
+                });
+
+                alert("✅ Reserva cancelada. Crédito devuelto.");
+                // Recargar datos
+                cargarCreditos(currentUser.uid);
+                cargarReservas(currentUser.uid);
+
+            } catch (e) {
+                alert("Error al cancelar: " + e.message);
+            }
+        }
+
+        // 4. CERRAR SESIÓN
         document.getElementById('btnLogout').addEventListener('click', (e) => {
             e.preventDefault();
             signOut(auth).then(() => window.location.href = "index.html");
         });
     </script>
-
 </body>
 </html>
