@@ -1,18 +1,18 @@
-// layout.js - VERSIÓN ESTABLE + ANTI-CACHÉ
+// layout.js - VERSIÓN CORREGIDA (Menú + Footer + Anti-Caché)
 
-// 1. FORZAR LA CARGA DE ESTILOS (Anti-Caché)
-// Usamos la fecha actual para que el navegador crea que es un archivo nuevo siempre.
+// 1. CONTROL DE VERSIONES (Anti-Caché)
 const version = Date.now(); 
+
+// 2. CARGAR EL CSS FORZANDO LA VERSIÓN
 const link = document.createElement("link");
 link.rel = "stylesheet";
 link.href = `style.css?v=${version}`; 
 document.head.appendChild(link);
 
-
-
-// 2. DEFINIR EL MENÚ (CORREGIDO)
+// 3. DEFINIR EL MENÚ (Con la etiqueta <nav> que faltaba)
 const menuHTML = `
-    <nav>  <a href="index.html" class="nav-logo">
+    <nav>
+        <a href="index.html" class="nav-logo">
             <img src="imagen/logo.png" alt="ITA Logo">
         </a>
         
@@ -32,7 +32,7 @@ const menuHTML = `
     </nav>
 `;
 
-// 3. DEFINIR EL FOOTER (HTML)
+// 4. DEFINIR EL FOOTER
 const footerHTML = `
     <footer>
         <div class="container">
@@ -43,20 +43,20 @@ const footerHTML = `
     </footer>
 `;
 
-// 4. EJECUTAR AL CARGAR LA PÁGINA
+// 5. INYECTAR TODO AL CARGAR LA PÁGINA
 document.addEventListener("DOMContentLoaded", function() {
     
-    // a) Limpieza de seguridad (Borrar menús viejos si los hubiera)
+    // a) Limpieza de seguridad (Borrar si ya existían para no duplicar)
     const oldNav = document.querySelector('nav');
     if(oldNav) oldNav.remove();
     const oldFooter = document.querySelector('footer');
     if(oldFooter) oldFooter.remove();
 
-    // b) Inyectar Menú y Footer (ESTO ES LO PRIORITARIO)
+    // b) Inyectar Menú (Arriba) y Footer (Abajo)
     document.body.insertAdjacentHTML('afterbegin', menuHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
-    // c) Marcar enlace activo
+    // c) Marcar pestaña activa (Negrita en el menú)
     const currentPage = window.location.pathname.split("/").pop();
     const links = document.querySelectorAll('.nav-links a');
     links.forEach(link => {
@@ -65,14 +65,13 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // d) Cargar lógica de usuarios (Al final, para no bloquear)
-    // Si falla, el menú ya está pintado, así que no pasa nada.
+    // d) Cargar lógica de usuarios
     import(`./auth.js?v=${version}`)
         .then(() => console.log("Sistema de usuarios activo"))
-        .catch(err => console.log("Modo invitado (Auth no cargado)"));
+        .catch(err => console.log("Modo invitado"));
 });
 
-// 5. FUNCIÓN GLOBAL PARA EL MÓVIL
+// 6. FUNCIÓN GLOBAL PARA EL MÓVIL
 window.toggleMenu = function() {
     var menu = document.getElementById("navLinks");
     if (menu) menu.classList.toggle("active");
