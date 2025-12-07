@@ -14,16 +14,24 @@
     
     <script>
         const v = Date.now();
-        function cargar(src) {
-            const s = document.createElement('script');
-            s.type = 'module'; s.src = src + '?v=' + v;
-            document.head.appendChild(s);
-        }
+        
+        // Función para cargar estilos
         function cargarCSS(src) {
             const l = document.createElement('link');
-            l.rel = 'stylesheet'; l.href = src + '?v=' + v;
+            l.rel = 'stylesheet'; 
+            l.href = src + '?v=' + v;
             document.head.appendChild(l);
         }
+        
+        // Función para cargar scripts (Módulos)
+        function cargar(src) {
+            const s = document.createElement('script');
+            s.type = 'module'; 
+            s.src = src + '?v=' + v;
+            document.head.appendChild(s);
+        }
+
+        // Cargamos todo fresco
         cargarCSS('style.css');
         cargar('layout.js');
         cargar('user-logic.js');
@@ -71,6 +79,11 @@
 
         .logout-btn { display: block; width: 100%; max-width: 200px; margin: 50px auto 0; padding: 15px; background: #333; color: white; text-align: center; text-decoration: none; border-radius: 5px; transition: 0.3s; font-size: 0.9rem; }
         .logout-btn:hover { background: #ff4444; }
+        
+        @media (max-width: 600px) {
+            .booking-card { flex-direction: column; text-align: center; gap: 15px; }
+            .btn-cancel { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -116,7 +129,7 @@
     <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { doc, getDoc, collection, query, where, getDocs, updateDoc, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { doc, getDoc, collection, query, where, getDocs, updateDoc, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         let currentUser = null;
 
@@ -140,7 +153,7 @@
                 const data = userSnap.data();
                 const creds = data.creditos_detalle || {};
                 
-                // Compatibilidad con saldo antiguo
+                // Compatibilidad con saldo antiguo (lo tratamos como fuerza)
                 if (typeof data.creditos === 'number' && creds.fuerza === undefined) {
                     creds.fuerza = data.creditos;
                 }
@@ -157,7 +170,7 @@
             const container = document.getElementById('misReservas');
             
             try {
-                // Buscamos clases donde el usuario esté en la lista "apuntados"
+                // Buscamos clases donde el usuario esté apuntado
                 const q = query(collection(db, "clases"), where("apuntados", "array-contains", uid));
                 const querySnapshot = await getDocs(q);
 
@@ -167,7 +180,6 @@
                 }
 
                 let html = "";
-                // Ordenamos por fecha en el cliente (para evitar líos de índices ahora mismo)
                 const clases = [];
                 querySnapshot.forEach(doc => {
                     const d = doc.data();
@@ -175,14 +187,14 @@
                     clases.push(d);
                 });
 
-                // Ordenar: primero las más cercanas
+                // Ordenamos por fecha
                 clases.sort((a, b) => a.timestamp - b.timestamp);
 
                 clases.forEach(clase => {
-                    // Colores del borde según tipo
                     const bordeColor = 
                         clase.tipo === 'fuerza' ? '#ff9f43' :
-                        clase.tipo === 'pilates' ? '#54a0ff' : '#ccc';
+                        clase.tipo === 'pilates' ? '#54a0ff' : 
+                        clase.tipo === 'personal' ? '#ff6b6b' : '#1dd1a1';
 
                     html += `
                         <div class="booking-card" style="border-left-color: ${bordeColor}">
@@ -206,7 +218,7 @@
 
         // 3. CANCELAR RESERVA (Devolución automática)
         window.cancelarReserva = async (claseId, tipoClase, nombreClase) => {
-            if(!confirm(`¿Cancelar tu asistencia a ${nombreClase}? Te devolveremos el crédito.`)) return;
+            if(!confirm(`¿Cancelar asistencia a ${nombreClase}? Te devolveremos el crédito.`)) return;
 
             try {
                 // A) Quitar usuario de la clase
@@ -215,25 +227,24 @@
                     apuntados: arrayRemove(currentUser.uid)
                 });
 
-                // B) Devolver crédito al usuario (Lógica manual para estructura anidada)
+                // B) Devolver crédito
                 const userRef = doc(db, "usuarios", currentUser.uid);
                 const userSnap = await getDoc(userRef);
                 let data = userSnap.data();
                 let creds = data.creditos_detalle || {};
                 
-                // Fallback antiguo
+                // Fallback
                 if (typeof data.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = data.creditos;
 
                 if (!creds[tipoClase]) creds[tipoClase] = 0;
-                creds[tipoClase] += 1; // DEVOLUCIÓN
+                creds[tipoClase] += 1;
 
                 await updateDoc(userRef, {
                     creditos_detalle: creds,
-                    creditos: creds.fuerza // Sync legacy
+                    creditos: creds.fuerza // Legacy
                 });
 
                 alert("✅ Reserva cancelada. Crédito devuelto.");
-                // Recargar datos
                 cargarCreditos(currentUser.uid);
                 cargarReservas(currentUser.uid);
 
