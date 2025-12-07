@@ -1,4 +1,15 @@
-// 1. CÓDIGO DEL MENÚ (BARRA DE NAVEGACIÓN)
+// --- CONTROL DE VERSIONES ---
+// Cambia este número cuando hagas modificaciones para limpiar la caché de todos los usuarios
+const webVersion = "2.1"; 
+
+// 1. CARGAR EL CSS AUTOMÁTICAMENTE (CON VERSIÓN)
+// Así no tienes que poner <link> en cada HTML
+const link = document.createElement("link");
+link.rel = "stylesheet";
+link.href = `style.css?v=${webVersion}`; // Aquí ocurre la magia
+document.head.appendChild(link);
+
+// 2. CÓDIGO DEL MENÚ (NAVBAR)
 const menuHTML = `
     <nav>
         <a href="index.html" class="nav-logo">
@@ -21,26 +32,26 @@ const menuHTML = `
     </nav>
 `;
 
-// 2. CÓDIGO DEL FOOTER (PIE DE PÁGINA)
+// 3. CÓDIGO DEL FOOTER
 const footerHTML = `
     <footer>
         <div class="container">
-            <img src="imagen/logo.png" alt="ITA Small Logo" class="footer-logo">
+            <img src="imagen/logo.jpg" alt="ITA Small Logo" class="footer-logo">
             <p>© 2025 ITA Sport Center. Todos los derechos reservados.</p>
             <p style="margin-top:10px; font-size: 0.8rem; opacity: 0.6; letter-spacing: 2px;">IMAGINA • TRANSFORMA • ACTÚA</p>
         </div>
     </footer>
 `;
 
-// 3. FUNCIÓN QUE INYECTA EL CÓDIGO EN LA PÁGINA
+// 4. INYECTAR TODO EN LA PÁGINA
 document.addEventListener("DOMContentLoaded", function() {
-    // Insertar menú al principio del body
+    // Insertar menú arriba
     document.body.insertAdjacentHTML('afterbegin', menuHTML);
     
-    // Insertar footer al final del body
+    // Insertar footer abajo
     document.body.insertAdjacentHTML('beforeend', footerHTML);
     
-    // Resaltar el enlace de la página actual (Opcional)
+    // Marcar enlace activo según la página
     const currentPage = window.location.pathname.split("/").pop();
     const links = document.querySelectorAll('.nav-links a');
     links.forEach(link => {
@@ -50,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// 4. LÓGICA DEL MENÚ MÓVIL
+// 5. FUNCIÓN MENÚ MÓVIL
 function toggleMenu() {
     var menu = document.getElementById("navLinks");
     menu.classList.toggle("active");
