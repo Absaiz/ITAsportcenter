@@ -12,7 +12,7 @@ document.head.appendChild(link);
  
 const menuHTML = `
     <nav>  <a href="index.html" class="nav-logo">
-            <img src="imagen/logo.jpg" alt="ITA Logo">
+            <img src="imagen/logo.png" alt="ITA Logo">
         </a>
         
         <div class="menu-icon" onclick="toggleMenu()">
@@ -35,7 +35,7 @@ const menuHTML = `
 const footerHTML = `
     <footer>
         <div class="container">
-            <img src="imagen/logo.jpg" alt="ITA Small Logo" class="footer-logo">
+            <img src="imagen/logo.png" alt="ITA Small Logo" class="footer-logo">
             <p>© 2025 ITA Sport Center. Todos los derechos reservados.</p>
             <p style="margin-top:10px; font-size: 0.8rem; opacity: 0.6; letter-spacing: 2px;">IMAGINA • TRANSFORMA • ACTÚA</p>
         </div>
