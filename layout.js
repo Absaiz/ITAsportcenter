@@ -9,8 +9,9 @@ link.href = `style.css?v=${version}`;
 document.head.appendChild(link);
 
 // 2. DEFINIR EL MENÚ (Actualizado con enlace a Reservas)
+ 
 const menuHTML = `
-        <a href="index.html" class="nav-logo">
+    <nav>  <a href="index.html" class="nav-logo">
             <img src="imagen/logo.jpg" alt="ITA Logo">
         </a>
         
@@ -22,7 +23,8 @@ const menuHTML = `
 
         <div class="nav-links" id="navLinks">
             <a href="filosofia.html">Filosofía</a>
-            <a href="reservas.html">Horarios</a> <a href="planes.html">Tarifas</a>
+            <a href="reservas.html">Horarios</a>
+            <a href="planes.html">Tarifas</a>
             <a href="contacto.html">Contacto</a>
             <a href="login.html" class="btn-login">ÁREA SOCIOS</a>
         </div>
