@@ -16,7 +16,7 @@ body {
     font-family: 'Montserrat', sans-serif;
     line-height: 1.6;
     display: flex; flex-direction: column; min-height: 100vh;
-    padding-top: 120px; /* Espacio para la barra de navegación grande */
+    padding-top: 120px;
 }
 
 /* --- TIPOGRAFÍA --- */
@@ -42,29 +42,18 @@ nav {
     height: 120px; 
 }
 
-/* LOGO EN ESCRITORIO (IZQUIERDA) */
-.nav-logo {
-    position: static;
-    transform: none;
-}
-
+/* LOGO EN ESCRITORIO */
+.nav-logo { position: static; transform: none; }
 .nav-logo img { 
-    height: 100px; /* Tamaño grande */
-    width: auto; 
-    transition: transform 0.3s;
-    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+    height: 100px; width: auto; 
+    transition: transform 0.3s; 
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); 
     display: block; 
 }
-
 .nav-logo img:hover { transform: scale(1.05); }
 
-/* ENLACES A LA DERECHA */
-.nav-links { 
-    display: flex; 
-    gap: 25px; 
-    align-items: center;
-}
-
+/* ENLACES */
+.nav-links { display: flex; gap: 25px; align-items: center; }
 .nav-links a { 
     color: var(--text-white); text-decoration: none; font-weight: 700; 
     text-transform: uppercase; font-size: 0.85rem; transition: color 0.3s;
@@ -72,33 +61,19 @@ nav {
 .nav-links a:hover, .nav-links a.active { color: var(--accent-glow); }
 
 /* Botón Login */
-.btn-login {
-    border: 1px solid var(--text-white); padding: 8px 15px; border-radius: 4px;
-}
+.btn-login { border: 1px solid var(--text-white); padding: 8px 15px; border-radius: 4px; }
 .btn-login:hover { background: white; color: black !important; }
 
-/* --- BOTÓN DE MENÚ (TRES PUNTOS) --- */
+/* Menú Móvil Icono */
 .menu-icon {
-    display: none; /* Oculto en PC */
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-    padding: 5px;
+    display: none; flex-direction: column; justify-content: space-between;
+    cursor: pointer; padding: 5px;
 }
-
 .menu-icon span {
-    width: 6px;
-    height: 6px;
-    background-color: var(--accent-pink);
-    border-radius: 50%;
-    margin: 3px 0;
-    transition: 0.3s;
+    width: 6px; height: 6px; background-color: var(--accent-pink);
+    border-radius: 50%; margin: 3px 0; transition: 0.3s;
 }
-
-.menu-icon:hover span {
-    background-color: white;
-    box-shadow: 0 0 5px var(--accent-glow);
-}
+.menu-icon:hover span { background-color: white; box-shadow: 0 0 5px var(--accent-glow); }
 
 /* --- PORTADA (HERO) --- */
 .hero {
@@ -113,31 +88,27 @@ nav {
     max-width: 300px; width: 100%; height: auto; margin-bottom: 20px;
     filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
 }
-
 .cta-button {
     background-color: var(--accent-pink); color: white; padding: 15px 40px; border-radius: 5px; 
     text-decoration: none; font-weight: 700; text-transform: uppercase; display: inline-block; transition: 0.3s;
 }
 .cta-button:hover { background-color: var(--accent-glow); box-shadow: 0 0 20px rgba(194, 94, 117, 0.4); }
 
-/* --- SECCIONES INTERNAS --- */
+/* --- SECCIONES Y CARDS --- */
 section { padding: 80px 0; }
-
 .split-section { display: flex; align-items: center; gap: 50px; margin-bottom: 80px; }
 .split-text { flex: 1; }
 .split-image { flex: 1; }
 .split-image img { width: 100%; border-radius: 10px; border: 2px solid #333; }
 .split-section.reverse { flex-direction: row-reverse; }
 
-/* Cards Filosofía */
 .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 30px; }
 .philosophy-card { background: var(--card-bg); padding: 30px; border-left: 4px solid var(--accent-pink); }
 .philosophy-card h3 { color: var(--accent-pink); margin-bottom: 10px; }
 
-/* --- PLANES Y TARIFAS --- */
+/* --- PLANES --- */
 .service-category { margin-bottom: 80px; }
 .service-category h3 { font-size: 2rem; color: var(--accent-pink); margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-
 .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; }
 .plan-card {
     background: var(--card-bg); padding: 30px 20px; border: 1px solid #333; border-radius: 10px; 
@@ -152,71 +123,28 @@ section { padding: 80px 0; }
 .btn-plan:hover { background: var(--accent-pink); border-color: var(--accent-pink); }
 .plan-featured { border-color: var(--accent-pink); box-shadow: 0 0 15px rgba(194,94,117,0.2); }
 
-/* --- CONTACTO & FOOTER --- */
+/* --- FOOTER --- */
 .contact-box { text-align: center; background: #111; padding: 60px; border-radius: 20px; border: 1px solid #222; max-width: 600px; margin: 0 auto; }
-
 footer { 
-    text-align: center; 
-    padding: 50px 20px; 
-    border-top: 1px solid #222; 
-    background-color: #080808; 
-    color: #666; 
-    margin-top: auto; 
+    text-align: center; padding: 50px 20px; border-top: 1px solid #222; 
+    background-color: #080808; color: #666; margin-top: auto; 
 }
-.footer-logo {
-    max-width: 120px;
-    margin-bottom: 20px;
-    opacity: 0.8;
-    transition: opacity 0.3s;
-}
+.footer-logo { max-width: 120px; margin-bottom: 20px; opacity: 0.8; transition: opacity 0.3s; }
 .footer-logo:hover { opacity: 1; }
-
 
 /* --- RESPONSIVE (MÓVIL) --- */
 @media (max-width: 768px) {
-    /* Ajustes generales */
     .hero h1 { font-size: 2.5rem; }
     .split-section, .split-section.reverse { flex-direction: column; }
-
-    /* Barra de navegación móvil */
-    nav { 
-        height: 80px; 
-        padding: 10px 20px;
-        justify-content: flex-end; /* Alineamos icono a la derecha */
-    }
-
-    /* Logo centrado en móvil */
-    .nav-logo {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: auto;
-    }
+    nav { height: 80px; padding: 10px 20px; justify-content: flex-end; }
+    .nav-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: auto; }
     .nav-logo img { height: 55px; }
-
-    /* Menú hamburguesa */
-    .menu-icon { 
-        display: flex; 
-        z-index: 1001;
-    }
-
-    /* Menú desplegable */
+    .menu-icon { display: flex; z-index: 1001; }
     .nav-links {
-        display: none;
-        position: absolute;
-        top: 80px;
-        left: 0;
-        width: 100%;
-        flex-direction: column;
-        background-color: rgba(5, 5, 5, 0.98);
-        padding: 30px 20px;
-        text-align: center;
-        border-bottom: 2px solid var(--accent-pink);
+        display: none; position: absolute; top: 80px; left: 0; width: 100%;
+        flex-direction: column; background-color: rgba(5, 5, 5, 0.98);
+        padding: 30px 20px; text-align: center; border-bottom: 2px solid var(--accent-pink);
         box-shadow: 0 10px 20px rgba(0,0,0,0.8);
     }
-    
-    .nav-links.active {
-        display: flex;
-    }
+    .nav-links.active { display: flex; }
 }

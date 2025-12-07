@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+ 
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>ITA | Registro</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script type="module" src="layout.js"></script>
+
+    <style>
+        /* Estilos específicos para formularios oscuros */
+        body { background-color: #050505; color: white; font-family: 'Montserrat', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+        .auth-container { max-width: 400px; margin: 150px auto 50px; padding: 40px; background: #121212; border: 1px solid #333; border-radius: 10px; text-align: center; }
+        h2 { font-family: 'Oswald'; color: #C25E75; margin-bottom: 30px; font-size: 2rem; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
+        input:focus { border-color: #C25E75; outline: none; }
+        button { width: 100%; padding: 12px; background: #C25E75; color: white; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #ff2a6d; }
+        .link { margin-top: 20px; font-size: 0.9rem; display: block; color: #aaa; text-decoration: none; }
+        .link:hover { color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <h2>UNIRSE A ITA</h2>
+        <form id="registroForm">
+            <input type="text" id="nombre" placeholder="Nombre completo" required>
+            <input type="email" id="email" placeholder="Correo electrónico" required>
+            <input type="password" id="password" placeholder="Contraseña (mín. 6 caracteres)" required>
+            <button type="submit">CREAR CUENTA</button>
+        </form>
+        <a href="login.html" class="link">¿Ya tienes cuenta? Inicia sesión aquí</a>
+    </div>
+
+    <script type="module">
+        import { registrarUsuario } from "./auth.js";
+
+        document.getElementById('registroForm').addEventListener('submit', (e) => {
+            e.preventDefault(); // Evita que la página se recargue
+            const nombre = document.getElementById('nombre').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            registrarUsuario(email, password, nombre);
+        });
+    </script>
+</body>
+</html>
