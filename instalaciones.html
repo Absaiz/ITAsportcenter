@@ -9,8 +9,22 @@
     <title>ITA | Instalaciones</title>
  
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-    <script src="layout.js?v=FORCE_RELOAD" defer></script>
-    <script type="module" src="user-logic.js?v=1.0"></script>
+    <script>
+        // Generamos la versión una vez (la hora actual)
+        const version = Date.now();
+
+        // Función para cargar scripts de forma independiente
+        function cargar(archivo) {
+            var script = document.createElement('script');
+            script.type = 'module';
+            script.src = archivo + '?v=' + version; // Aquí añadimos la versión
+            document.head.appendChild(script);
+        }
+
+        // --- TUS DOS LÍNEAS INDEPENDIENTES ---
+        cargar('layout.js');      // Carga el menú
+        cargar('user-logic.js');  // Carga el usuario
+    </script>
 </head>
 <body>
  
