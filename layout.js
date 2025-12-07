@@ -1,4 +1,4 @@
-// layout.js - VERSIÓN CORREGIDA (Con la etiqueta <nav> recuperada)
+// layout.js - VERSIÓN BLINDADA (Funciona aunque cargue tarde)
 
 // 1. FORZAR LA CARGA DE ESTILOS (Anti-Caché)
 const version = Date.now(); 
@@ -7,13 +7,14 @@ link.rel = "stylesheet";
 link.href = `style.css?v=${version}`; 
 document.head.appendChild(link);
 
-// 2. DEFINIR EL MENÚ (¡AHORA SÍ CON ETIQUETA NAV!)
+// 2. DEFINIR EL MENÚ
 const menuHTML = `
-    <nav> <a href="index.html" class="nav-logo">
+    <nav> 
+        <a href="index.html" class="nav-logo">
             <img src="imagen/logo.png" alt="ITA Logo">
         </a>
         
-        <div class="menu-icon" onclick="toggleMenu()">
+        <div class="menu-icon" onclick="window.toggleMenu()">
             <span></span>
             <span></span>
             <span></span>
@@ -29,7 +30,7 @@ const menuHTML = `
     </nav>
 `;
 
-// 3. DEFINIR EL FOOTER (HTML)
+// 3. DEFINIR EL FOOTER
 const footerHTML = `
     <footer>
         <div class="container">
@@ -40,9 +41,10 @@ const footerHTML = `
     </footer>
 `;
 
-// 4. EJECUTAR AL CARGAR LA PÁGINA
-document.addEventListener("DOMContentLoaded", function() {
-    
+// --- FUNCIÓN PRINCIPAL DE INICIO ---
+function iniciarLayout() {
+    console.log("Iniciando Layout..."); // Chivato en consola
+
     // a) Limpieza de seguridad
     const oldNav = document.querySelector('nav');
     if(oldNav) oldNav.remove();
@@ -66,7 +68,15 @@ document.addEventListener("DOMContentLoaded", function() {
     import(`./auth.js?v=${version}`)
         .then(() => console.log("Sistema de usuarios activo"))
         .catch(err => console.log("Modo invitado (Auth no cargado)"));
-});
+}
+
+// 4. DETECCIÓN INTELIGENTE DEL ESTADO DE CARGA
+// Si la página ya cargó, ejecutamos directamente. Si no, esperamos.
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", iniciarLayout);
+} else {
+    iniciarLayout(); // ¡Ejecutar ya!
+}
 
 // 5. FUNCIÓN GLOBAL PARA EL MÓVIL
 window.toggleMenu = function() {
