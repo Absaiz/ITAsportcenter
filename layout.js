@@ -1,13 +1,13 @@
-// layout.js - VERSIÓN BLINDADA (Funciona aunque cargue tarde)
+// layout.js - VERSIÓN BLINDADA (Funciona siempre)
 
-// 1. FORZAR LA CARGA DE ESTILOS (Anti-Caché)
+// 1. CARGAR ESTILOS
 const version = Date.now(); 
 const link = document.createElement("link");
 link.rel = "stylesheet";
 link.href = `style.css?v=${version}`; 
 document.head.appendChild(link);
 
-// 2. DEFINIR EL MENÚ
+// 2. EL MENÚ (Con la etiqueta <nav> bien puesta)
 const menuHTML = `
     <nav> 
         <a href="index.html" class="nav-logo">
@@ -30,7 +30,7 @@ const menuHTML = `
     </nav>
 `;
 
-// 3. DEFINIR EL FOOTER
+// 3. EL FOOTER
 const footerHTML = `
     <footer>
         <div class="container">
@@ -41,44 +41,43 @@ const footerHTML = `
     </footer>
 `;
 
-// --- FUNCIÓN PRINCIPAL DE INICIO ---
+// --- FUNCIÓN QUE ARRANCA TODO ---
 function iniciarLayout() {
-    console.log("Iniciando Layout..."); // Chivato en consola
+    console.log("🚀 Pintando menú y footer..."); // Si ves esto en la consola, funciona
 
-    // a) Limpieza de seguridad
+    // a) Limpieza para no duplicar
     const oldNav = document.querySelector('nav');
     if(oldNav) oldNav.remove();
     const oldFooter = document.querySelector('footer');
     if(oldFooter) oldFooter.remove();
 
-    // b) Inyectar Menú y Footer
+    // b) Inyectar HTML (Lo importante)
     document.body.insertAdjacentHTML('afterbegin', menuHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
-    // c) Marcar enlace activo
+    // c) Marcar activo
     const currentPage = window.location.pathname.split("/").pop();
     const links = document.querySelectorAll('.nav-links a');
     links.forEach(link => {
-        if(link.getAttribute('href') === currentPage) {
-            link.classList.add('active');
-        }
+        if(link.getAttribute('href') === currentPage) link.classList.add('active');
     });
 
-    // d) Cargar lógica de usuarios
+    // d) Cargar usuario
     import(`./auth.js?v=${version}`)
-        .then(() => console.log("Sistema de usuarios activo"))
-        .catch(err => console.log("Modo invitado (Auth no cargado)"));
+        .then(() => console.log("Usuario cargado"))
+        .catch(() => console.log("Modo invitado"));
 }
 
-// 4. DETECCIÓN INTELIGENTE DEL ESTADO DE CARGA
-// Si la página ya cargó, ejecutamos directamente. Si no, esperamos.
+// 4. ¡AQUÍ ESTÁ LA MAGIA! (El detector de autobús)
+// Si la página ya está lista ('interactive' o 'complete'), ejecutamos YA.
+// Si no, esperamos al evento.
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", iniciarLayout);
 } else {
-    iniciarLayout(); // ¡Ejecutar ya!
+    iniciarLayout(); // ¡Ejecutar inmediatamente!
 }
 
-// 5. FUNCIÓN GLOBAL PARA EL MÓVIL
+// 5. Función móvil
 window.toggleMenu = function() {
     var menu = document.getElementById("navLinks");
     if (menu) menu.classList.toggle("active");
