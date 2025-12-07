@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    
+    <title>ITA | Reservas</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <script>
+        const v = Date.now();
+        function cargar(src) {
+            const s = document.createElement('script');
+            s.type = 'module';
+            s.src = src + '?v=' + v;
+            document.head.appendChild(s);
+        }
+        cargar('layout.js');
+        cargar('user-logic.js');
+    </script>
+
+    <style>
+        .classes-container { max-width: 1000px; margin: 50px auto; padding: 20px; }
+        
+        .class-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+        .class-card:hover { border-color: var(--accent-pink); transform: translateX(5px); }
+
+        .class-info h3 { margin: 0; color: white; font-family: 'Oswald'; font-size: 1.5rem; }
+        .class-time { color: var(--accent-pink); font-weight: bold; margin-top: 5px; }
+        .class-spots { color: #888; font-size: 0.9rem; margin-top: 5px; }
+        
+        .btn-book {
+            background: white; color: black; border: none;
+            padding: 10px 20px; font-weight: bold; cursor: pointer;
+            border-radius: 5px; transition: 0.3s;
+        }
+        .btn-book:hover { background: var(--accent-pink); color: white; }
+        .btn-book:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+        /* Botón Mágico Admin */
+        #btnGenerar { 
+            display: block; margin: 20px auto; background: #333; color: #aaa; 
+            border: 1px dashed #555; padding: 10px; cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="classes-container">
+        <h1 class="section-title">HORARIO DE CLASES</h1>
+        
+        <button id="btnGenerar" onclick="generarClasesTest()">[ADMIN] GENERAR CLASES DE PRUEBA</button>
+
+        <div id="listaClases">
+            <p style="text-align: center; color: #666;">Cargando clases disponibles...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, auth } from "./firebase-config.js";
+        import { collection, getDocs, doc, getDoc, updateDoc, arrayUnion, increment, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        let currentUser = null;
+
+        // 1. Detectar usuario
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            cargarClases(); // Cargar la lista al entrar
+        });
+
+        // 2. Cargar Clases desde Firebase
+        async function cargarClases() {
+            const container = document.getElementById('listaClases');
+            container.innerHTML = ""; // Limpiar
+
+            try {
+                const querySnapshot = await getDocs(collection(db, "clases"));
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = "<p style='text-align:center'>No hay clases programadas.</p>";
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const plazasOcupadas = data.apuntados ? data.apuntados.length : 0;
+                    const plazasLibres = data.plazas_totales - plazasOcupadas;
+                    
+                    // Crear HTML de la tarjeta
+                    const div = document.createElement('div');
+                    div.className = 'class-card';
+                    div.innerHTML = `
+                        <div class="class-info">
+                            <h3>${data.nombre}</h3>
+                            <div class="class-time">📅 ${data.dia} - ⏰ ${data.hora}</div>
+                            <div class="class-spots">Plazas libres: ${plazasLibres} / ${data.plazas_totales}</div>
+                        </div>
+                        <button class="btn-book" onclick="reservar('${docSnap.id}', '${data.nombre}')" 
+                            ${plazasLibres === 0 ? 'disabled' : ''}>
+                            ${plazasLibres === 0 ? 'COMPLETO' : 'RESERVAR'}
+                        </button>
+                    `;
+                    container.appendChild(div);
+                });
+
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = "<p>Error cargando clases.</p>";
+            }
+        }
+
+        // 3. Función para RESERVAR (Global)
+        window.reservar = async (claseId, nombreClase) => {
+            if (!currentUser) {
+                alert("Debes iniciar sesión para reservar.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const confirmacion = confirm(`¿Gastar 1 crédito para reservar ${nombreClase}?`);
+            if (!confirmacion) return;
+
+            try {
+                // A) Comprobar CRÉDITOS del usuario
+                const userRef = doc(db, "usuarios", currentUser.uid);
+                const userSnap = await getDoc(userRef);
+                
+                if (userSnap.data().creditos < 1) {
+                    alert("⛔ No tienes créditos suficientes. Contacta con administración.");
+                    return;
+                }
+
+                // B) Comprobar PLAZAS de la clase (Doble seguridad)
+                const claseRef = doc(db, "clases", claseId);
+                const claseSnap = await getDoc(claseRef);
+                const dataClase = claseSnap.data();
+                
+                if (dataClase.apuntados && dataClase.apuntados.includes(currentUser.uid)) {
+                    alert("⚠️ Ya estás apuntado a esta clase.");
+                    return;
+                }
+                
+                if (dataClase.apuntados && dataClase.apuntados.length >= dataClase.plazas_totales) {
+                    alert("⛔ Clase completa.");
+                    return;
+                }
+
+                // C) OPERACIÓN FINAL (Restar crédito + Apuntar usuario)
+                // 1. Restar crédito
+                await updateDoc(userRef, { creditos: increment(-1) });
+                
+                // 2. Añadir usuario a la lista de la clase
+                await updateDoc(claseRef, {
+                    apuntados: arrayUnion(currentUser.uid)
+                });
+
+                alert("✅ ¡Reserva confirmada! Te esperamos.");
+                cargarClases(); // Recargar para ver los cambios
+
+            } catch (error) {
+                console.error(error);
+                alert("Error al reservar: " + error.message);
+            }
+        };
+
+        // 4. GENERADOR DE CLASES (Solo para Admin)
+        window.generarClasesTest = async () => {
+            if(!confirm("¿Crear clases de prueba?")) return;
+            try {
+                const clasesRef = collection(db, "clases");
+                
+                await addDoc(clasesRef, {
+                    nombre: "FUERZA ESTRUCTURAL", dia: "Lunes", hora: "18:00",
+                    plazas_totales: 4, apuntados: []
+                });
+                await addDoc(clasesRef, {
+                    nombre: "PILATES REFORMER", dia: "Martes", hora: "10:00",
+                    plazas_totales: 2, apuntados: [] // Solo 2 plazas, se llena rápido
+                });
+                await addDoc(clasesRef, {
+                    nombre: "HYROX TRAINING", dia: "Miércoles", hora: "19:30",
+                    plazas_totales: 6, apuntados: []
+                });
+
+                alert("Clases creadas. Recarga la página.");
+                cargarClases();
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
+        };
+    </script>
+</body>
+</html>
