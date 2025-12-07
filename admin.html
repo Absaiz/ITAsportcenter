@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    
-    <title>ITA | Panel Admin</title>
+    <title>ITA | ADMIN PRO</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -14,144 +13,387 @@
         const v = Date.now();
         function cargar(src) {
             const s = document.createElement('script');
-            s.type = 'module';
-            s.src = src + '?v=' + v;
+            s.type = 'module'; s.src = src + '?v=' + v;
             document.head.appendChild(s);
         }
-        cargar('layout.js');     // Menú
-        cargar('user-logic.js'); // Botón Login
+        cargar('layout.js');
+        cargar('user-logic.js');
     </script>
 
     <style>
-        /* Estilos específicos del Admin */
-        .admin-container { max-width: 800px; margin: 50px auto; padding: 20px; }
-        .admin-card { background: #1a1a1a; padding: 30px; border-radius: 10px; border: 1px solid #333; margin-bottom: 30px; }
-        h2 { font-family: 'Oswald'; color: var(--accent-pink); margin-bottom: 20px; }
+        /* ESTILOS DEL PANEL ADMIN AVANZADO */
+        .admin-layout { max-width: 1200px; margin: 40px auto; padding: 20px; display: grid; gap: 40px; }
         
-        /* Buscador */
-        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
-        .btn-search { padding: 12px 30px; background: #444; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
-        .btn-search:hover { background: #666; }
+        .panel-card { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 25px; }
+        .panel-title { font-family: 'Oswald'; color: var(--accent-pink); margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* Resultado */
-        .user-result { display: none; background: #222; padding: 20px; border-left: 4px solid var(--accent-pink); margin-top: 20px; }
-        .credit-controls { display: flex; align-items: center; gap: 10px; margin-top: 20px; background: #111; padding: 15px; border-radius: 5px; }
-        .current-credits { font-size: 2rem; font-weight: bold; color: white; margin-right: 20px; }
+        /* TABLA DE USUARIOS */
+        .user-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .user-table th { text-align: left; color: #888; padding: 10px; border-bottom: 1px solid #444; }
+        .user-table td { padding: 15px 10px; border-bottom: 1px solid #222; vertical-align: middle; }
+        .user-table tr:hover { background: #222; }
         
-        .btn-action { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
-        .btn-add { background: #25D366; }
-        .btn-sub { background: #ff4444; }
-        .btn-action:hover { opacity: 0.8; }
+        /* Créditos Mini */
+        .credit-tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; margin-right: 5px; margin-bottom: 5px; background: #333; border: 1px solid #444; }
+        .tag-fuerza { color: #ff9f43; border-color: #ff9f43; }
+        .tag-pilates { color: #54a0ff; border-color: #54a0ff; }
+        .tag-personal { color: #ff6b6b; border-color: #ff6b6b; }
+        .tag-nutri { color: #1dd1a1; border-color: #1dd1a1; }
+
+        /* Botones de Acción */
+        .btn-mini { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; background: #444; color: white; transition: 0.3s; }
+        .btn-mini:hover { background: var(--accent-pink); }
+        .btn-edit { background: #2e86de; }
+
+        /* MODAL DE EDICIÓN */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: #111; padding: 30px; border-radius: 10px; border: 1px solid var(--accent-pink); width: 90%; max-width: 500px; }
+        
+        .credit-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; }
+        .btn-circle { width: 30px; height: 30px; border-radius: 50%; border: none; font-weight: bold; cursor: pointer; }
+        .btn-minus { background: #444; color: white; }
+        .btn-plus { background: #25D366; color: black; }
+        
+        /* FORMULARIO CREAR CLASE */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
+        .btn-create { width: 100%; padding: 12px; background: var(--accent-pink); color: white; border: none; font-weight: bold; cursor: pointer; }
+
+        /* CALENDARIO LISTA */
+        .calendar-day { margin-bottom: 20px; }
+        .day-header { background: #333; color: white; padding: 10px; font-weight: bold; border-radius: 5px; margin-bottom: 10px; }
+        .class-item { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 15px; border-left: 4px solid #555; margin-bottom: 5px; border-radius: 4px; }
+        .class-item.type-fuerza { border-color: #ff9f43; }
+        .class-item.type-pilates { border-color: #54a0ff; }
+        .class-item.type-personal { border-color: #ff6b6b; }
+        .class-item.type-nutri { border-color: #1dd1a1; }
+        
+        .attendees-list { display: none; background: #111; padding: 10px; font-size: 0.9rem; color: #ccc; margin-bottom: 15px; border: 1px dashed #444; }
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <h1 class="section-title" style="font-size: 2.5rem;">PANEL DE CONTROL</h1>
-        
-        <div class="admin-card">
-            <h2>GESTIÓN DE USUARIOS</h2>
-            <p style="color:#888; margin-bottom: 15px;">Busca a un usuario por su correo para gestionarlo.</p>
-            
-            <div class="search-box">
-                <input type="email" id="emailInput" placeholder="Ej: cliente@correo.com">
-                <button class="btn-search" onclick="buscarUsuario()">BUSCAR</button>
-            </div>
+    <div class="admin-layout">
+        <h1 style="text-align: center; font-size: 3rem; margin: 0;">ADMINISTRACIÓN</h1>
 
-            <div id="userResult" class="user-result">
-                <h3 id="resNombre" style="margin: 0; color: white;">Nombre del Usuario</h3>
-                <p id="resEmail" style="color: #888;">email@ejemplo.com</p>
-                
-                <div class="credit-controls">
-                    <div>
-                        <span style="font-size:0.8rem; color:#aaa;">SALDO ACTUAL:</span><br>
-                        <span id="resCreditos" class="current-credits">0</span>
-                    </div>
-                    
-                    <button class="btn-action btn-sub" onclick="cambiarCreditos(-1)">-1</button>
-                    <button class="btn-action btn-add" onclick="cambiarCreditos(1)">+1</button>
-                    <button class="btn-action btn-add" onclick="cambiarCreditos(5)">+5</button>
-                    <button class="btn-action btn-add" onclick="cambiarCreditos(10)">+10</button>
+        <div class="panel-card">
+            <div class="panel-title">📅 NUEVA CLASE</div>
+            <div class="form-grid">
+                <input type="text" id="nombreClase" placeholder="Nombre (Ej: Pilates Avanzado)">
+                <select id="tipoClase">
+                    <option value="fuerza">Fuerza</option>
+                    <option value="pilates">Pilates</option>
+                    <option value="personal">Entreno Personal</option>
+                    <option value="nutricion">Nutrición</option>
+                </select>
+                <input type="date" id="fechaClase">
+                <input type="time" id="horaClase">
+                <input type="number" id="plazasClase" placeholder="Plazas Max" value="6">
+            </div>
+            <button class="btn-create" onclick="crearClase()">PROGRAMAR CLASE</button>
+        </div>
+
+        <div class="panel-card">
+            <div class="panel-title">
+                <span>🗓️ CALENDARIO</span>
+                <button class="btn-mini" onclick="cargarCalendario()">🔄 Refrescar</button>
+            </div>
+            <div id="calendarioContainer">
+                <p style="text-align: center; color: #666;">Cargando clases...</p>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="panel-title">
+                <span>👥 TODOS LOS USUARIOS</span>
+                <button class="btn-mini" onclick="cargarUsuarios()">🔄 Refrescar</button>
+            </div>
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Saldos</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaUsuarios">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="modalCreditos" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalUserNombre" style="margin-top:0;">Editar Saldos</h3>
+            <p id="modalUserEmail" style="color:#888; margin-bottom:20px;">...</p>
+
+            <div id="creditEditors">
                 </div>
-            </div>
 
-            <p id="msgBox" style="margin-top: 15px; color: #aaa;"></p>
+            <button class="btn-create" style="background:#444; margin-top:20px;" onclick="cerrarModal()">CERRAR</button>
         </div>
     </div>
 
     <script type="module">
         import { db } from "./firebase-config.js";
-        import { collection, query, where, getDocs, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { collection, getDocs, addDoc, doc, updateDoc, getDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        let currentUserId = null; // Aquí guardaremos el ID del usuario que encontremos
+        let allUsers = []; // Caché local de usuarios
 
-        // Función Global de Búsqueda
-        window.buscarUsuario = async () => {
-            const email = document.getElementById('emailInput').value;
-            const msgBox = document.getElementById('msgBox');
-            const resultBox = document.getElementById('userResult');
-
-            // Limpiamos pantalla
-            msgBox.innerText = "Buscando...";
-            msgBox.style.color = "#aaa";
-            resultBox.style.display = "none";
-
-            if(!email) { msgBox.innerText = "Escribe un correo primero."; return; }
+        // --- 1. CARGAR USUARIOS ---
+        window.cargarUsuarios = async () => {
+            const tbody = document.getElementById('tablaUsuarios');
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Cargando...</td></tr>';
 
             try {
-                // 1. Preguntamos a Firebase: "¿Existe alguien con este email?"
-                const usuariosRef = collection(db, "usuarios");
-                const q = query(usuariosRef, where("email", "==", email));
-                const querySnapshot = await getDocs(q);
+                // Traemos TODOS los usuarios de golpe
+                const querySnapshot = await getDocs(collection(db, "usuarios"));
+                allUsers = [];
+                let html = "";
 
-                if (querySnapshot.empty) {
-                    msgBox.innerText = "Usuario no encontrado. Revisa el correo.";
-                    msgBox.style.color = "#ff4444";
+                querySnapshot.forEach((docSnap) => {
+                    const u = docSnap.data();
+                    u.id = docSnap.id;
+                    allUsers.push(u);
+
+                    // Preparamos los créditos (si no tiene, es 0)
+                    const creds = u.creditos_detalle || { fuerza: 0, pilates: 0, personal: 0, nutri: 0 };
+                    
+                    // Si tiene el formato antiguo (solo numero), lo mostramos como Fuerza por defecto
+                    const saldoAntiguo = (typeof u.creditos === 'number') ? u.creditos : 0;
+                    const f = creds.fuerza !== undefined ? creds.fuerza : saldoAntiguo; 
+                    const p = creds.pilates || 0;
+                    const ep = creds.personal || 0;
+                    const n = creds.nutri || 0;
+
+                    html += `
+                        <tr>
+                            <td>
+                                <div style="font-weight:bold; color:white;">${u.nombre || 'Sin Nombre'}</div>
+                                <div style="font-size:0.8rem; color:#666;">${u.email}</div>
+                            </td>
+                            <td>
+                                <span class="credit-tag tag-fuerza">F: ${f}</span>
+                                <span class="credit-tag tag-pilates">P: ${p}</span><br>
+                                <span class="credit-tag tag-personal">EP: ${ep}</span>
+                                <span class="credit-tag tag-nutri">N: ${n}</span>
+                            </td>
+                            <td>
+                                <button class="btn-mini btn-edit" onclick="abrirModal('${u.id}')">EDITAR</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tbody.innerHTML = html;
+
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = `<tr><td colspan="3">Error: ${e.message}</td></tr>`;
+            }
+        };
+
+        // --- 2. GESTIÓN DE MODAL Y CRÉDITOS ---
+        window.abrirModal = (uid) => {
+            const user = allUsers.find(u => u.id === uid);
+            if(!user) return;
+
+            document.getElementById('modalUserNombre').innerText = user.nombre || 'Usuario';
+            document.getElementById('modalUserEmail').innerText = user.email;
+            
+            const container = document.getElementById('creditEditors');
+            container.innerHTML = "";
+
+            // Definimos los 4 tipos
+            const tipos = [
+                { id: 'fuerza', label: 'FUERZA', color: '#ff9f43' },
+                { id: 'pilates', label: 'PILATES', color: '#54a0ff' },
+                { id: 'personal', label: 'PERSONAL', color: '#ff6b6b' },
+                { id: 'nutri', label: 'NUTRICIÓN', color: '#1dd1a1' }
+            ];
+
+            // Datos actuales
+            const creds = user.creditos_detalle || {};
+            // Compatibilidad con sistema antiguo
+            if (typeof user.creditos === 'number' && !creds.fuerza) creds.fuerza = user.creditos;
+
+            tipos.forEach(t => {
+                const val = creds[t.id] || 0;
+                container.innerHTML += `
+                    <div class="credit-row">
+                        <strong style="color:${t.color}">${t.label}</strong>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <button class="btn-circle btn-minus" onclick="cambiarSaldo('${uid}', '${t.id}', -1)">-</button>
+                            <span style="font-size:1.2rem; font-weight:bold; width:30px; text-align:center;">${val}</span>
+                            <button class="btn-circle btn-plus" onclick="cambiarSaldo('${uid}', '${t.id}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('modalCreditos').style.display = 'flex';
+        }
+
+        window.cerrarModal = () => {
+            document.getElementById('modalCreditos').style.display = 'none';
+        }
+
+        window.cambiarSaldo = async (uid, tipo, cantidad) => {
+            try {
+                const userRef = doc(db, "usuarios", uid);
+                const userSnap = await getDoc(userRef);
+                const userData = userSnap.data();
+
+                let newCreds = userData.creditos_detalle || {};
+                
+                // Si es el primer uso, inicializamos
+                if(!newCreds.fuerza && typeof userData.creditos === 'number') newCreds.fuerza = userData.creditos;
+
+                const currentVal = newCreds[tipo] || 0;
+                newCreds[tipo] = currentVal + cantidad;
+                if(newCreds[tipo] < 0) newCreds[tipo] = 0;
+
+                await updateDoc(userRef, {
+                    creditos_detalle: newCreds,
+                    creditos: newCreds.fuerza // Mantenemos compatibilidad con reservas.html por ahora
+                });
+
+                // Refrescamos todo
+                await cargarUsuarios();
+                abrirModal(uid); // Reabrimos para ver el cambio visual
+
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        // --- 3. CREAR CLASE ---
+        window.crearClase = async () => {
+            const nombre = document.getElementById('nombreClase').value;
+            const tipo = document.getElementById('tipoClase').value;
+            const fecha = document.getElementById('fechaClase').value;
+            const hora = document.getElementById('horaClase').value;
+            const plazas = parseInt(document.getElementById('plazasClase').value);
+
+            if(!nombre || !fecha || !hora) { alert("Rellena todo"); return; }
+
+            try {
+                await addDoc(collection(db, "clases"), {
+                    nombre: nombre,
+                    tipo: tipo,
+                    fecha: fecha, // "2024-02-01"
+                    hora: hora,
+                    plazas_totales: plazas,
+                    apuntados: [], // Array de IDs de usuarios
+                    timestamp: new Date(fecha + 'T' + hora) // Para ordenar
+                });
+                alert("Clase creada");
+                cargarCalendario();
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        // --- 4. CALENDARIO ---
+        window.cargarCalendario = async () => {
+            const container = document.getElementById('calendarioContainer');
+            container.innerHTML = "Cargando...";
+
+            try {
+                // Traemos clases ordenadas por fecha (timestamp)
+                // NOTA: Si da error de índice, ve a la consola y pulsa el link
+                const q = query(collection(db, "clases"), orderBy("timestamp", "asc"));
+                const snap = await getDocs(q);
+
+                if(snap.empty) { container.innerHTML = "No hay clases futuras."; return; }
+
+                // Agrupamos por día
+                const grupos = {};
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    d.id = doc.id;
+                    if(!grupos[d.fecha]) grupos[d.fecha] = [];
+                    grupos[d.fecha].push(d);
+                });
+
+                let html = "";
+                // Ordenamos las fechas
+                Object.keys(grupos).sort().forEach(fecha => {
+                    html += `<div class="calendar-day">
+                                <div class="day-header">${fecha}</div>`;
+                    
+                    grupos[fecha].forEach(clase => {
+                        const plazasLibres = clase.plazas_totales - (clase.apuntados ? clase.apuntados.length : 0);
+                        html += `
+                            <div class="class-item type-${clase.tipo}">
+                                <div>
+                                    <strong style="font-size:1.1rem">${clase.hora} - ${clase.nombre}</strong><br>
+                                    <span style="font-size:0.8rem; opacity:0.7">${clase.tipo.toUpperCase()} • Libres: ${plazasLibres}/${clase.plazas_totales}</span>
+                                </div>
+                                <button class="btn-mini" onclick="verAsistentes('${clase.id}')">👥 Ver Usuarios</button>
+                            </div>
+                            <div id="asistentes-${clase.id}" class="attendees-list">Cargando nombres...</div>
+                        `;
+                    });
+                    html += `</div>`;
+                });
+
+                container.innerHTML = html;
+
+            } catch(e) {
+                console.error(e);
+                container.innerHTML = "Error cargando calendario (Revisa la consola por si falta un índice).";
+            }
+        }
+
+        // --- 5. VER QUIÉN VA A LA CLASE ---
+        window.verAsistentes = async (claseId) => {
+            const div = document.getElementById(`asistentes-${claseId}`);
+            
+            // Toggle (Mostrar/Ocultar)
+            if(div.style.display === 'block') {
+                div.style.display = 'none';
+                return;
+            }
+            div.style.display = 'block';
+            div.innerHTML = "Buscando nombres...";
+
+            try {
+                const claseRef = doc(db, "clases", claseId);
+                const claseSnap = await getDoc(claseRef);
+                const ids = claseSnap.data().apuntados || [];
+
+                if(ids.length === 0) {
+                    div.innerHTML = "Nadie apuntado aún.";
                     return;
                 }
 
-                // 2. Si existe, mostramos sus datos
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    currentUserId = doc.id; // Guardamos su ID secreto para luego
-                    
-                    document.getElementById('resNombre').innerText = data.nombre || "Usuario";
-                    document.getElementById('resEmail').innerText = data.email;
-                    document.getElementById('resCreditos').innerText = data.creditos || 0;
-                    
-                    resultBox.style.display = "block"; // Enseñamos la caja
-                    msgBox.innerText = "";
-                });
-
-            } catch (error) {
-                console.error(error);
-                msgBox.innerText = "Error: " + error.message;
-            }
-        }
-
-        // Función Global para Sumar/Restar Créditos
-        window.cambiarCreditos = async (cantidad) => {
-            if (!currentUserId) return;
-
-            try {
-                const userRef = doc(db, "usuarios", currentUserId);
+                // Buscamos los nombres de esos IDs
+                // (Manera simple: iterar. Para producción se optimiza, pero aquí vale)
+                let nombresHTML = "<ul style='padding-left:20px; margin:0;'>";
                 
-                // 1. Mandamos la orden a la base de datos
-                await updateDoc(userRef, {
-                    creditos: increment(cantidad)
-                });
+                for(const uid of ids) {
+                    const userSnap = await getDoc(doc(db, "usuarios", uid));
+                    if(userSnap.exists()) {
+                        nombresHTML += `<li>${userSnap.data().nombre} (${userSnap.data().email})</li>`;
+                    } else {
+                        nombresHTML += `<li>Usuario desconocido (${uid})</li>`;
+                    }
+                }
+                nombresHTML += "</ul>";
+                div.innerHTML = nombresHTML;
 
-                // 2. Actualizamos el número en pantalla al instante (truco visual)
-                const pantalla = document.getElementById('resCreditos');
-                const nuevoValor = parseInt(pantalla.innerText) + cantidad;
-                pantalla.innerText = nuevoValor;
-
-            } catch (error) {
-                alert("Error al actualizar: " + error.message);
+            } catch(e) {
+                div.innerHTML = "Error: " + e.message;
             }
         }
-    </script>
 
+        // Arrancamos
+        window.onload = () => {
+            cargarUsuarios();
+            cargarCalendario();
+        };
+
+    </script>
 </body>
 </html>
