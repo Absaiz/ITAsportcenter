@@ -1,22 +1,19 @@
-// layout.js - VERSIÓN CORREGIDA (Menú + Footer + Anti-Caché)
+// layout.js - VERSIÓN CORREGIDA (Con la etiqueta <nav> recuperada)
 
-// 1. CONTROL DE VERSIONES (Anti-Caché)
+// 1. FORZAR LA CARGA DE ESTILOS (Anti-Caché)
 const version = Date.now(); 
-
-// 2. CARGAR EL CSS FORZANDO LA VERSIÓN
 const link = document.createElement("link");
 link.rel = "stylesheet";
 link.href = `style.css?v=${version}`; 
 document.head.appendChild(link);
 
-// 3. DEFINIR EL MENÚ (Con la etiqueta <nav> que faltaba)
+// 2. DEFINIR EL MENÚ (¡AHORA SÍ CON ETIQUETA NAV!)
 const menuHTML = `
-    <nav>
-        <a href="index.html" class="nav-logo">
+    <nav> <a href="index.html" class="nav-logo">
             <img src="imagen/logo.png" alt="ITA Logo">
         </a>
         
-        <div class="menu-icon" onclick="window.toggleMenu()">
+        <div class="menu-icon" onclick="toggleMenu()">
             <span></span>
             <span></span>
             <span></span>
@@ -32,7 +29,7 @@ const menuHTML = `
     </nav>
 `;
 
-// 4. DEFINIR EL FOOTER
+// 3. DEFINIR EL FOOTER (HTML)
 const footerHTML = `
     <footer>
         <div class="container">
@@ -43,20 +40,20 @@ const footerHTML = `
     </footer>
 `;
 
-// 5. INYECTAR TODO AL CARGAR LA PÁGINA
+// 4. EJECUTAR AL CARGAR LA PÁGINA
 document.addEventListener("DOMContentLoaded", function() {
     
-    // a) Limpieza de seguridad (Borrar si ya existían para no duplicar)
+    // a) Limpieza de seguridad
     const oldNav = document.querySelector('nav');
     if(oldNav) oldNav.remove();
     const oldFooter = document.querySelector('footer');
     if(oldFooter) oldFooter.remove();
 
-    // b) Inyectar Menú (Arriba) y Footer (Abajo)
+    // b) Inyectar Menú y Footer
     document.body.insertAdjacentHTML('afterbegin', menuHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
-    // c) Marcar pestaña activa (Negrita en el menú)
+    // c) Marcar enlace activo
     const currentPage = window.location.pathname.split("/").pop();
     const links = document.querySelectorAll('.nav-links a');
     links.forEach(link => {
@@ -68,10 +65,10 @@ document.addEventListener("DOMContentLoaded", function() {
     // d) Cargar lógica de usuarios
     import(`./auth.js?v=${version}`)
         .then(() => console.log("Sistema de usuarios activo"))
-        .catch(err => console.log("Modo invitado"));
+        .catch(err => console.log("Modo invitado (Auth no cargado)"));
 });
 
-// 6. FUNCIÓN GLOBAL PARA EL MÓVIL
+// 5. FUNCIÓN GLOBAL PARA EL MÓVIL
 window.toggleMenu = function() {
     var menu = document.getElementById("navLinks");
     if (menu) menu.classList.toggle("active");
