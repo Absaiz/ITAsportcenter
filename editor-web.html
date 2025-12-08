@@ -20,14 +20,21 @@
 
     <style>
         .editor-container { max-width: 800px; margin: 40px auto; padding: 20px; background: #1a1a1a; border-radius: 10px; border: 1px solid #333; }
-        .editor-group { margin-bottom: 25px; padding: 15px; background: #222; border-left: 4px solid var(--accent-pink); border-radius: 4px; }
-        .editor-group h3 { margin-top: 0; color: #888; font-size: 0.9rem; }
         
-        label { display: block; margin-top: 10px; color: white; font-weight: bold; }
+        /* SECCIONES */
+        .section-header { color: var(--accent-pink); border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 40px; margin-bottom: 20px; font-family: 'Oswald'; font-size: 1.5rem; }
+        
+        .editor-group { margin-bottom: 25px; padding: 15px; background: #222; border-left: 4px solid #444; border-radius: 4px; }
+        .editor-group h3 { margin-top: 0; color: #aaa; font-size: 0.9rem; margin-bottom: 10px; }
+        
+        label { display: block; margin-top: 10px; color: white; font-weight: bold; font-size: 0.9rem; }
         input, textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #444; color: white; margin-top: 5px; border-radius: 5px; font-family: 'Montserrat'; }
-        textarea { height: 100px; resize: vertical; }
+        textarea { height: 80px; resize: vertical; }
         
-        .btn-save { width: 100%; padding: 15px; background: #25D366; color: black; font-weight: bold; border: none; cursor: pointer; font-size: 1.1rem; margin-top: 20px; transition: 0.3s; }
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+
+        .btn-save { width: 100%; padding: 15px; background: #25D366; color: black; font-weight: bold; border: none; cursor: pointer; font-size: 1.1rem; margin-top: 30px; transition: 0.3s; position: sticky; bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .btn-save:hover { background: #20bf5b; }
     </style>
 </head>
@@ -36,41 +43,71 @@
     <div class="editor-container">
         <h1 class="section-title">EDITOR DE CONTENIDOS</h1>
         
+        <h2 class="section-header">PÁGINA: FILOSOFÍA</h2>
+        
         <div class="editor-group">
-            <h3>PÁGINA: FILOSOFÍA</h3>
-            
+            <h3>CABECERA</h3>
             <label>Título Principal</label>
-            <input type="text" id="filo_titulo" placeholder="Ej: Nuestra Esencia">
-            
+            <input type="text" id="filo_titulo">
             <label>Texto Introducción</label>
-            <textarea id="filo_intro" placeholder="Texto largo..."></textarea>
+            <textarea id="filo_intro"></textarea>
         </div>
 
-        <div class="editor-group">
-            <h3>TARJETA 1 (IZQUIERDA)</h3>
-            <label>Título</label>
-            <input type="text" id="card1_titulo">
-            <label>Texto</label>
-            <textarea id="card1_texto" style="height:60px"></textarea>
+        <div class="row">
+            <div class="col editor-group">
+                <h3>TARJETA 1</h3>
+                <input type="text" id="card1_titulo" placeholder="Título">
+                <textarea id="card1_texto" placeholder="Texto"></textarea>
+            </div>
+            <div class="col editor-group">
+                <h3>TARJETA 2</h3>
+                <input type="text" id="card2_titulo" placeholder="Título">
+                <textarea id="card2_texto" placeholder="Texto"></textarea>
+            </div>
+            <div class="col editor-group">
+                <h3>TARJETA 3</h3>
+                <input type="text" id="card3_titulo" placeholder="Título">
+                <textarea id="card3_texto" placeholder="Texto"></textarea>
+            </div>
         </div>
 
-        <div class="editor-group">
-            <h3>TARJETA 2 (CENTRO)</h3>
-            <label>Título</label>
-            <input type="text" id="card2_titulo">
-            <label>Texto</label>
-            <textarea id="card2_texto" style="height:60px"></textarea>
+        <h2 class="section-header">PÁGINA: TARIFAS (PLANES)</h2>
+
+        <div class="editor-group" style="border-color: #ff9f43;">
+            <h3>PLAN 1 (IZQUIERDA - Ej: MENSUAL)</h3>
+            <div class="row">
+                <div class="col"><label>Nombre Plan</label><input type="text" id="plan1_nombre"></div>
+                <div class="col"><label>Precio (€)</label><input type="text" id="plan1_precio"></div>
+                <div class="col"><label>Subtítulo</label><input type="text" id="plan1_sub"></div>
+            </div>
+            <label>Características (Separa por comas)</label>
+            <textarea id="plan1_feat" placeholder="Ej: Acceso ilimitado, Toalla incluida..."></textarea>
         </div>
 
-        <div class="editor-group">
-            <h3>TARJETA 3 (DERECHA)</h3>
-            <label>Título</label>
-            <input type="text" id="card3_titulo">
-            <label>Texto</label>
-            <textarea id="card3_texto" style="height:60px"></textarea>
+        <div class="editor-group" style="border-color: #54a0ff;">
+            <h3>PLAN 2 (CENTRO - DESTACADO)</h3>
+            <div class="row">
+                <div class="col"><label>Nombre Plan</label><input type="text" id="plan2_nombre"></div>
+                <div class="col"><label>Precio (€)</label><input type="text" id="plan2_precio"></div>
+                <div class="col"><label>Subtítulo</label><input type="text" id="plan2_sub"></div>
+            </div>
+            <label>Características</label>
+            <textarea id="plan2_feat"></textarea>
         </div>
 
-        <button onclick="guardarCambios()" class="btn-save">💾 GUARDAR CAMBIOS</button>
+        <div class="editor-group" style="border-color: #ff6b6b;">
+            <h3>PLAN 3 (DERECHA - Ej: BONO)</h3>
+            <div class="row">
+                <div class="col"><label>Nombre Plan</label><input type="text" id="plan3_nombre"></div>
+                <div class="col"><label>Precio (€)</label><input type="text" id="plan3_precio"></div>
+                <div class="col"><label>Subtítulo</label><input type="text" id="plan3_sub"></div>
+            </div>
+            <label>Características</label>
+            <textarea id="plan3_feat"></textarea>
+        </div>
+
+
+        <button onclick="guardarCambios()" class="btn-save">💾 GUARDAR TODO</button>
     </div>
 
     <script type="module">
@@ -78,51 +115,65 @@
         import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        // 1. SEGURIDAD: Solo admin o adminWeb
+        // 1. SEGURIDAD
         onAuthStateChanged(auth, async (user) => {
             if (!user) window.location.href = "login.html";
-            
             const snap = await getDoc(doc(db, "usuarios", user.uid));
             const rol = snap.data().rol;
-            
             if (rol !== 'admin' && rol !== 'adminWeb' && rol !== 'adminIT') {
-                document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px'>⛔ ACCESO DENEGADO</h1>";
+                document.body.innerHTML = "<h1>⛔ ACCESO DENEGADO</h1>";
             } else {
                 cargarDatos();
             }
         });
 
-        // 2. CARGAR DATOS EXISTENTES
+        // 2. CARGAR (Ahora lee 2 documentos: filosofia y tarifas)
         window.cargarDatos = async () => {
             try {
-                const docRef = doc(db, "contenidos_web", "filosofia");
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('filo_titulo').value = data.titulo || "";
-                    document.getElementById('filo_intro').value = data.intro || "";
-                    
-                    document.getElementById('card1_titulo').value = data.c1_tit || "";
-                    document.getElementById('card1_texto').value = data.c1_txt || "";
-                    
-                    document.getElementById('card2_titulo').value = data.c2_tit || "";
-                    document.getElementById('card2_texto').value = data.c2_txt || "";
-                    
-                    document.getElementById('card3_titulo').value = data.c3_tit || "";
-                    document.getElementById('card3_texto').value = data.c3_txt || "";
+                // Filosofía
+                const docFilo = await getDoc(doc(db, "contenidos_web", "filosofia"));
+                if (docFilo.exists()) {
+                    const d = docFilo.data();
+                    document.getElementById('filo_titulo').value = d.titulo || "";
+                    document.getElementById('filo_intro').value = d.intro || "";
+                    document.getElementById('card1_titulo').value = d.c1_tit || "";
+                    document.getElementById('card1_texto').value = d.c1_txt || "";
+                    document.getElementById('card2_titulo').value = d.c2_tit || "";
+                    document.getElementById('card2_texto').value = d.c2_txt || "";
+                    document.getElementById('card3_titulo').value = d.c3_tit || "";
+                    document.getElementById('card3_texto').value = d.c3_txt || "";
                 }
-            } catch (e) {
-                console.error("Error cargando:", e);
-            }
+
+                // Tarifas
+                const docTarifas = await getDoc(doc(db, "contenidos_web", "tarifas"));
+                if (docTarifas.exists()) {
+                    const t = docTarifas.data();
+                    document.getElementById('plan1_nombre').value = t.p1_nom || "";
+                    document.getElementById('plan1_precio').value = t.p1_pre || "";
+                    document.getElementById('plan1_sub').value = t.p1_sub || "";
+                    document.getElementById('plan1_feat').value = t.p1_feat || "";
+
+                    document.getElementById('plan2_nombre').value = t.p2_nom || "";
+                    document.getElementById('plan2_precio').value = t.p2_pre || "";
+                    document.getElementById('plan2_sub').value = t.p2_sub || "";
+                    document.getElementById('plan2_feat').value = t.p2_feat || "";
+
+                    document.getElementById('plan3_nombre').value = t.p3_nom || "";
+                    document.getElementById('plan3_precio').value = t.p3_pre || "";
+                    document.getElementById('plan3_sub').value = t.p3_sub || "";
+                    document.getElementById('plan3_feat').value = t.p3_feat || "";
+                }
+
+            } catch (e) { console.error(e); }
         };
 
-        // 3. GUARDAR CAMBIOS
+        // 3. GUARDAR (Guarda en 2 documentos a la vez)
         window.guardarCambios = async () => {
             const btn = document.querySelector('.btn-save');
             btn.innerText = "⏳ Guardando...";
             
             try {
+                // Guardar Filosofía
                 await setDoc(doc(db, "contenidos_web", "filosofia"), {
                     titulo: document.getElementById('filo_titulo').value,
                     intro: document.getElementById('filo_intro').value,
@@ -133,9 +184,27 @@
                     c3_tit: document.getElementById('card3_titulo').value,
                     c3_txt: document.getElementById('card3_texto').value
                 });
+
+                // Guardar Tarifas
+                await setDoc(doc(db, "contenidos_web", "tarifas"), {
+                    p1_nom: document.getElementById('plan1_nombre').value,
+                    p1_pre: document.getElementById('plan1_precio').value,
+                    p1_sub: document.getElementById('plan1_sub').value,
+                    p1_feat: document.getElementById('plan1_feat').value,
+
+                    p2_nom: document.getElementById('plan2_nombre').value,
+                    p2_pre: document.getElementById('plan2_precio').value,
+                    p2_sub: document.getElementById('plan2_sub').value,
+                    p2_feat: document.getElementById('plan2_feat').value,
+
+                    p3_nom: document.getElementById('plan3_nombre').value,
+                    p3_pre: document.getElementById('plan3_precio').value,
+                    p3_sub: document.getElementById('plan3_sub').value,
+                    p3_feat: document.getElementById('plan3_feat').value
+                });
                 
-                btn.innerText = "✅ ¡GUARDADO!";
-                setTimeout(() => btn.innerText = "💾 GUARDAR CAMBIOS", 2000);
+                btn.innerText = "✅ ¡TODO GUARDADO!";
+                setTimeout(() => btn.innerText = "💾 GUARDAR TODO", 2000);
                 
             } catch (e) {
                 alert("Error: " + e.message);

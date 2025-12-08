@@ -2,149 +2,112 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="imagen/logoico.png">
     <link rel="icon" type="image/png" href="imagen/logoico.png">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ITA | Tarifas</title>
-    
+ 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
     <script>
-        // Generamos un número único (la hora actual)
         const v = Date.now();
-
-        // Función para cargar CSS con versión
-        function cargarCSS(archivo) {
-            var link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.href = archivo + "?v=" + v;
-            document.head.appendChild(link);
+        function cargarCSS(src) {
+            const l = document.createElement("link"); l.rel = "stylesheet"; l.href = src + '?v=' + v; document.head.appendChild(l);
         }
-
-        // Función para cargar JS con versión
-        function cargarJS(archivo) {
-            var script = document.createElement('script');
-            script.type = 'module';
-            script.src = archivo + '?v=' + v;
-            document.head.appendChild(script);
+        function cargarJS(src) {
+            const s = document.createElement('script'); s.type = 'module'; s.src = src + '?v=' + v; document.head.appendChild(s);
         }
-
-        // --- CARGAMOS TODO FRESCO ---
-        cargarCSS('style.css');       // Estilos
-        cargarJS('layout.js');        // Menú
-        cargarJS('user-logic.js');    // Lógica Usuario
+        cargarCSS('style.css');
+        cargarJS('layout.js');
+        cargarJS('user-logic.js');
     </script>
 </head>
 <body>
  
-
     <section class="container">
-        <h2 class="section-title">Nuestros Servicios</h2>
+        <h2 class="section-title">Nuestras Tarifas</h2>
+        <p style="text-align:center; color:#888; margin-bottom:40px;">Elige el plan que mejor se adapte a tus objetivos.</p>
 
-        <div class="service-category">
-            <h3>01. ENTRENAMIENTO DE FUERZA (Presencial)</h3>
-            <div class="plans-grid">
+        <div class="plans-grid">
             
             <div class="plan-card">
-                <div>
-                    <div class="plan-header">IMAGINA</div>
-                    <span class="plan-subtitle">1 DÍA / SEMANA</span>
-                    <p class="plan-features">
-                        Mantenimiento y Técnica.<br>
-                        Ideal si combinas con otro deporte o tienes agenda apretada.
-                    </p>
-                </div>
-                <a href="contacto.html" class="btn-plan">Más info</a>
-            </div>
-
-            <div class="plan-card">
-                <div>
-                    <div class="plan-header">TRANSFORMA</div>
-                    <span class="plan-subtitle">2 DÍAS / SEMANA</span>
-                    <p class="plan-features">
-                        Constancia y Progreso.<br>
-                        La frecuencia mínima necesaria para ver cambios físicos reales.
-                    </p>
-                </div>
-                <a href="contacto.html" class="btn-plan">Más info</a>
+                <h3 class="plan-header" id="p1_nom">...</h3>
+                <span class="plan-subtitle" id="p1_sub">...</span>
+                <div class="plan-price" id="p1_pre">...</div>
+                <div class="plan-features" id="p1_feat">...</div>
+                <a href="contacto.html" class="btn-plan">ELEGIR PLAN</a>
             </div>
 
             <div class="plan-card plan-featured">
-                <div>
-                    <div class="plan-header">ACTÚA</div>
-                    <span class="plan-subtitle">3 DÍAS / SEMANA</span>
-                    <p class="plan-features">
-                        Evolución Acelerada.<br>
-                        El equilibrio perfecto para maximizar tus resultados y fuerza.
-                    </p>
-                </div>
-                <a href="contacto.html" class="btn-plan" style="background:var(--accent-pink); border-color:var(--accent-pink);">Opción Recomendada</a>
+                <h3 class="plan-header" id="p2_nom">...</h3>
+                <span class="plan-subtitle" id="p2_sub">...</span>
+                <div class="plan-price" id="p2_pre" style="color:var(--accent-pink)">...</div>
+                <div class="plan-features" id="p2_feat">...</div>
+                <a href="contacto.html" class="btn-plan" style="background:var(--accent-pink); border-color:var(--accent-pink)">ELEGIR PLAN</a>
             </div>
 
             <div class="plan-card">
-                <div>
-                    <div class="plan-header">ITA TOTAL</div>
-                    <span class="plan-subtitle">4 DÍAS / SEMANA</span>
-                    <p class="plan-features">
-                        Alto Rendimiento.<br>
-                        Inmersión total para quienes buscan superar todos sus límites.
-                    </p>
-                </div>
-                <a href="contacto.html" class="btn-plan">Más info</a>
+                <h3 class="plan-header" id="p3_nom">...</h3>
+                <span class="plan-subtitle" id="p3_sub">...</span>
+                <div class="plan-price" id="p3_pre">...</div>
+                <div class="plan-features" id="p3_feat">...</div>
+                <a href="contacto.html" class="btn-plan">ELEGIR PLAN</a>
             </div>
 
         </div>
-        </div>
-
-        <div class="service-category">
-            <h3>02. PILATES & MOVILIDAD</h3>
-            <div class="plans-grid">
-                <div class="plan-card">
-                    <div>
-                        <div class="plan-header">CLASE SUELTA</div>
-                        <p class="plan-features">Prueba una sesión sin compromiso.</p>
-                    </div>
-                    <a href="#" class="btn-plan">Reservar</a>
-                </div>
-                <div class="plan-card plan-featured">
-                    <div>
-                        <div class="plan-header">BONO MENSUAL</div>
-                        <span class="plan-subtitle">2 CLASES / SEMANA</span>
-                        <p class="plan-features">Grupos reducidos y atención personalizada.</p>
-                    </div>
-                    <a href="#" class="btn-plan">Ver Disponibilidad</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="service-category">
-            <h3>03. SERVICIOS PERSONALIZADOS</h3>
-            <div class="plans-grid">
-                <div class="plan-card">
-                    <div>
-                        <div class="plan-header">NUTRICIÓN</div>
-                        <span class="plan-subtitle">PLAN ALIMENTICIO</span>
-                        <p class="plan-features">Estudio corporal + Dieta personalizada + Revisión.</p>
-                    </div>
-                    <a href="contacto.html" class="btn-plan">Agendar Cita</a>
-                </div>
-                <div class="plan-card">
-                    <div>
-                        <div class="plan-header">ENTRENAMIENTO PERSONAL</div>
-                        <span class="plan-subtitle">1 to 1</span>
-                        <p class="plan-features">Un entrenador exclusivamente para ti durante toda la sesión.</p>
-                    </div>
-                    <a href="contacto.html" class="btn-plan">Consultar Disponibilidad</a>
-                </div>
-            </div>
-        </div>
-
     </section>
+
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        async function cargarTarifas() {
+            try {
+                const docRef = doc(db, "contenidos_web", "tarifas");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const t = docSnap.data();
+
+                    // Función auxiliar para formatear la lista de características
+                    const formatFeat = (texto) => {
+                        if(!texto) return "";
+                        // Divide por comas y pone saltos de línea
+                        return texto.split(',').map(item => `• ${item.trim()}`).join('<br>');
+                    };
+
+                    // PLAN 1
+                    document.getElementById('p1_nom').innerText = t.p1_nom || "Básico";
+                    document.getElementById('p1_sub').innerText = t.p1_sub || "Mensual";
+                    document.getElementById('p1_pre').innerText = (t.p1_pre || "0") + "€";
+                    document.getElementById('p1_feat').innerHTML = formatFeat(t.p1_feat);
+
+                    // PLAN 2
+                    document.getElementById('p2_nom').innerText = t.p2_nom || "Pro";
+                    document.getElementById('p2_sub').innerText = t.p2_sub || "Trimestral";
+                    document.getElementById('p2_pre').innerText = (t.p2_pre || "0") + "€";
+                    document.getElementById('p2_feat').innerHTML = formatFeat(t.p2_feat);
+
+                    // PLAN 3
+                    document.getElementById('p3_nom').innerText = t.p3_nom || "Bono";
+                    document.getElementById('p3_sub').innerText = t.p3_sub || "10 Sesiones";
+                    document.getElementById('p3_pre').innerText = (t.p3_pre || "0") + "€";
+                    document.getElementById('p3_feat').innerHTML = formatFeat(t.p3_feat);
+                }
+
+            } catch (error) {
+                console.error("Error cargando tarifas:", error);
+            }
+        }
+
+        cargarTarifas();
+    </script>
 
 </body>
 </html>
