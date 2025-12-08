@@ -1,5 +1,7 @@
 // layout.js - VERSIÓN "APP NATIVA" (Anti-Caché + iOS Fix)
 
+import { registrarLog } from "./logger.js";
+
 // 1. FORZAR LA CARGA DE ESTILOS Y MANIFEST (Anti-Caché)
 const version = Date.now(); 
 

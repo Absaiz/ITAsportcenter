@@ -1,4 +1,5 @@
 // auth.js
+import { registrarLog } from "./logger.js";
 import { auth, db } from "./firebase-config.js";
 import { 
     createUserWithEmailAndPassword, 
@@ -42,9 +43,13 @@ export async function registrarUsuario(email, password, nombre) {
 export async function iniciarSesion(email, password) {
     try {
         await signInWithEmailAndPassword(auth, email, password);
+        // --- NUEVO: LOG ---
+        registrarLog(email, "LOGIN", "Inicio de sesión exitoso");
         window.location.href = "index.html"; // Redirigir al inicio
     } catch (error) {
         console.error("Error:", error);
+        // --- NUEVO: LOG ---
+        registrarLog(email, "LOGIN", "Inicio de sesión datos erroneos");
         alert("Correo o contraseña incorrectos.");
     }
 }
@@ -53,6 +58,8 @@ export async function iniciarSesion(email, password) {
 export async function cerrarSesion() {
     try {
         await signOut(auth);
+        // --- NUEVO: LOG ---
+        registrarLog(email, "LOGIN", "Cierre de session");
         window.location.href = "login.html";
     } catch (error) {
         console.error("Error al salir:", error);
