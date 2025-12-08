@@ -1,13 +1,13 @@
-// layout.js - VERSIÓN DEFINITIVA (PWA / MODO APP)
+// layout.js - VERSIÓN BLINDADA (Funciona siempre, llegue tarde o pronto)
 
-// 1. FORZAR LA CARGA DE ESTILOS (Anti-Caché)
+// 1. FORZAR LA CARGA DE ESTILOS
 const version = Date.now(); 
 const link = document.createElement("link");
 link.rel = "stylesheet";
 link.href = `style.css?v=${version}`; 
 document.head.appendChild(link);
 
-// 2. EL MENÚ
+// 2. EL MENÚ (Correcto)
 const menuHTML = `
     <nav> 
         <a href="index.html" class="nav-logo">
@@ -30,7 +30,7 @@ const menuHTML = `
     </nav>
 `;
 
-// 3. EL FOOTER
+// 3. EL FOOTER (Correcto)
 const footerHTML = `
     <footer>
         <div class="container">
@@ -41,11 +41,11 @@ const footerHTML = `
     </footer>
 `;
 
-// --- FUNCIÓN PRINCIPAL ---
+// --- FUNCIÓN MAESTRA (PINTAR TODO) ---
 function iniciarLayout() {
-    console.log("🚀 Iniciando Modo App...");
+    console.log("🚀 EJECUTANDO LAYOUT: Pintando menú y footer...");
 
-    // a) Limpieza
+    // a) Limpieza de seguridad
     const oldNav = document.querySelector('nav');
     if(oldNav) oldNav.remove();
     const oldFooter = document.querySelector('footer');
@@ -55,67 +55,56 @@ function iniciarLayout() {
     document.body.insertAdjacentHTML('afterbegin', menuHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
-    // c) Marcar activo
+    // c) Marcar enlace activo
     const currentPage = window.location.pathname.split("/").pop();
     const links = document.querySelectorAll('.nav-links a');
     links.forEach(link => {
-        if(link.getAttribute('href') === currentPage) link.classList.add('active');
+        if(link.getAttribute('href') === currentPage) {
+            link.classList.add('active');
+        }
     });
 
-    // d) Cargar usuario
+    // d) Cargar lógica de usuarios
     import(`./auth.js?v=${version}`)
         .then(() => console.log("Usuario cargado"))
         .catch(() => console.log("Modo invitado"));
-
-    // e) ACTIVAR MODO APP (Hack para iOS)
+    
+    // e) Activar Modo App iPhone (Opcional, si lo quieres)
     activarModoApp();
 }
 
-// 4. EL DETECTOR DE CARGA
+// 4. EL DETECTOR INTELIGENTE (ESTO ES LO QUE ARREGLA EL PROBLEMA)
+// Preguntamos: "¿La página sigue cargando?"
 if (document.readyState === "loading") {
+    // Si sigue cargando, esperamos.
     document.addEventListener("DOMContentLoaded", iniciarLayout);
 } else {
+    // Si ya terminó (que es lo que te está pasando), ejecutamos YA.
     iniciarLayout();
 }
 
-// 5. FUNCIÓN MÓVIL
+// 5. MODO APP Y MÓVIL
 window.toggleMenu = function() {
     var menu = document.getElementById("navLinks");
     if (menu) menu.classList.toggle("active");
 }
 
-// 6. MODO APP IPHONE (PWA)
-// Esto hace que los enlaces no te saquen de la pantalla completa
 function activarModoApp() {
-    
-    // A) Inyectar etiquetas META para Apple (Para que se vea full screen)
     const metas = [
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
     ];
-
     metas.forEach(m => {
         if (!document.querySelector(`meta[name="${m.name}"]`)) {
             const meta = document.createElement('meta');
-            meta.name = m.name;
-            meta.content = m.content;
+            meta.name = m.name; meta.content = m.content;
             document.head.appendChild(meta);
         }
     });
-
-    // B) Hack de Navegación para iOS
-    // Detectamos si es un clic en un enlace interno y forzamos la carga interna
     document.addEventListener('click', function(e) {
-        // Buscamos si lo que se pulsó es un enlace (o algo dentro de un enlace)
         const anchor = e.target.closest('a');
-        
-        // Si es un enlace, es interno (mismo dominio) y no abre pestaña nueva...
         if (anchor && anchor.href && anchor.target !== '_blank' && anchor.hostname === window.location.hostname) {
-            
-            // PREVENIMOS EL COMPORTAMIENTO DE SAFARI
             e.preventDefault();
-            
-            // CAMBIAMOS LA PÁGINA "A MANO"
             window.location.href = anchor.href;
         }
     }, false);
