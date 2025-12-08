@@ -1,6 +1,6 @@
 // auth.js
-import { registrarLog } from "./logger.js";
 import { auth, db } from "./firebase-config.js";
+import { registrarLog } from "./logger.js";
 import { 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
