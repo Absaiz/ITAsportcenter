@@ -228,6 +228,9 @@
             if(!confirm(`¿Cancelar asistencia a ${nombreClase}? Te devolveremos el crédito.`)) return;
 
             try {
+                
+
+
                 // A) Quitar usuario de la clase
                 const claseRef = doc(db, "clases", claseId);
                 await updateDoc(claseRef, {
@@ -251,6 +254,7 @@
                     creditos: creds.fuerza // Legacy
                 });
 
+                registrarLog(currentUser.email, "Candela", `Cancela: ${nombreClase} (${tipoClase})`);
                 alert("✅ Reserva cancelada. Crédito devuelto.");
                 cargarCreditos(currentUser.uid);
                 cargarReservas(currentUser.uid);
@@ -260,9 +264,11 @@
             }
         }
 
+
         // 4. CERRAR SESIÓN
         document.getElementById('btnLogout').addEventListener('click', (e) => {
             e.preventDefault();
+            registrarLog(currentUser.email, "Cierra Session", `Cierra Session')`);
             signOut(auth).then(() => window.location.href = "index.html");
         });
     </script>
