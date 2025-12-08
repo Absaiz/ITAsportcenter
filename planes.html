@@ -25,41 +25,43 @@
         }
         cargarCSS('style.css');
         cargarJS('layout.js');
-        cargarJS('user-logic.js');
     </script>
+
+    <style>
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 40px; }
+        
+        .plan-card { 
+            background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 25px; 
+            display: flex; flex-direction: column; transition: 0.3s;
+            border-top: 5px solid var(--accent-pink);
+        }
+        .plan-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+
+        .plan-header { font-family: 'Oswald'; font-size: 1.8rem; color: white; margin-bottom: 10px; text-align: center; }
+        .plan-desc { color: #888; font-size: 0.9rem; text-align: center; margin-bottom: 20px; font-style: italic; min-height: 40px; }
+
+        /* TABLA DE PRECIOS */
+        .price-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .price-table td { padding: 8px 0; border-bottom: 1px solid #333; color: #ccc; font-size: 0.9rem; }
+        .price-table td:last-child { text-align: right; font-weight: bold; color: white; font-size: 1.1rem; }
+        .price-table tr:last-child td { border-bottom: none; }
+
+        .btn-plan { 
+            margin-top: auto; display: block; text-align: center; padding: 12px; 
+            background: transparent; border: 1px solid var(--accent-pink); color: white; 
+            text-decoration: none; border-radius: 5px; font-weight: bold; transition: 0.3s; 
+        }
+        .btn-plan:hover { background: var(--accent-pink); }
+    </style>
 </head>
 <body>
  
     <section class="container">
-        <h2 class="section-title">Nuestras Tarifas</h2>
-        <p style="text-align:center; color:#888; margin-bottom:40px;">Elige el plan que mejor se adapte a tus objetivos.</p>
+        <h2 class="section-title">TARIFAS Y PLANES</h2>
+        <p style="text-align:center; color:#888;">Entrena a tu ritmo con nuestras opciones flexibles.</p>
 
-        <div class="plans-grid">
-            
-            <div class="plan-card">
-                <h3 class="plan-header" id="p1_nom">...</h3>
-                <span class="plan-subtitle" id="p1_sub">...</span>
-                <div class="plan-price" id="p1_pre">...</div>
-                <div class="plan-features" id="p1_feat">...</div>
-                <a href="contacto.html" class="btn-plan">ELEGIR PLAN</a>
-            </div>
-
-            <div class="plan-card plan-featured">
-                <h3 class="plan-header" id="p2_nom">...</h3>
-                <span class="plan-subtitle" id="p2_sub">...</span>
-                <div class="plan-price" id="p2_pre" style="color:var(--accent-pink)">...</div>
-                <div class="plan-features" id="p2_feat">...</div>
-                <a href="contacto.html" class="btn-plan" style="background:var(--accent-pink); border-color:var(--accent-pink)">ELEGIR PLAN</a>
-            </div>
-
-            <div class="plan-card">
-                <h3 class="plan-header" id="p3_nom">...</h3>
-                <span class="plan-subtitle" id="p3_sub">...</span>
-                <div class="plan-price" id="p3_pre">...</div>
-                <div class="plan-features" id="p3_feat">...</div>
-                <a href="contacto.html" class="btn-plan">ELEGIR PLAN</a>
-            </div>
-
+        <div class="plans-grid" id="gridPlanes">
+            <p style="text-align:center; width:100%">Cargando tarifas actualizadas...</p>
         </div>
     </section>
 
@@ -69,40 +71,57 @@
 
         async function cargarTarifas() {
             try {
-                const docRef = doc(db, "contenidos_web", "tarifas");
+                // Usamos la nueva colección 'tarifas_v2'
+                const docRef = doc(db, "contenidos_web", "tarifas_v2");
                 const docSnap = await getDoc(docRef);
 
+                const container = document.getElementById('gridPlanes');
+
                 if (docSnap.exists()) {
-                    const t = docSnap.data();
+                    const d = docSnap.data();
+                    let html = "";
 
-                    // Función auxiliar para formatear la lista de características
-                    const formatFeat = (texto) => {
-                        if(!texto) return "";
-                        // Divide por comas y pone saltos de línea
-                        return texto.split(',').map(item => `• ${item.trim()}`).join('<br>');
-                    };
+                    // Recorremos los 6 planes
+                    for(let i=1; i<=6; i++) {
+                        // Solo mostramos el plan si tiene nombre (para no mostrar tarjetas vacías)
+                        if(d[`p${i}_nom`]) {
+                            html += `
+                                <div class="plan-card">
+                                    <h3 class="plan-header">${d[`p${i}_nom`]}</h3>
+                                    <div class="plan-desc">${d[`p${i}_desc`] || ""}</div>
+                                    
+                                    <table class="price-table">
+                                        <tr>
+                                            <td>Clase Suelta</td>
+                                            <td>${d[`p${i}_suelta`] || "-"}€</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Trimestral</td>
+                                            <td>${d[`p${i}_trim`] || "-"}€</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Semestral</td>
+                                            <td>${d[`p${i}_sem`] || "-"}€</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Anual</td>
+                                            <td>${d[`p${i}_anual`] || "-"}€</td>
+                                        </tr>
+                                    </table>
 
-                    // PLAN 1
-                    document.getElementById('p1_nom').innerText = t.p1_nom || "Básico";
-                    document.getElementById('p1_sub').innerText = t.p1_sub || "Mensual";
-                    document.getElementById('p1_pre').innerText = (t.p1_pre || "0") + "€";
-                    document.getElementById('p1_feat').innerHTML = formatFeat(t.p1_feat);
-
-                    // PLAN 2
-                    document.getElementById('p2_nom').innerText = t.p2_nom || "Pro";
-                    document.getElementById('p2_sub').innerText = t.p2_sub || "Trimestral";
-                    document.getElementById('p2_pre').innerText = (t.p2_pre || "0") + "€";
-                    document.getElementById('p2_feat').innerHTML = formatFeat(t.p2_feat);
-
-                    // PLAN 3
-                    document.getElementById('p3_nom').innerText = t.p3_nom || "Bono";
-                    document.getElementById('p3_sub').innerText = t.p3_sub || "10 Sesiones";
-                    document.getElementById('p3_pre').innerText = (t.p3_pre || "0") + "€";
-                    document.getElementById('p3_feat').innerHTML = formatFeat(t.p3_feat);
+                                    <a href="contacto.html" class="btn-plan">SOLICITAR INFO</a>
+                                </div>
+                            `;
+                        }
+                    }
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = "<p>No hay tarifas disponibles actualmente.</p>";
                 }
 
             } catch (error) {
                 console.error("Error cargando tarifas:", error);
+                document.getElementById('gridPlanes').innerHTML = "<p>Error cargando datos.</p>";
             }
         }
 
