@@ -25,7 +25,7 @@ const actualizarMenu = async (user) => {
         btnLogin.style.color = "white";
         btnLogin.onclick = null; 
 
-// --- ZONA ADMIN Y IT ---
+// --- ZONA ADMIN, IT Y EDITOR ---
         try {
             const docRef = doc(db, "usuarios", user.uid);
             const docSnap = await getDoc(docRef);
@@ -34,45 +34,44 @@ const actualizarMenu = async (user) => {
                 const data = docSnap.data();
                 const rol = data.rol;
 
-                // BOTÓN ADMIN (Para 'admin' y 'adminIT')
+                // 1. BOTÓN ADMIN (Para 'admin' y 'adminIT')
+                // Los redactores (adminWeb) NO ven esto.
                 if (rol === 'admin' || rol === 'adminIT') {
                     if (!document.getElementById('adminBtnLink')) {
                         const adminBtn = document.createElement('a');
                         adminBtn.id = 'adminBtnLink';
                         adminBtn.href = 'admin.html';
                         adminBtn.innerText = 'ADMIN';
-                        adminBtn.style.color = '#ff4444';
+                        adminBtn.style.color = '#ff4444'; // Rojo
                         adminBtn.style.fontWeight = 'bold';
                         navLinks.insertBefore(adminBtn, btnLogin);
                     }
                 }
 
-                // ... después del bloque de adminIT ...
-
-                // BOTÓN EDITOR WEB (Para 'admin', 'adminIT' y 'adminWeb')
-                if (rol === 'admin' || rol === 'adminIT' || rol === 'adminWeb') 
-                {
-                    if (!document.getElementById('editorBtnLink')) {
-                        const editorBtn = document.createElement('a');
-                        editorBtn.id = 'editorBtnLink';
-                        editorBtn.href = 'editor-web.html';
-                        editorBtn.innerText = '✏️ EDITOR';
-                        editorBtn.style.color = '#e1b12c'; // Color amarillo
-                        editorBtn.style.fontWeight = 'bold';
-                        navLinks.insertBefore(editorBtn, btnLogin);
-                    }
-                }
-
-                // BOTÓN LOGS (Solo para 'adminIT')
+                // 2. BOTÓN LOGS (Solo para 'adminIT')
                 if (rol === 'adminIT') {
                     if (!document.getElementById('logsBtnLink')) {
                         const logsBtn = document.createElement('a');
                         logsBtn.id = 'logsBtnLink';
                         logsBtn.href = 'it-logs.html';
                         logsBtn.innerText = '🕵️ LOGS';
-                        logsBtn.style.color = '#00d2d3'; // Un color azul cian "Matrix"
+                        logsBtn.style.color = '#00d2d3'; // Cian
                         logsBtn.style.fontWeight = 'bold';
                         navLinks.insertBefore(logsBtn, btnLogin);
+                    }
+                }
+
+                // 3. BOTÓN EDITOR (Para TODOS los jefes)
+                // Admin, IT y el nuevo adminWeb pueden editar textos.
+                if (rol === 'admin' || rol === 'adminIT' || rol === 'adminWeb') {
+                    if (!document.getElementById('editorBtnLink')) {
+                        const editorBtn = document.createElement('a');
+                        editorBtn.id = 'editorBtnLink';
+                        editorBtn.href = 'editor-web.html';
+                        editorBtn.innerText = '✏️ EDITOR';
+                        editorBtn.style.color = '#e1b12c'; // Amarillo
+                        editorBtn.style.fontWeight = 'bold';
+                        navLinks.insertBefore(editorBtn, btnLogin);
                     }
                 }
             }
