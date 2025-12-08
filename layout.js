@@ -1,13 +1,13 @@
-// layout.js - VERSIÓN BLINDADA (Funciona siempre)
+// layout.js - VERSIÓN DEFINITIVA (PWA / MODO APP)
 
-// 1. CARGAR ESTILOS
+// 1. FORZAR LA CARGA DE ESTILOS (Anti-Caché)
 const version = Date.now(); 
 const link = document.createElement("link");
 link.rel = "stylesheet";
 link.href = `style.css?v=${version}`; 
 document.head.appendChild(link);
 
-// 2. EL MENÚ (Con la etiqueta <nav> bien puesta)
+// 2. EL MENÚ
 const menuHTML = `
     <nav> 
         <a href="index.html" class="nav-logo">
@@ -41,17 +41,17 @@ const footerHTML = `
     </footer>
 `;
 
-// --- FUNCIÓN QUE ARRANCA TODO ---
+// --- FUNCIÓN PRINCIPAL ---
 function iniciarLayout() {
-    console.log("🚀 Pintando menú y footer..."); // Si ves esto en la consola, funciona
+    console.log("🚀 Iniciando Modo App...");
 
-    // a) Limpieza para no duplicar
+    // a) Limpieza
     const oldNav = document.querySelector('nav');
     if(oldNav) oldNav.remove();
     const oldFooter = document.querySelector('footer');
     if(oldFooter) oldFooter.remove();
 
-    // b) Inyectar HTML (Lo importante)
+    // b) Inyectar HTML
     document.body.insertAdjacentHTML('afterbegin', menuHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
@@ -66,19 +66,57 @@ function iniciarLayout() {
     import(`./auth.js?v=${version}`)
         .then(() => console.log("Usuario cargado"))
         .catch(() => console.log("Modo invitado"));
+
+    // e) ACTIVAR MODO APP (Hack para iOS)
+    activarModoApp();
 }
 
-// 4. ¡AQUÍ ESTÁ LA MAGIA! (El detector de autobús)
-// Si la página ya está lista ('interactive' o 'complete'), ejecutamos YA.
-// Si no, esperamos al evento.
+// 4. EL DETECTOR DE CARGA
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", iniciarLayout);
 } else {
-    iniciarLayout(); // ¡Ejecutar inmediatamente!
+    iniciarLayout();
 }
 
-// 5. Función móvil
+// 5. FUNCIÓN MÓVIL
 window.toggleMenu = function() {
     var menu = document.getElementById("navLinks");
     if (menu) menu.classList.toggle("active");
+}
+
+// 6. MODO APP IPHONE (PWA)
+// Esto hace que los enlaces no te saquen de la pantalla completa
+function activarModoApp() {
+    
+    // A) Inyectar etiquetas META para Apple (Para que se vea full screen)
+    const metas = [
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
+    ];
+
+    metas.forEach(m => {
+        if (!document.querySelector(`meta[name="${m.name}"]`)) {
+            const meta = document.createElement('meta');
+            meta.name = m.name;
+            meta.content = m.content;
+            document.head.appendChild(meta);
+        }
+    });
+
+    // B) Hack de Navegación para iOS
+    // Detectamos si es un clic en un enlace interno y forzamos la carga interna
+    document.addEventListener('click', function(e) {
+        // Buscamos si lo que se pulsó es un enlace (o algo dentro de un enlace)
+        const anchor = e.target.closest('a');
+        
+        // Si es un enlace, es interno (mismo dominio) y no abre pestaña nueva...
+        if (anchor && anchor.href && anchor.target !== '_blank' && anchor.hostname === window.location.hostname) {
+            
+            // PREVENIMOS EL COMPORTAMIENTO DE SAFARI
+            e.preventDefault();
+            
+            // CAMBIAMOS LA PÁGINA "A MANO"
+            window.location.href = anchor.href;
+        }
+    }, false);
 }
