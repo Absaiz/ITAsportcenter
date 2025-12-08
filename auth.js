@@ -1,6 +1,7 @@
 // auth.js
 import { auth, db } from "./firebase-config.js";
-import { registrarLog } from "./logger.js";
+import { registrarLog } from "./logger.js"; // <--- 1. ¡IMPORTANTE! FALTABA ESTA LÍNEA
+
 import { 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
@@ -16,20 +17,22 @@ export async function registrarUsuario(email, password, nombre) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Guardar datos extra en la base de datos (Firestore)
+        // Guardar datos extra en la base de datos
         await setDoc(doc(db, "usuarios", user.uid), {
             nombre: nombre,
             email: email,
-            creditos: 0,        // Empiezan con 0 clases
-            rol: "usuario",     // Por defecto son normales
+            creditos: 0,
+            rol: "usuario",
             fechaRegistro: new Date()
         });
 
-        // Actualizar el nombre visible en Auth
         await updateProfile(user, { displayName: nombre });
 
+        // (Opcional) También podemos registrar el registro
+        registrarLog(email, "REGISTRO", "Nuevo usuario registrado");
+
         alert("¡Cuenta creada con éxito! Bienvenido a ITA.");
-        window.location.href = "index.html"; // Redirigir al inicio
+        window.location.href = "index.html";
 
     } catch (error) {
         console.error("Error:", error);
@@ -43,13 +46,15 @@ export async function registrarUsuario(email, password, nombre) {
 export async function iniciarSesion(email, password) {
     try {
         await signInWithEmailAndPassword(auth, email, password);
-        // --- NUEVO: LOG ---
+
+        // <--- 2. ¡ESTO ES LO QUE HACE QUE SALGA EN EL LOG!
         registrarLog(email, "LOGIN", "Inicio de sesión exitoso");
-        window.location.href = "index.html"; // Redirigir al inicio
+        
+        window.location.href = "index.html"; 
     } catch (error) {
         console.error("Error:", error);
-        // --- NUEVO: LOG ---
-        registrarLog(email, "LOGIN", "Inicio de sesión datos erroneos");
+        // (Opcional) Registrar intentos fallidos
+        registrarLog(email, "ERROR_LOGIN", "Intento fallido"); 
         alert("Correo o contraseña incorrectos.");
     }
 }
@@ -57,29 +62,28 @@ export async function iniciarSesion(email, password) {
 // --- FUNCIÓN DE LOGOUT ---
 export async function cerrarSesion() {
     try {
+        // (Opcional) Registrar salida
+        if (auth.currentUser) {
+            registrarLog(auth.currentUser.email, "LOGOUT", "Cierre de sesión");
+        }
         await signOut(auth);
-        // --- NUEVO: LOG ---
-        registrarLog(email, "LOGIN", "Cierre de session");
         window.location.href = "login.html";
     } catch (error) {
         console.error("Error al salir:", error);
     }
 }
 
-// --- ESCUCHADOR DE ESTADO (Para cambiar el menú si está logueado) ---
-// Esto se conecta con layout.js automáticamente
+// --- ESCUCHADOR DE ESTADO ---
 onAuthStateChanged(auth, async (user) => {
     const btnLogin = document.querySelector('.btn-login');
     if (!btnLogin) return;
 
     if (user) {
-        // SI ESTÁ LOGUEADO
-        btnLogin.textContent = "MI PERFIL"; // Cambia el texto del botón
-        btnLogin.href = "perfil.html";      // Cambia el enlace
+        btnLogin.textContent = "MI PERFIL"; 
+        btnLogin.href = "perfil.html";     
         btnLogin.style.backgroundColor = "var(--accent-pink)";
         btnLogin.style.borderColor = "var(--accent-pink)";
     } else {
-        // SI NO ESTÁ LOGUEADO
         btnLogin.textContent = "ÁREA SOCIOS";
         btnLogin.href = "login.html";
         btnLogin.style.backgroundColor = "transparent";
