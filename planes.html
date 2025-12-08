@@ -25,7 +25,7 @@
         }
         cargarCSS('style.css');
         cargarJS('layout.js');
-        cargarJS('user-logic.js');    // Lógica Usuario
+        cargarJS('user-logic.js');
     </script>
 
     <style>
@@ -38,8 +38,9 @@
         }
         .plan-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
-        .plan-header { font-family: 'Oswald'; font-size: 1.8rem; color: white; margin-bottom: 10px; text-align: center; }
-        .plan-desc { color: #888; font-size: 0.9rem; text-align: center; margin-bottom: 20px; font-style: italic; min-height: 40px; }
+        .plan-header { font-family: 'Oswald'; font-size: 1.8rem; color: white; margin-bottom: 5px; text-align: center; }
+        .plan-subtitle { color: var(--accent-pink); font-size: 0.9rem; text-align: center; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; display: block; }
+        .plan-desc { color: #888; font-size: 0.9rem; text-align: center; margin-bottom: 20px; font-style: italic; min-height: 30px; }
 
         /* TABLA DE PRECIOS */
         .price-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
@@ -59,7 +60,7 @@
  
     <section class="container">
         <h2 class="section-title">TARIFAS Y PLANES</h2>
-        <p style="text-align:center; color:#888;">Entrena a tu ritmo con nuestras opciones flexibles.</p>
+        <p style="text-align:center; color:#888; margin-bottom:40px;">Elige el plan que mejor se adapte a tus objetivos.</p>
 
         <div class="plans-grid" id="gridPlanes">
             <p style="text-align:center; width:100%">Cargando tarifas actualizadas...</p>
@@ -84,12 +85,12 @@
 
                     // Recorremos los 6 planes
                     for(let i=1; i<=6; i++) {
-                        // Solo mostramos el plan si tiene nombre (para no mostrar tarjetas vacías)
+                        // Solo mostramos el plan si tiene nombre
                         if(d[`p${i}_nom`]) {
                             html += `
                                 <div class="plan-card">
                                     <h3 class="plan-header">${d[`p${i}_nom`]}</h3>
-                                    <div class="plan-desc">${d[`p${i}_desc`] || ""}</div>
+                                    <span class="plan-subtitle">${d[`p${i}_sub`] || ""}</span> <div class="plan-desc">${d[`p${i}_desc`] || ""}</div>
                                     
                                     <table class="price-table">
                                         <tr>
@@ -125,6 +126,7 @@
                 document.getElementById('gridPlanes').innerHTML = "<p>Error cargando datos.</p>";
             }
         }
+
         cargarTarifas();
     </script>
 

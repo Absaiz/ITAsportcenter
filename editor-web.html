@@ -3,9 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>ITA | Editor Tarifas</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="imagen/logoico.png">
+    <link rel="icon" type="image/png" href="imagen/logoico.png">
+
+    <title>ITA | Editor Total</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     
     <script>
         const v = Date.now();
@@ -17,22 +23,27 @@
         }
         cargarCSS('style.css');
         cargarJS('layout.js');
-        cargarJS('user-logic.js');    // Lógica Usuario
+        cargarJS('user-logic.js');
     </script>
 
     <style>
         .editor-container { max-width: 900px; margin: 40px auto; padding: 20px; background: #1a1a1a; border-radius: 10px; border: 1px solid #333; }
-        .section-header { color: var(--accent-pink); border-bottom: 2px solid #333; padding-bottom: 10px; margin: 40px 0 20px; font-family: 'Oswald'; font-size: 1.5rem; }
+        .section-header { color: var(--accent-pink); border-bottom: 2px solid #333; padding-bottom: 10px; margin: 60px 0 20px; font-family: 'Oswald'; font-size: 1.8rem; text-align: center; }
         
-        /* BLOQUE DE CADA PLAN */
-        .plan-editor { background: #222; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 5px solid #444; }
-        .plan-editor h3 { margin-top: 0; color: #fff; font-family: 'Oswald'; }
+        .editor-group { margin-bottom: 25px; padding: 15px; background: #222; border-left: 4px solid #444; border-radius: 4px; }
+        .editor-group h3 { margin-top: 0; color: #aaa; font-size: 0.9rem; margin-bottom: 10px; }
         
+        label { display: block; margin-top: 10px; color: white; font-weight: bold; font-size: 0.9rem; }
+        input, textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #444; color: white; margin-top: 5px; border-radius: 5px; font-family: 'Montserrat'; }
+        textarea { height: 80px; resize: vertical; }
+        
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+
+        /* Estilos específicos Tarifas */
+        .plan-editor { background: #222; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 5px solid var(--accent-pink); }
         .price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
         .price-item label { font-size: 0.75rem; color: #888; text-transform: uppercase; }
-        
-        input, textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #444; color: white; margin-top: 5px; border-radius: 5px; font-family: 'Montserrat'; }
-        textarea { height: 60px; resize: vertical; }
 
         .btn-save { width: 100%; padding: 15px; background: #25D366; color: black; font-weight: bold; border: none; cursor: pointer; font-size: 1.1rem; margin-top: 30px; position: sticky; bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .btn-save:hover { background: #20bf5b; }
@@ -41,13 +52,43 @@
 <body>
 
     <div class="editor-container">
-        <h1 class="section-title">EDITOR DE TARIFAS</h1>
-        <p style="text-align:center; color:#888;">Gestiona tus 6 planes y sus 4 modalidades de pago.</p>
-        
-        <h2 class="section-header">GESTIÓN DE LOS 6 PLANES</h2>
-        <div id="planesContainer"></div>
+        <h1 class="section-title">GESTOR DE CONTENIDOS</h1>
 
-        <button onclick="guardarCambios()" class="btn-save">💾 GUARDAR TODO</button>
+        <h2 class="section-header">🧠 PÁGINA: FILOSOFÍA</h2>
+        
+        <div class="editor-group">
+            <h3>CABECERA PRINCIPAL</h3>
+            <label>Título</label>
+            <input type="text" id="filo_titulo">
+            <label>Texto Introducción</label>
+            <textarea id="filo_intro"></textarea>
+        </div>
+
+        <div class="row">
+            <div class="col editor-group">
+                <h3>TARJETA 1 (IZQ)</h3>
+                <input type="text" id="card1_titulo" placeholder="Título">
+                <textarea id="card1_texto" placeholder="Texto"></textarea>
+            </div>
+            <div class="col editor-group">
+                <h3>TARJETA 2 (CEN)</h3>
+                <input type="text" id="card2_titulo" placeholder="Título">
+                <textarea id="card2_texto" placeholder="Texto"></textarea>
+            </div>
+            <div class="col editor-group">
+                <h3>TARJETA 3 (DER)</h3>
+                <input type="text" id="card3_titulo" placeholder="Título">
+                <textarea id="card3_texto" placeholder="Texto"></textarea>
+            </div>
+        </div>
+
+
+        <h2 class="section-header">💸 PÁGINA: TARIFAS (6 PLANES)</h2>
+        <div id="planesContainer">
+            </div>
+
+
+        <button onclick="guardarCambios()" class="btn-save">💾 GUARDAR TODO (FILOSOFÍA + TARIFAS)</button>
     </div>
 
     <script type="module">
@@ -55,14 +96,26 @@
         import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        // 1. GENERAR HTML DINÁMICAMENTE (Para no copiar 6 veces el código)
+        // 1. GENERAR HTML DE TARIFAS (Loop 1 a 6)
         const container = document.getElementById('planesContainer');
         for(let i=1; i<=6; i++) {
             container.innerHTML += `
                 <div class="plan-editor">
-                    <h3>PLAN ${i}</h3>
-                    <input type="text" id="p${i}_nom" placeholder="Nombre del Plan (Ej: Pilates)">
-                    <textarea id="p${i}_desc" placeholder="Descripción breve..."></textarea>
+                    <h3 style="color:white; font-family:'Oswald'">PLAN ${i}</h3>
+                    
+                    <div class="row">
+                        <div class="col">
+                            <label>Nombre Plan</label>
+                            <input type="text" id="p${i}_nom" placeholder="Ej: Pilates">
+                        </div>
+                        <div class="col">
+                            <label>Subtítulo (Opcional)</label>
+                            <input type="text" id="p${i}_sub" placeholder="Ej: Sin matrícula">
+                        </div>
+                    </div>
+
+                    <label>Descripción / Notas</label>
+                    <textarea id="p${i}_desc" placeholder="Descripción breve..." style="height:50px"></textarea>
                     
                     <div class="price-grid">
                         <div class="price-item">
@@ -98,14 +151,30 @@
             }
         });
 
-        // 3. CARGAR
+        // 3. CARGAR TODO
         window.cargarDatos = async () => {
             try {
-                const docSnap = await getDoc(doc(db, "contenidos_web", "tarifas_v2")); // Usamos nueva colección v2
-                if (docSnap.exists()) {
-                    const d = docSnap.data();
+                // A) FILOSOFÍA
+                const docFilo = await getDoc(doc(db, "contenidos_web", "filosofia"));
+                if (docFilo.exists()) {
+                    const d = docFilo.data();
+                    document.getElementById('filo_titulo').value = d.titulo || "";
+                    document.getElementById('filo_intro').value = d.intro || "";
+                    document.getElementById('card1_titulo').value = d.c1_tit || "";
+                    document.getElementById('card1_texto').value = d.c1_txt || "";
+                    document.getElementById('card2_titulo').value = d.c2_tit || "";
+                    document.getElementById('card2_texto').value = d.c2_txt || "";
+                    document.getElementById('card3_titulo').value = d.c3_tit || "";
+                    document.getElementById('card3_texto').value = d.c3_txt || "";
+                }
+
+                // B) TARIFAS V2
+                const docTarifas = await getDoc(doc(db, "contenidos_web", "tarifas_v2"));
+                if (docTarifas.exists()) {
+                    const d = docTarifas.data();
                     for(let i=1; i<=6; i++) {
                         document.getElementById(`p${i}_nom`).value = d[`p${i}_nom`] || "";
+                        document.getElementById(`p${i}_sub`).value = d[`p${i}_sub`] || ""; // <-- CARGAR SUBTÍTULO
                         document.getElementById(`p${i}_desc`).value = d[`p${i}_desc`] || "";
                         document.getElementById(`p${i}_suelta`).value = d[`p${i}_suelta`] || "";
                         document.getElementById(`p${i}_trim`).value = d[`p${i}_trim`] || "";
@@ -113,26 +182,40 @@
                         document.getElementById(`p${i}_anual`).value = d[`p${i}_anual`] || "";
                     }
                 }
+
             } catch (e) { console.error(e); }
         };
 
-        // 4. GUARDAR
+        // 4. GUARDAR TODO
         window.guardarCambios = async () => {
             const btn = document.querySelector('.btn-save');
             btn.innerText = "⏳ Guardando...";
             
             try {
-                let datos = {};
-                for(let i=1; i<=6; i++) {
-                    datos[`p${i}_nom`] = document.getElementById(`p${i}_nom`).value;
-                    datos[`p${i}_desc`] = document.getElementById(`p${i}_desc`).value;
-                    datos[`p${i}_suelta`] = document.getElementById(`p${i}_suelta`).value;
-                    datos[`p${i}_trim`] = document.getElementById(`p${i}_trim`).value;
-                    datos[`p${i}_sem`] = document.getElementById(`p${i}_sem`).value;
-                    datos[`p${i}_anual`] = document.getElementById(`p${i}_anual`).value;
-                }
+                // A) Guardar Filosofía
+                await setDoc(doc(db, "contenidos_web", "filosofia"), {
+                    titulo: document.getElementById('filo_titulo').value,
+                    intro: document.getElementById('filo_intro').value,
+                    c1_tit: document.getElementById('card1_titulo').value,
+                    c1_txt: document.getElementById('card1_texto').value,
+                    c2_tit: document.getElementById('card2_titulo').value,
+                    c2_txt: document.getElementById('card2_texto').value,
+                    c3_tit: document.getElementById('card3_titulo').value,
+                    c3_txt: document.getElementById('card3_texto').value
+                });
 
-                await setDoc(doc(db, "contenidos_web", "tarifas_v2"), datos);
+                // B) Guardar Tarifas (Loop)
+                let datosPlanes = {};
+                for(let i=1; i<=6; i++) {
+                    datosPlanes[`p${i}_nom`] = document.getElementById(`p${i}_nom`).value;
+                    datosPlanes[`p${i}_sub`] = document.getElementById(`p${i}_sub`).value; // <-- GUARDAR SUBTÍTULO
+                    datosPlanes[`p${i}_desc`] = document.getElementById(`p${i}_desc`).value;
+                    datosPlanes[`p${i}_suelta`] = document.getElementById(`p${i}_suelta`).value;
+                    datosPlanes[`p${i}_trim`] = document.getElementById(`p${i}_trim`).value;
+                    datosPlanes[`p${i}_sem`] = document.getElementById(`p${i}_sem`).value;
+                    datosPlanes[`p${i}_anual`] = document.getElementById(`p${i}_anual`).value;
+                }
+                await setDoc(doc(db, "contenidos_web", "tarifas_v2"), datosPlanes);
                 
                 btn.innerText = "✅ ¡TODO GUARDADO!";
                 setTimeout(() => btn.innerText = "💾 GUARDAR TODO", 2000);
