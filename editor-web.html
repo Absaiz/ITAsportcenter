@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>ITA | Editor Web</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        const v = Date.now();
+        function cargarCSS(src) {
+            const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = src + '?v=' + v; document.head.appendChild(l);
+        }
+        function cargarJS(src) {
+            const s = document.createElement('script'); s.type = 'module'; s.src = src + '?v=' + v; document.head.appendChild(s);
+        }
+        cargarCSS('style.css');
+        cargarJS('layout.js');
+    </script>
+
+    <style>
+        .editor-container { max-width: 800px; margin: 40px auto; padding: 20px; background: #1a1a1a; border-radius: 10px; border: 1px solid #333; }
+        .editor-group { margin-bottom: 25px; padding: 15px; background: #222; border-left: 4px solid var(--accent-pink); border-radius: 4px; }
+        .editor-group h3 { margin-top: 0; color: #888; font-size: 0.9rem; }
+        
+        label { display: block; margin-top: 10px; color: white; font-weight: bold; }
+        input, textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #444; color: white; margin-top: 5px; border-radius: 5px; font-family: 'Montserrat'; }
+        textarea { height: 100px; resize: vertical; }
+        
+        .btn-save { width: 100%; padding: 15px; background: #25D366; color: black; font-weight: bold; border: none; cursor: pointer; font-size: 1.1rem; margin-top: 20px; transition: 0.3s; }
+        .btn-save:hover { background: #20bf5b; }
+    </style>
+</head>
+<body>
+
+    <div class="editor-container">
+        <h1 class="section-title">EDITOR DE CONTENIDOS</h1>
+        
+        <div class="editor-group">
+            <h3>PÁGINA: FILOSOFÍA</h3>
+            
+            <label>Título Principal</label>
+            <input type="text" id="filo_titulo" placeholder="Ej: Nuestra Esencia">
+            
+            <label>Texto Introducción</label>
+            <textarea id="filo_intro" placeholder="Texto largo..."></textarea>
+        </div>
+
+        <div class="editor-group">
+            <h3>TARJETA 1 (IZQUIERDA)</h3>
+            <label>Título</label>
+            <input type="text" id="card1_titulo">
+            <label>Texto</label>
+            <textarea id="card1_texto" style="height:60px"></textarea>
+        </div>
+
+        <div class="editor-group">
+            <h3>TARJETA 2 (CENTRO)</h3>
+            <label>Título</label>
+            <input type="text" id="card2_titulo">
+            <label>Texto</label>
+            <textarea id="card2_texto" style="height:60px"></textarea>
+        </div>
+
+        <div class="editor-group">
+            <h3>TARJETA 3 (DERECHA)</h3>
+            <label>Título</label>
+            <input type="text" id="card3_titulo">
+            <label>Texto</label>
+            <textarea id="card3_texto" style="height:60px"></textarea>
+        </div>
+
+        <button onclick="guardarCambios()" class="btn-save">💾 GUARDAR CAMBIOS</button>
+    </div>
+
+    <script type="module">
+        import { db, auth } from "./firebase-config.js";
+        import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        // 1. SEGURIDAD: Solo admin o adminWeb
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) window.location.href = "login.html";
+            
+            const snap = await getDoc(doc(db, "usuarios", user.uid));
+            const rol = snap.data().rol;
+            
+            if (rol !== 'admin' && rol !== 'adminWeb' && rol !== 'adminIT') {
+                document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px'>⛔ ACCESO DENEGADO</h1>";
+            } else {
+                cargarDatos();
+            }
+        });
+
+        // 2. CARGAR DATOS EXISTENTES
+        window.cargarDatos = async () => {
+            try {
+                const docRef = doc(db, "contenidos_web", "filosofia");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('filo_titulo').value = data.titulo || "";
+                    document.getElementById('filo_intro').value = data.intro || "";
+                    
+                    document.getElementById('card1_titulo').value = data.c1_tit || "";
+                    document.getElementById('card1_texto').value = data.c1_txt || "";
+                    
+                    document.getElementById('card2_titulo').value = data.c2_tit || "";
+                    document.getElementById('card2_texto').value = data.c2_txt || "";
+                    
+                    document.getElementById('card3_titulo').value = data.c3_tit || "";
+                    document.getElementById('card3_texto').value = data.c3_txt || "";
+                }
+            } catch (e) {
+                console.error("Error cargando:", e);
+            }
+        };
+
+        // 3. GUARDAR CAMBIOS
+        window.guardarCambios = async () => {
+            const btn = document.querySelector('.btn-save');
+            btn.innerText = "⏳ Guardando...";
+            
+            try {
+                await setDoc(doc(db, "contenidos_web", "filosofia"), {
+                    titulo: document.getElementById('filo_titulo').value,
+                    intro: document.getElementById('filo_intro').value,
+                    c1_tit: document.getElementById('card1_titulo').value,
+                    c1_txt: document.getElementById('card1_texto').value,
+                    c2_tit: document.getElementById('card2_titulo').value,
+                    c2_txt: document.getElementById('card2_texto').value,
+                    c3_tit: document.getElementById('card3_titulo').value,
+                    c3_txt: document.getElementById('card3_texto').value
+                });
+                
+                btn.innerText = "✅ ¡GUARDADO!";
+                setTimeout(() => btn.innerText = "💾 GUARDAR CAMBIOS", 2000);
+                
+            } catch (e) {
+                alert("Error: " + e.message);
+                btn.innerText = "❌ Error";
+            }
+        };
+    </script>
+</body>
+</html>

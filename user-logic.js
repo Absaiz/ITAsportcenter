@@ -47,6 +47,22 @@ const actualizarMenu = async (user) => {
                     }
                 }
 
+                // ... después del bloque de adminIT ...
+
+                // BOTÓN EDITOR WEB (Para 'admin', 'adminIT' y 'adminWeb')
+                if (rol === 'admin' || rol === 'adminIT' || rol === 'adminWeb') 
+                {
+                    if (!document.getElementById('editorBtnLink')) {
+                        const editorBtn = document.createElement('a');
+                        editorBtn.id = 'editorBtnLink';
+                        editorBtn.href = 'editor-web.html';
+                        editorBtn.innerText = '✏️ EDITOR';
+                        editorBtn.style.color = '#e1b12c'; // Color amarillo
+                        editorBtn.style.fontWeight = 'bold';
+                        navLinks.insertBefore(editorBtn, btnLogin);
+                    }
+                }
+
                 // BOTÓN LOGS (Solo para 'adminIT')
                 if (rol === 'adminIT') {
                     if (!document.getElementById('logsBtnLink')) {
