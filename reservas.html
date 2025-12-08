@@ -223,6 +223,8 @@
                 let creditosDisponibles = 0;
                 let bolsaCreditos = userData.creditos_detalle || {};
                 
+                
+
                 // Si no tiene bolsa nueva pero tiene saldo antiguo, asumimos que es Fuerza
                 if (typeof userData.creditos === 'number' && bolsaCreditos.fuerza === undefined) {
                     bolsaCreditos.fuerza = userData.creditos;
@@ -231,6 +233,7 @@
                 creditosDisponibles = bolsaCreditos[tipoClase] || 0;
 
                 if (creditosDisponibles < 1) {
+                    registrarLog(currentUser.email, "RESERVA", `Intento Reserva, no creditos: ${nombreClase} (${tipoClase})`);
                     alert(`⛔ No tienes créditos de ${tipoClase.toUpperCase()}. Contacta con el centro.`);
                     return;
                 }
@@ -260,6 +263,8 @@
                 await updateDoc(claseRef, {
                     apuntados: arrayUnion(currentUser.uid)
                 });
+
+                registrarLog(currentUser.email, "RESERVA", `Reservó: ${nombreClase} (${tipoClase})`);
 
                 alert("✅ ¡Reserva confirmada!");
                 cargarClases(); // Recargar la lista
