@@ -1,13 +1,33 @@
-// layout.js - VERSIÓN BLINDADA (Funciona siempre, llegue tarde o pronto)
+// layout.js - VERSIÓN "APP NATIVA" (Anti-Caché + iOS Fix)
 
-// 1. FORZAR LA CARGA DE ESTILOS
+// 1. FORZAR LA CARGA DE ESTILOS Y MANIFEST (Anti-Caché)
 const version = Date.now(); 
-const link = document.createElement("link");
-link.rel = "stylesheet";
-link.href = `style.css?v=${version}`; 
-document.head.appendChild(link);
 
-// 2. EL MENÚ (Correcto)
+// A) Estilos
+const linkCSS = document.createElement("link");
+linkCSS.rel = "stylesheet";
+linkCSS.href = `style.css?v=${version}`; 
+document.head.appendChild(linkCSS);
+
+// B) Manifest (Vital para iPhone/Android)
+const linkManifest = document.createElement("link");
+linkManifest.rel = "manifest";
+linkManifest.href = `manifest.json?v=${version}`; // Forzamos versión también aquí
+document.head.appendChild(linkManifest);
+
+// C) Metaetiquetas para iPhone (Full Screen)
+const metaApple = document.createElement("meta");
+metaApple.name = "apple-mobile-web-app-capable";
+metaApple.content = "yes";
+document.head.appendChild(metaApple);
+
+const metaStatus = document.createElement("meta");
+metaStatus.name = "apple-mobile-web-app-status-bar-style";
+metaStatus.content = "black-translucent";
+document.head.appendChild(metaStatus);
+
+
+// 2. EL MENÚ HTML
 const menuHTML = `
     <nav> 
         <a href="index.html" class="nav-logo">
@@ -30,7 +50,7 @@ const menuHTML = `
     </nav>
 `;
 
-// 3. EL FOOTER (Correcto)
+// 3. EL FOOTER HTML
 const footerHTML = `
     <footer>
         <div class="container">
@@ -41,21 +61,21 @@ const footerHTML = `
     </footer>
 `;
 
-// --- FUNCIÓN MAESTRA (PINTAR TODO) ---
+// --- FUNCIÓN MAESTRA ---
 function iniciarLayout() {
-    console.log("🚀 EJECUTANDO LAYOUT: Pintando menú y footer...");
+    console.log("🚀 MODO APP: Iniciando interfaz...");
 
-    // a) Limpieza de seguridad
+    // Limpieza previa
     const oldNav = document.querySelector('nav');
     if(oldNav) oldNav.remove();
     const oldFooter = document.querySelector('footer');
     if(oldFooter) oldFooter.remove();
 
-    // b) Inyectar HTML
+    // Inyectar HTML
     document.body.insertAdjacentHTML('afterbegin', menuHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
-    // c) Marcar enlace activo
+    // Marcar activo
     const currentPage = window.location.pathname.split("/").pop();
     const links = document.querySelectorAll('.nav-links a');
     links.forEach(link => {
@@ -64,48 +84,38 @@ function iniciarLayout() {
         }
     });
 
-    // d) Cargar lógica de usuarios
+    // Cargar lógica de usuarios (siempre fresca)
     import(`./auth.js?v=${version}`)
         .then(() => console.log("Usuario cargado"))
         .catch(() => console.log("Modo invitado"));
-    
-    // e) Activar Modo App iPhone (Opcional, si lo quieres)
-    activarModoApp();
 }
 
-// 4. EL DETECTOR INTELIGENTE (ESTO ES LO QUE ARREGLA EL PROBLEMA)
-// Preguntamos: "¿La página sigue cargando?"
+// 4. EJECUCIÓN INMEDIATA (Sin esperar)
 if (document.readyState === "loading") {
-    // Si sigue cargando, esperamos.
     document.addEventListener("DOMContentLoaded", iniciarLayout);
 } else {
-    // Si ya terminó (que es lo que te está pasando), ejecutamos YA.
     iniciarLayout();
 }
 
-// 5. MODO APP Y MÓVIL
+// 5. FUNCIONES GLOBALES
 window.toggleMenu = function() {
     var menu = document.getElementById("navLinks");
     if (menu) menu.classList.toggle("active");
 }
 
-function activarModoApp() {
-    const metas = [
-        { name: 'apple-mobile-web-app-capable', content: 'yes' },
-        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
-    ];
-    metas.forEach(m => {
-        if (!document.querySelector(`meta[name="${m.name}"]`)) {
-            const meta = document.createElement('meta');
-            meta.name = m.name; meta.content = m.content;
-            document.head.appendChild(meta);
-        }
-    });
-    document.addEventListener('click', function(e) {
-        const anchor = e.target.closest('a');
-        if (anchor && anchor.href && anchor.target !== '_blank' && anchor.hostname === window.location.hostname) {
-            e.preventDefault();
-            window.location.href = anchor.href;
-        }
-    }, false);
-}
+// 6. HACK NAVEGACIÓN IOS (Se ejecuta YA, no espera a cargar)
+// Esto intercepta cualquier clic en un enlace y obliga al iPhone a no abrir Safari
+document.addEventListener('click', function(e) {
+    // Buscamos si el clic fue en un enlace (<a>)
+    const anchor = e.target.closest('a');
+    
+    // Si es un enlace interno y no es para abrir en pestaña nueva
+    if (anchor && anchor.href && anchor.target !== '_blank' && anchor.hostname === window.location.hostname) {
+        
+        // Evitamos que el navegador haga lo suyo (abrir ventana nueva)
+        e.preventDefault();
+        
+        // Cambiamos la URL manualmente dentro de la misma ventana
+        window.location.href = anchor.href;
+    }
+}, false);
