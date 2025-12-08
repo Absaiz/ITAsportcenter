@@ -2,7 +2,17 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="imagen/logoico.png">
+    <link rel="icon" type="image/png" href="imagen/logoico.png">
+
     <title>ITA | Editor Web</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     
@@ -14,9 +24,10 @@
         function cargarJS(src) {
             const s = document.createElement('script'); s.type = 'module'; s.src = src + '?v=' + v; document.head.appendChild(s);
         }
+        
+        // Cargar recursos frescos
         cargarCSS('style.css');
         cargarJS('layout.js');
-        cargarJS('user-logic.js');
     </script>
 
     <style>
@@ -128,7 +139,7 @@
             }
         });
 
-        // 2. CARGAR (Ahora lee 2 documentos: filosofia y tarifas)
+        // 2. CARGAR
         window.cargarDatos = async () => {
             try {
                 // Filosofía
@@ -168,13 +179,12 @@
             } catch (e) { console.error(e); }
         };
 
-        // 3. GUARDAR (Guarda en 2 documentos a la vez)
+        // 3. GUARDAR
         window.guardarCambios = async () => {
             const btn = document.querySelector('.btn-save');
             btn.innerText = "⏳ Guardando...";
             
             try {
-                // Guardar Filosofía
                 await setDoc(doc(db, "contenidos_web", "filosofia"), {
                     titulo: document.getElementById('filo_titulo').value,
                     intro: document.getElementById('filo_intro').value,
@@ -186,7 +196,6 @@
                     c3_txt: document.getElementById('card3_texto').value
                 });
 
-                // Guardar Tarifas
                 await setDoc(doc(db, "contenidos_web", "tarifas"), {
                     p1_nom: document.getElementById('plan1_nombre').value,
                     p1_pre: document.getElementById('plan1_precio').value,
