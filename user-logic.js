@@ -25,34 +25,42 @@ const actualizarMenu = async (user) => {
         btnLogin.style.color = "white";
         btnLogin.onclick = null; 
 
-        // --- ZONA ADMIN (La Magia) ---
+// --- ZONA ADMIN Y IT ---
         try {
-            // Preguntamos a la base de datos qué rol tiene este usuario
             const docRef = doc(db, "usuarios", user.uid);
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                
-                // Si el usuario tiene rol "admin", inyectamos el botón
-                if (data.rol === 'admin') {
-                    // Evitamos duplicados (si ya existe, no lo creamos otra vez)
+                const rol = data.rol;
+
+                // BOTÓN ADMIN (Para 'admin' y 'adminIT')
+                if (rol === 'admin' || rol === 'adminIT') {
                     if (!document.getElementById('adminBtnLink')) {
                         const adminBtn = document.createElement('a');
                         adminBtn.id = 'adminBtnLink';
                         adminBtn.href = 'admin.html';
-                        adminBtn.innerText = 'ADMINISTRACIÓN';
-                        adminBtn.style.color = '#ff4444'; // Color rojo para destacar
+                        adminBtn.innerText = 'ADMIN';
+                        adminBtn.style.color = '#ff4444';
                         adminBtn.style.fontWeight = 'bold';
-                        
-                        // Lo insertamos justo antes del botón de perfil
                         navLinks.insertBefore(adminBtn, btnLogin);
                     }
                 }
+
+                // BOTÓN LOGS (Solo para 'adminIT')
+                if (rol === 'adminIT') {
+                    if (!document.getElementById('logsBtnLink')) {
+                        const logsBtn = document.createElement('a');
+                        logsBtn.id = 'logsBtnLink';
+                        logsBtn.href = 'it-logs.html';
+                        logsBtn.innerText = '🕵️ LOGS';
+                        logsBtn.style.color = '#00d2d3'; // Un color azul cian "Matrix"
+                        logsBtn.style.fontWeight = 'bold';
+                        navLinks.insertBefore(logsBtn, btnLogin);
+                    }
+                }
             }
-        } catch (error) {
-            console.error("Error verificando admin:", error);
-        }
+        } catch (error) { console.error(error); }
 
     } else {
         // --- USUARIO NO LOGUEADO ---

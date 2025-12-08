@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>ITA | LOGS IT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        const v = Date.now();
+        function cargarCSS(src) {
+            const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = src + '?v=' + v; document.head.appendChild(l);
+        }
+        function cargarJS(src) {
+            const s = document.createElement('script'); s.type = 'module'; s.src = src + '?v=' + v; document.head.appendChild(s);
+        }
+        cargarCSS('style.css');
+        cargarJS('layout.js');
+        cargarJS('user-logic.js');
+    </script>
+
+    <style>
+        .logs-container { max-width: 1000px; margin: 50px auto; padding: 20px; }
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background: #1a1a1a; border-radius: 10px; overflow: hidden; }
+        .log-table th { background: #333; color: var(--accent-pink); padding: 15px; text-align: left; font-family: 'Oswald'; }
+        .log-table td { padding: 12px 15px; border-bottom: 1px solid #333; color: #ddd; }
+        .log-table tr:hover { background: #222; }
+        
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .badge-login { background: #2e86de; color: white; }
+        .badge-reserva { background: #25D366; color: black; }
+        .badge-cancel { background: #ff4444; color: white; }
+        .badge-admin { background: #f0932b; color: black; }
+    </style>
+</head>
+<body>
+
+    <div class="logs-container">
+        <h1 class="section-title">REGISTRO DE ACTIVIDAD (IT)</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">Solo visible para Rol: adminIT</p>
+        
+        <button onclick="cargarLogs()" class="cta-button" style="margin-bottom: 20px; padding: 10px 20px; font-size: 0.8rem;">🔄 REFRESCAR</button>
+
+        <table class="log-table">
+            <thead>
+                <tr>
+                    <th>HORA</th>
+                    <th>USUARIO</th>
+                    <th>ACCIÓN</th>
+                    <th>DETALLES</th>
+                </tr>
+            </thead>
+            <tbody id="tablaLogs">
+                <tr><td colspan="4" style="text-align:center">Cargando datos...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { db, auth } from "./firebase-config.js";
+        import { collection, getDocs, query, orderBy, limit, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        // 1. PROTECCIÓN: Verificar si eres adminIT
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+                if (userSnap.exists() && userSnap.data().rol === "adminIT") {
+                    cargarLogs(); // Permiso concedido
+                } else {
+                    document.body.innerHTML = "<h1 style='color:white;text-align:center;margin-top:100px'>⛔ ACCESO DENEGADO</h1>";
+                }
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // 2. CARGAR LOGS
+        window.cargarLogs = async () => {
+            const tbody = document.getElementById('tablaLogs');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Cargando...</td></tr>';
+
+            try {
+                // Traer los últimos 50 eventos ordenados por fecha
+                const q = query(collection(db, "logs"), orderBy("fecha", "desc"), limit(50));
+                const snap = await getDocs(q);
+
+                let html = "";
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    
+                    // Formatear fecha
+                    const fechaObj = data.fecha.toDate(); // Firebase Timestamp a JS Date
+                    const fechaStr = fechaObj.toLocaleString();
+
+                    // Estilo de etiqueta
+                    let badgeClass = "";
+                    if(data.accion === "LOGIN") badgeClass = "badge-login";
+                    else if(data.accion === "RESERVA") badgeClass = "badge-reserva";
+                    else if(data.accion === "CANCELACIÓN") badgeClass = "badge-cancel";
+                    else badgeClass = "badge-admin";
+
+                    html += `
+                        <tr>
+                            <td style="color:#888; font-size:0.8rem">${fechaStr}</td>
+                            <td>${data.usuario}</td>
+                            <td><span class="badge ${badgeClass}">${data.accion}</span></td>
+                            <td>${data.detalles}</td>
+                        </tr>
+                    `;
+                });
+
+                tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center">No hay actividad reciente.</td></tr>';
+
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center">Error (Recuerda crear el índice si la consola lo pide)</td></tr>`;
+            }
+        }
+    </script>
+</body>
+</html>
