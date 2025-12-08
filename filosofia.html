@@ -2,72 +2,107 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="imagen/logoico.png">
     <link rel="icon" type="image/png" href="imagen/logoico.png">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ITA | Filosofía</title>
  
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
     <script>
-        // Generamos un número único (la hora actual)
         const v = Date.now();
-
-        // Función para cargar CSS con versión
-        function cargarCSS(archivo) {
-            var link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.href = archivo + "?v=" + v;
-            document.head.appendChild(link);
+        function cargarCSS(src) {
+            const l = document.createElement("link"); l.rel = "stylesheet"; l.href = src + "?v=" + v; document.head.appendChild(l);
         }
-
-        // Función para cargar JS con versión
-        function cargarJS(archivo) {
-            var script = document.createElement('script');
-            script.type = 'module';
-            script.src = archivo + '?v=' + v;
-            document.head.appendChild(script);
+        function cargarJS(src) {
+            const s = document.createElement('script'); s.type = 'module'; s.src = src + '?v=' + v; document.head.appendChild(s);
         }
-
-        // --- CARGAMOS TODO FRESCO ---
-        cargarCSS('style.css');       // Estilos
-        cargarJS('layout.js');        // Menú
-        cargarJS('user-logic.js');    // Lógica Usuario
+        cargarCSS('style.css');
+        cargarJS('layout.js');
+        cargarJS('user-logic.js');
     </script>
 </head>
 <body>
  
-
     <section class="container">
-        <h2 class="section-title">Nuestra Esencia</h2>
+        <h2 class="section-title" id="f_titulo">Cargando...</h2>
+        
         <div class="split-section">
             <div class="split-text">
-                <p>En ITA creemos que el entrenamiento no es solo físico, es mental. Nuestro método se basa en tres pilares para garantizar tu éxito:</p>
+                <p id="f_intro">Cargando la esencia de ITA...</p>
+                
                 <div class="cards-grid">
                     <div class="philosophy-card">
-                        <h3>IMAGINA</h3>
-                        <p>Visualiza tu objetivo. Todo empieza con la mentalidad correcta.</p>
+                        <h3 id="c1_tit">...</h3>
+                        <p id="c1_txt">...</p>
                     </div>
+                    
                     <div class="philosophy-card">
-                        <h3>TRANSFORMA</h3>
-                        <p>A través de la constancia y la programación de fuerza.</p>
+                        <h3 id="c2_tit">...</h3>
+                        <p id="c2_txt">...</p>
                     </div>
+                    
                     <div class="philosophy-card">
-                        <h3>ACTÚA</h3>
-                        <p>Entrenamiento real, sudor real, resultados reales.</p>
+                        <h3 id="c3_tit">...</h3>
+                        <p id="c3_txt">...</p>
                     </div>
                 </div>
             </div>
+            
             <div class="split-image">
                 <img src="imagen/image_7.png" alt="Filosofía ITA">
             </div>
         </div>
     </section>
+
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        async function cargarContenido() {
+            try {
+                // Buscamos el documento 'filosofia' en la colección 'contenidos_web'
+                const docRef = doc(db, "contenidos_web", "filosofia");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    // Rellenamos los huecos con lo que haya en la base de datos
+                    // Si un campo está vacío, ponemos un texto por defecto (||)
+                    document.getElementById('f_titulo').innerText = data.titulo || "Nuestra Esencia";
+                    document.getElementById('f_intro').innerText = data.intro || "Texto pendiente de redacción...";
+
+                    document.getElementById('c1_tit').innerText = data.c1_tit || "IMAGINA";
+                    document.getElementById('c1_txt').innerText = data.c1_txt || "Visualiza tu objetivo.";
+
+                    document.getElementById('c2_tit').innerText = data.c2_tit || "TRANSFORMA";
+                    document.getElementById('c2_txt').innerText = data.c2_txt || "Constancia y fuerza.";
+
+                    document.getElementById('c3_tit').innerText = data.c3_tit || "ACTÚA";
+                    document.getElementById('c3_txt').innerText = data.c3_txt || "Entrenamiento real.";
+                } else {
+                    console.log("No hay contenido guardado aún. Se usarán los textos por defecto.");
+                    // Aquí podrías forzar los textos por defecto si quieres
+                }
+
+            } catch (error) {
+                console.error("Error cargando textos:", error);
+            }
+        }
+
+        // Ejecutar al cargar
+        cargarContenido();
+    </script>
 
 </body>
 </html>
