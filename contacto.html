@@ -2,73 +2,113 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link rel="manifest" href="manifest.json">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     
+    <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="imagen/logoico.png">
     <link rel="icon" type="image/png" href="imagen/logoico.png">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>ITA | Contacto</title>
- 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
     <script>
-        // Generamos un número único (la hora actual)
         const v = Date.now();
-
-        // Función para cargar CSS con versión
-        function cargarCSS(archivo) {
-            var link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.href = archivo + "?v=" + v;
-            document.head.appendChild(link);
+        function cargarCSS(src) {
+            const l = document.createElement("link"); l.rel = "stylesheet"; l.href = src + '?v=' + v; document.head.appendChild(l);
         }
-
-        // Función para cargar JS con versión
-        function cargarJS(archivo) {
-            var script = document.createElement('script');
-            script.type = 'module';
-            script.src = archivo + '?v=' + v;
-            document.head.appendChild(script);
+        function cargarJS(src) {
+            const s = document.createElement('script'); s.type = 'module'; s.src = src + '?v=' + v; document.head.appendChild(s);
         }
-
-        // --- CARGAMOS TODO FRESCO ---
-        cargarCSS('style.css');       // Estilos
-        cargarJS('layout.js');        // Menú
-        cargarJS('user-logic.js');    // Lógica Usuario
+        cargarCSS('style.css');
+        cargarJS('layout.js');
+        cargarJS('user-logic.js');
     </script>
+
+    <style>
+        .contact-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        
+        /* DISEÑO DE COLUMNAS (INFO + MAPA) */
+        .contact-split { display: flex; flex-wrap: wrap; gap: 40px; margin-bottom: 50px; }
+        .contact-info { flex: 1; min-width: 300px; }
+        .contact-map { flex: 1; min-width: 300px; height: 400px; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+
+        .info-item { margin-bottom: 25px; }
+        .info-label { color: var(--accent-pink); font-family: 'Oswald'; font-size: 1.1rem; margin-bottom: 5px; }
+        .info-text { color: white; font-size: 1rem; line-height: 1.5; }
+
+        /* FORMULARIO */
+        .form-box { background: #1a1a1a; padding: 30px; border-radius: 10px; border: 1px solid #333; max-width: 600px; margin: 0 auto; }
+        input, textarea { width: 100%; padding: 12px; background: #111; border: 1px solid #444; color: white; margin-bottom: 15px; border-radius: 5px; font-family: 'Montserrat'; }
+        textarea { height: 120px; resize: vertical; }
+        
+        .btn-send { width: 100%; padding: 15px; background: white; color: black; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; font-family: 'Oswald'; letter-spacing: 1px; }
+        .btn-send:hover { background: var(--accent-pink); color: white; }
+
+        /* Mapa en escala de grises para que pegue con la web */
+        iframe { width: 100%; height: 100%; border: 0; filter: grayscale(100%) invert(90%) contrast(85%); }
+        .contact-map:hover iframe { filter: none; transition: 0.5s; } /* Color al pasar el ratón */
+    </style>
 </head>
 <body>
- 
-    <section class="container">
-        <h2 class="section-title">Únete al Equipo</h2>
-        <div class="contact-box">
-            <p style="margin-bottom: 20px; font-size: 1.2rem;">¿Tienes dudas sobre qué plan escoger?<br>¿Quieres probar una clase de Pilates?</p>
-            <p style="color: #aaa; margin-bottom: 30px;">Escríbenos por WhatsApp y te responderemos al instante.</p>
-            
-            <a href="https://wa.me/34627387758" class="cta-button" style="background-color: #25D366; border-color: #25D366;">
-                HABLAR POR WHATSAPP
-            </a>
 
-            <div style="margin-top: 50px; text-align: left;">
-                <h4 style="color:white; border-bottom: 1px solid #333; padding-bottom: 10px;">UBICACIÓN</h4>
-                <p style="margin-top: 10px;">Calle Severo Ochoa, 8<br>Burgos, CP 09007</p>
-                <p style="margin-top: 10px;">itasportcenterburgos@gmail.com</p>
+    <section class="container contact-container">
+        <h2 class="section-title">CONTACTO & UBICACIÓN</h2>
+        <p style="text-align:center; color:#888; margin-bottom:40px;">Ven a conocernos o escríbenos para empezar tu cambio.</p>
+
+        <div class="contact-split">
+            
+            <div class="contact-info">
+                <div class="info-item">
+                    <div class="info-label">📍 DIRECCIÓN</div>
+                    <div class="info-text">
+                        Calle Severo Ochoa, 8<br>
+                        09007 Burgos, España
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">📞 TELÉFONO</div>
+                    <div class="info-text">+34 627387758</div> </div>
+
+                <div class="info-item">
+                    <div class="info-label">📧 EMAIL</div>
+                    <div class="info-text">itasportcenterburgos@gmail.com</div> </div>
+
+                <div class="info-item">
+                    <div class="info-label">⏰ HORARIO ATENCIÓN</div>
+                    <div class="info-text">
+                        Lunes a Viernes: 07:00 - 22:00<br>
+                        Sábados: 09:00 - 14:00
+                    </div>
+                </div>
             </div>
+
+            <div class="contact-map">
+                <iframe 
+                    src="https://www.google.com/maps?q=Calle+Severo+Ochoa,+8,+09007+Burgos&output=embed" 
+                    allowfullscreen="" loading="lazy">
+                </iframe>
+            </div>
+
         </div>
+
+        <div class="form-box">
+            <h3 style="color:white; font-family:'Oswald'; margin-bottom:20px; text-align:center;">ENVÍANOS UN MENSAJE</h3>
+            <form onsubmit="event.preventDefault(); alert('¡Gracias! Te responderemos pronto.');">
+                <input type="text" placeholder="Tu Nombre" required>
+                <input type="email" placeholder="Tu Email" required>
+                <input type="tel" placeholder="Tu Teléfono">
+                <textarea placeholder="¿En qué podemos ayudarte?" required></textarea>
+                <button type="submit" class="btn-send">ENVIAR MENSAJE</button>
+            </form>
+        </div>
+
     </section>
 
-    <footer>
-        <div class="container">
-            <img src="imagen/logo.png" alt="ITA Small Logo" class="footer-logo">
-            <p>© 2025 ITA Sport Center. Todos los derechos reservados.</p>
-            <p style="margin-top:10px; font-size: 0.8rem; opacity: 0.6; letter-spacing: 2px;">IMAGINA • TRANSFORMA • ACTÚA</p>
-        </div>
-    </footer>
-
-  
 </body>
-</html>
+</html> 
+
+
+ 
