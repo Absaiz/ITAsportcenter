@@ -2,58 +2,56 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="imagen/logoico.png">
     <link rel="icon" type="image/png" href="imagen/logoico.png">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>ITA Sport Center</title>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     
     <script>
-        // Generamos un número único (la hora actual)
         const v = Date.now();
-
-        // Función para cargar CSS con versión
-        function cargarCSS(archivo) {
-            var link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.href = archivo + "?v=" + v;
-            document.head.appendChild(link);
+        function cargarCSS(src) {
+            const l = document.createElement("link"); l.rel = "stylesheet"; l.href = src + '?v=' + v; document.head.appendChild(l);
         }
-
-        // Función para cargar JS con versión
-        function cargarJS(archivo) {
-            var script = document.createElement('script');
-            script.type = 'module';
-            script.src = archivo + '?v=' + v;
-            document.head.appendChild(script);
+        function cargarJS(src) {
+            const s = document.createElement('script'); s.type = 'module'; s.src = src + '?v=' + v; document.head.appendChild(s);
         }
-
-        // --- CARGAMOS TODO FRESCO ---
-        cargarCSS('style.css');       // Estilos
-        cargarJS('layout.js');        // Menú
-        cargarJS('user-logic.js');    // Lógica Usuario
-        // --- CARGAMOS TODO FRESCO ---
+        
+        cargarCSS('style.css');  // Carga estilos
+        cargarJS('layout.js');   // Carga Menú, Footer y WhatsApp
+        cargarJS('user-logic.js'); // Carga lógica de usuario
     </script>
 </head>
 <body>
-    
+
+    <div id="intro-overlay">
+        <video id="intro-video" autoplay muted playsinline>
+            <source src="video/intro.mp4" type="video/mp4">
+        </video>
+        <button onclick="cerrarIntro()" class="skip-btn">SALTAR INTRO</button>
+    </div>
+
+
     <header class="hero">
-        <div class="container">
-            <img src="imagen/logo.png" alt="Logo ITA Gigante" class="hero-logo-img">
-            <h1 style="font-size: 2.5rem; margin-top: 10px;">TODO COMIENZA CON UN SUEÑO</h1>
-            <p style="font-size: 1.2rem; margin-bottom: 30px; color: #ddd;">Centro de Fuerza y Alto Rendimiento</p>
-            <a href="planes.html" class="cta-button">EMPIEZA TU CAMBIO</a>
+        <div class="hero-content">
+            <h1>TU MEJOR VERSIÓN COMIENZA AQUÍ</h1>
+            <p>Entrenamiento de fuerza y alta intensidad diseñado para resultados reales.</p>
+            <a href="reservas.html" class="cta-button">EMPEZAR AHORA</a>
         </div>
     </header>
 
-    <section class="container" style="margin-top: 60px; margin-bottom: 60px;">
+
+    <section class="container" id="sobre-mi" style="margin-top: 60px; margin-bottom: 60px;">
         <div class="split-section" style="display: flex; flex-wrap: wrap; gap: 40px; align-items: center;">
             
             <div class="split-image" style="flex: 1; min-width: 300px;">
@@ -61,7 +59,7 @@
             </div>
 
             <div class="split-text" style="flex: 1; min-width: 300px;">
-                <h2 class="section-title" style="text-align: left; margin-bottom: 10px;">HOLA, SOY LARA</h2>
+                <h2 class="section-title" style="text-align: left; margin-bottom: 10px;">HOLA, SOY [TU NOMBRE]</h2>
                 <h4 style="color: var(--accent-pink); font-family: 'Oswald'; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 1px;">TU ENTRENADORA PERSONAL</h4>
                 
                 <p style="color: #ddd; line-height: 1.6; margin-bottom: 15px;">
@@ -72,11 +70,68 @@
                     Mi enfoque combina la fuerza física con la mentalidad. No creo en las soluciones mágicas, creo en el trabajo constante y en disfrutar del proceso. ¿Estás lista para transformar tu vida?
                 </p>
 
-                <a href="filosofia.html" class="cta-button" style="display: inline-block; font-size: 0.9rem;">DESCUBRE MI FILOSOFÍA &rarr;</a>
+                <a href="filosofia.html" class="cta-button" style="display: inline-block; font-size: 0.9rem; background: transparent; border: 1px solid var(--accent-pink);">DESCUBRE MI FILOSOFÍA &rarr;</a>
             </div>
 
         </div>
     </section>
 
-    </body>
+
+    <section class="container features">
+        <div class="feature-card">
+            <h3>FUERZA</h3>
+            <p>Mejora tu composición corporal y potencia.</p>
+        </div>
+        <div class="feature-card">
+            <h3>CARDIO</h3>
+            <p>Resistencia y salud cardiovascular al límite.</p>
+        </div>
+        <div class="feature-card">
+            <h3>COMUNIDAD</h3>
+            <p>Entrena con gente que comparte tu pasión.</p>
+        </div>
+    </section>
+
+    <section class="container" style="text-align: center; margin: 80px auto;">
+        <h2 class="section-title">¿LISTO PARA EL CAMBIO?</h2>
+        <a href="planes.html" class="cta-button">VER TARIFAS</a>
+    </section>
+
+
+    <script>
+        // Comprobamos si ya han visto la intro en esta sesión
+        if (!sessionStorage.getItem('introVisto')) {
+            
+            const overlay = document.getElementById('intro-overlay');
+            const video = document.getElementById('intro-video');
+
+            // Función para desvanecer y quitar
+            window.cerrarIntro = function() {
+                overlay.classList.add('fade-out'); // Activa CSS transparencia
+                sessionStorage.setItem('introVisto', 'true'); // Marca como visto
+                
+                // Esperamos 1s a que el CSS termine la transición
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    video.pause(); // Paramos vídeo para ahorrar recursos
+                }, 1000);
+            }
+
+            // Cuando el vídeo termina, cerramos
+            video.onended = function() {
+                cerrarIntro();
+            };
+
+            // SEGURO DE VIDA: Si el vídeo falla o dura mucho, cerramos a los 6 segs
+            setTimeout(() => {
+                if(overlay.style.display !== 'none') cerrarIntro();
+            }, 6000);
+
+        } else {
+            // Si ya lo vieron, ocultamos directo
+            document.getElementById('intro-overlay').style.display = 'none';
+        }
+    </script>
+
+</body>
 </html>
