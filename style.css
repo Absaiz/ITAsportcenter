@@ -220,3 +220,49 @@ footer {
         display: flex;
     }
 }
+/* --- ESTILOS DE LA INTRO --- */
+#intro-overlay {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: #000; /* Fondo negro por si el vídeo tarda en cargar */
+    z-index: 99999; /* Por encima de TODO */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 1s ease-in-out; /* Transición suave de 1 segundo */
+}
+
+#intro-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Para que cubra la pantalla sin bordes negros */
+}
+
+/* Clase para hacer desaparecer la intro */
+.fade-out {
+    opacity: 0;
+    pointer-events: none; /* Para que puedas hacer clic en la web mientras desaparece */
+}
+
+/* Botón de saltar (discreto) */
+.skip-btn {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.5);
+    padding: 5px 15px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 20px;
+    font-family: 'Montserrat', sans-serif;
+    transition: 0.3s;
+}
+.skip-btn:hover {
+    background: white;
+    color: black;
+}
