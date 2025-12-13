@@ -210,159 +210,159 @@
         let todasLasClases = []; 
         let currentFilter = 'all';
         let fechaInicioVista = new Date(); 
-
-        // Reseteamos a las 00:00 de hoy
+        
+        // Reseteamos horas para evitar problemas de comparacion
         fechaInicioVista.setHours(0,0,0,0);
 
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            // Iniciamos carga
             cargarClases();
         });
 
-        // --- FUNCIÓN AUXILIAR: PARSEAR FECHAS (ESPAÑA vs ISO) ---
-        function parseFechaSegura(fechaStr, horaStr) {
+        // --- 1. FUNCIÓN MAESTRA PARA ENTENDER CUALQUIER FECHA ---
+        function parseFechaInteligente(fechaStr, horaStr = "00:00") {
             if (!fechaStr) return null;
             
             let dia, mes, anio;
             
-            // Caso 1: Formato YYYY-MM-DD (Estándar input date)
-            if (fechaStr.includes('-')) {
-                const partes = fechaStr.split('-');
-                if (partes[0].length === 4) { // YYYY-MM-DD
-                    anio = parseInt(partes[0]);
-                    mes = parseInt(partes[1]) - 1; // Meses en JS son 0-11
-                    dia = parseInt(partes[2]);
-                } else { // DD-MM-YYYY
-                    dia = parseInt(partes[0]);
-                    mes = parseInt(partes[1]) - 1;
-                    anio = parseInt(partes[2]);
-                }
-            } 
-            // Caso 2: Formato DD/MM/YYYY (Escrito a mano común)
-            else if (fechaStr.includes('/')) {
-                const partes = fechaStr.split('/');
+            // Normalizar separadores (convertir todo a guiones)
+            let fechaLimpia = fechaStr.replace(/\//g, '-'); 
+            let partes = fechaLimpia.split('-');
+
+            if (partes.length !== 3) return null;
+
+            // Detectar si es YYYY-MM-DD o DD-MM-YYYY
+            if (partes[0].length === 4) { 
+                // Formato ISO: 2025-12-31
+                anio = parseInt(partes[0]);
+                mes = parseInt(partes[1]) - 1; // Mes en JS empieza en 0
+                dia = parseInt(partes[2]);
+            } else { 
+                // Formato Español: 31-12-2025
                 dia = parseInt(partes[0]);
                 mes = parseInt(partes[1]) - 1;
                 anio = parseInt(partes[2]);
-            } else {
-                return null; // Formato desconocido
             }
 
-            // Añadir hora si existe
-            let hora = 0, minuto = 0;
-            if(horaStr) {
-                const hPartes = horaStr.split(':');
-                hora = parseInt(hPartes[0]);
-                minuto = parseInt(hPartes[1]);
-            }
-
-            const fechaObj = new Date(anio, mes, dia, hora, minuto);
-            return fechaObj.getTime(); // Devolver timestamp numérico
+            // Parsear hora
+            let [hora, minuto] = horaStr.split(':').map(n => parseInt(n));
+            
+            // Crear fecha válida
+            let fechaObj = new Date(anio, mes, dia, hora || 0, minuto || 0);
+            return fechaObj.getTime();
         }
 
+        // --- 2. CARGA DE CLASES ---
         async function cargarClases() {
             const container = document.getElementById('listaClases');
-            container.innerHTML = "<p style='text-align:center; color:#888;'>Cargando base de datos...</p>";
+            container.innerHTML = "<p style='text-align:center; color:#888;'>Cargando y sincronizando calendario...</p>";
             
             try {
-                // 1. Traemos TODO sin filtros de Firebase para evitar errores de índice
+                // Traemos TODO para filtrar en memoria (más seguro y rápido)
                 const querySnapshot = await getDocs(collection(db, "clases"));
                 
                 todasLasClases = [];
-                let totalEncontradas = 0;
+                console.log(`--- INICIO DIAGNÓSTICO (${querySnapshot.size} encontradas) ---`);
 
                 querySnapshot.forEach((doc) => {
-                    totalEncontradas++;
                     let data = doc.data();
                     data.id = doc.id;
 
-                    // CORRECCIÓN DE FECHA
-                    // Si no tiene timestamp o queremos asegurarnos, lo recalculamos
-                    const ts = parseFechaSegura(data.fecha, data.hora);
+                    // TRADUCIR FECHA
+                    const ts = parseFechaInteligente(data.fecha, data.hora);
+                    
                     if (ts) {
-                        data.timestamp = ts;
+                        data.timestamp = ts; // Guardamos el timestamp correcto
                         todasLasClases.push(data);
+                        console.log(`✅ Clase OK: ${data.nombre} | Fecha: ${data.fecha} -> Detectada: ${new Date(ts).toLocaleDateString()}`);
                     } else {
-                        console.warn("Clase con fecha inválida omitida:", data.nombre, data.fecha);
+                        console.warn(`❌ Fecha inválida omitida: ${data.fecha} en clase ${data.nombre}`);
                     }
                 });
 
-                // Ordenar por fecha
+                // Ordenar cronológicamente
                 todasLasClases.sort((a, b) => a.timestamp - b.timestamp);
 
                 if (todasLasClases.length === 0) {
-                     if (totalEncontradas > 0) {
-                         container.innerHTML = `<p style='text-align:center; color:orange'>⚠️ Hay ${totalEncontradas} clases en la BD pero las fechas tienen un formato incorrecto. Revisa que sean YYYY-MM-DD.</p>`;
-                     } else {
-                         container.innerHTML = "<p style='text-align:center'>📭 La base de datos de clases está vacía.</p>";
-                     }
-                     return;
+                    container.innerHTML = "<p style='text-align:center'>📭 No se encontraron clases válidas. Revisa las fechas en la base de datos.</p>";
+                    return;
                 }
+
+                // --- AUTO-ENFOQUE (MAGIA) ---
+                // Buscamos la primera clase que sea IGUAL o POSTERIOR a hoy
+                const hoy = new Date();
+                hoy.setHours(0,0,0,0);
+                
+                const primeraFutura = todasLasClases.find(c => c.timestamp >= hoy.getTime());
+
+                if (primeraFutura) {
+                    console.log("📍 Saltando a la fecha de la próxima clase:", primeraFutura.fecha);
+                    fechaInicioVista = new Date(primeraFutura.timestamp);
+                } else {
+                    // Si no hay futuras, mostramos la última del pasado para que no salga vacío
+                    console.log("📍 Solo hay clases pasadas, mostrando la última.");
+                    fechaInicioVista = new Date(todasLasClases[todasLasClases.length - 1].timestamp);
+                }
+
+                // Ajustar al lunes de esa semana (opcional) o simplemente iniciar ese día
+                // Para simplificar, iniciamos la vista exactamente el día de la clase
+                fechaInicioVista.setHours(0,0,0,0);
 
                 renderizarClases();
 
             } catch (error) {
-                console.error("Error grave:", error);
-                container.innerHTML = `<p style='text-align:center; color:red;'>Error de conexión: ${error.message}</p>`;
+                console.error("Error CRÍTICO:", error);
+                container.innerHTML = `<p style='text-align:center; color:red;'>Error de sistema: ${error.message}</p>`;
             }
         }
 
+        // --- 3. RENDERIZADO ---
         window.renderizarClases = function() {
             const container = document.getElementById('listaClases');
             container.innerHTML = "";
 
-            // Calcular rango visual (Semana actual)
+            // Definir ventana de visualización (7 días desde la fecha seleccionada)
             const fechaFinVista = new Date(fechaInicioVista);
-            fechaFinVista.setDate(fechaInicioVista.getDate() + 7);
+            fechaFinVista.setDate(fechaInicioVista.getDate() + 7); // Mostrar 7 días
 
-            // Texto fecha
+            // Texto rango fechas
             const opt = { day: 'numeric', month: 'short' };
             document.getElementById('rangoFechas').innerText = 
                 `${fechaInicioVista.toLocaleDateString('es-ES', opt)} - ${fechaFinVista.toLocaleDateString('es-ES', opt)}`;
 
-            // FILTRADO LOCAL
-            const clasesFiltradas = todasLasClases.filter(clase => {
-                // 1. Filtro Tipo
+            // Filtrar
+            const clasesVisibles = todasLasClases.filter(clase => {
+                // Filtro Tipo
                 if (currentFilter !== 'all' && clase.tipo.toLowerCase() !== currentFilter.toLowerCase()) return false;
                 
-                // 2. Filtro Tiempo (Dentro de la semana seleccionada)
+                // Filtro Tiempo (Ventana de 7 días)
+                // Usamos un pequeño margen de error para incluir clases del mismo día exacto
                 return clase.timestamp >= fechaInicioVista.getTime() && clase.timestamp < fechaFinVista.getTime();
             });
 
-            if (clasesFiltradas.length === 0) {
-                // DIAGNÓSTICO INTELIGENTE
-                // Si no hay clases esta semana, miramos si hay clases en el futuro para avisar al usuario
-                const futuras = todasLasClases.filter(c => c.timestamp >= fechaFinVista.getTime());
-                const pasadas = todasLasClases.filter(c => c.timestamp < fechaInicioVista.getTime());
-                
-                let mensajeExtra = "";
-                if (futuras.length > 0) mensajeExtra = `<br><small style="color:#ff007f; cursor:pointer" onclick="cambiarSemana(1)">👉 Hay ${futuras.length} clases más adelante. Dale a 'Siguiente'.</small>`;
-                else if (pasadas.length > 0) mensajeExtra = `<br><small style="color:#aaa">Hay ${pasadas.length} clases pasadas.</small>`;
-
+            if (clasesVisibles.length === 0) {
                 container.innerHTML = `
                     <div style="text-align:center; padding: 40px; color: #666;">
-                        <i class="bi bi-calendar4-week" style="font-size: 2rem;"></i>
-                        <p>No hay clases visibles esta semana.</p>
-                        ${mensajeExtra}
+                        <i class="bi bi-calendar-event" style="font-size: 2rem;"></i>
+                        <p>No hay clases de <b>${currentFilter.toUpperCase()}</b> en esta semana.</p>
+                        <button onclick="cambiarSemana(1)" class="btn-book" style="margin-top:10px; background:#333; color:white;">Ver Siguiente Semana</button>
                     </div>`;
                 return;
             }
 
             let lastDate = "";
 
-            clasesFiltradas.forEach(data => {
+            clasesVisibles.forEach(data => {
                 const plazasOcupadas = data.apuntados ? data.apuntados.length : 0;
                 const plazasLibres = data.plazas_totales - plazasOcupadas;
                 const estaApuntado = currentUser && data.apuntados && data.apuntados.includes(currentUser.uid);
                 
-                // Divisor de Fecha
+                // Separador de fecha bonito
                 if(data.fecha !== lastDate) {
                     let fechaTexto = data.fecha;
                     try {
                         const f = new Date(data.timestamp);
-                        const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
-                        fechaTexto = f.toLocaleDateString('es-ES', opciones);
+                        fechaTexto = f.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
                         fechaTexto = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
                     } catch(e){}
                     
@@ -370,7 +370,6 @@
                     lastDate = data.fecha;
                 }
 
-                // Botón
                 let btnText = "RESERVAR";
                 let btnDisabled = false;
                 
@@ -384,7 +383,7 @@
 
                 let tipoClass = "type-" + (data.tipo ? data.tipo.toLowerCase() : 'fuerza');
 
-                const html = `
+                container.innerHTML += `
                     <div class="class-card ${tipoClass}">
                         <div class="class-info">
                             <h3>${data.nombre}</h3>
@@ -403,10 +402,10 @@
                         </button>
                     </div>
                 `;
-                container.innerHTML += html;
             });
         }
 
+        // --- CONTROLES ---
         window.filtrarTipo = function(tipo, btn) {
             currentFilter = tipo;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -425,8 +424,10 @@
                 return;
             }
 
-            const confirmacion = confirm(`¿Gastar 1 crédito de ${tipoClase.toUpperCase()}?`);
-            if (!confirmacion) return;
+            // Normalización de tipo
+            const tipoKey = tipoClase ? tipoClase.toLowerCase() : 'fuerza';
+            
+            if(!confirm(`¿Gastar 1 crédito de ${tipoKey.toUpperCase()}?`)) return;
 
             try {
                 const userRef = doc(db, "usuarios", currentUser.uid);
@@ -434,19 +435,19 @@
                 const userData = userSnap.data();
 
                 let bolsa = userData.creditos_detalle || {};
-                // Fallback para usuarios viejos
+                // Compatibilidad saldo antiguo
                 if (typeof userData.creditos === 'number' && bolsa.fuerza === undefined) {
                     bolsa.fuerza = userData.creditos;
                 }
 
-                const tipoKey = tipoClase.toLowerCase();
                 const creds = bolsa[tipoKey] || 0;
 
                 if (creds < 1) {
-                    alert(`⛔ No tienes créditos de ${tipoClase}.`);
+                    alert(`⛔ No tienes créditos de ${tipoKey.toUpperCase()}.`);
                     return;
                 }
 
+                // Check plazas
                 const claseRef = doc(db, "clases", claseId);
                 const claseSnap = await getDoc(claseRef);
                 
@@ -456,7 +457,7 @@
                     return;
                 }
 
-                // Descontar y reservar
+                // Ejecutar transacción
                 bolsa[tipoKey] = creds - 1;
                 await updateDoc(userRef, { creditos_detalle: bolsa, creditos: bolsa.fuerza });
                 await updateDoc(claseRef, { apuntados: arrayUnion(currentUser.uid) });
@@ -464,7 +465,7 @@
                 registrarLog(currentUser.email, "RESERVA", `Clase: ${nombreClase}`);
                 alert("✅ ¡Reserva confirmada!");
                 
-                // Actualizar localmente para feedback instantáneo
+                // Actualizar localmente
                 const idx = todasLasClases.findIndex(c => c.id === claseId);
                 if(idx !== -1) {
                     if(!todasLasClases[idx].apuntados) todasLasClases[idx].apuntados = [];
