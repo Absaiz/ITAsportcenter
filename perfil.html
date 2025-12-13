@@ -456,7 +456,7 @@
             try {
                 const claseRef = doc(db, "clases", claseId);
                 await updateDoc(claseRef, {
-                    apuntados: arrayRemove(currentUser.uid)
+                    apuntados: arrayRemove(currentUser.uid) 
                 });
 
                 const userRef = doc(db, "usuarios", currentUser.uid);
