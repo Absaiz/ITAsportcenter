@@ -200,7 +200,7 @@
         </div>
     </div>
 
-   <script type="module">
+<script type="module">
         import { db, auth } from "./firebase-config.js";
         import { registrarLog } from "./logger.js";
         import { collection, getDocs, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -210,58 +210,101 @@
         let todasLasClases = []; 
         let currentFilter = 'all';
         let fechaInicioVista = new Date(); 
-        
-        // Ajustamos al principio del día de hoy (00:00:00)
+
+        // Reseteamos a las 00:00 de hoy
         fechaInicioVista.setHours(0,0,0,0);
 
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            cargarClasesRobust();
+            // Iniciamos carga
+            cargarClases();
         });
 
-        // --- FUNCIÓN DE CARGA ROBUSTA (Sin filtros complejos de DB) ---
-        async function cargarClasesRobust() {
+        // --- FUNCIÓN AUXILIAR: PARSEAR FECHAS (ESPAÑA vs ISO) ---
+        function parseFechaSegura(fechaStr, horaStr) {
+            if (!fechaStr) return null;
+            
+            let dia, mes, anio;
+            
+            // Caso 1: Formato YYYY-MM-DD (Estándar input date)
+            if (fechaStr.includes('-')) {
+                const partes = fechaStr.split('-');
+                if (partes[0].length === 4) { // YYYY-MM-DD
+                    anio = parseInt(partes[0]);
+                    mes = parseInt(partes[1]) - 1; // Meses en JS son 0-11
+                    dia = parseInt(partes[2]);
+                } else { // DD-MM-YYYY
+                    dia = parseInt(partes[0]);
+                    mes = parseInt(partes[1]) - 1;
+                    anio = parseInt(partes[2]);
+                }
+            } 
+            // Caso 2: Formato DD/MM/YYYY (Escrito a mano común)
+            else if (fechaStr.includes('/')) {
+                const partes = fechaStr.split('/');
+                dia = parseInt(partes[0]);
+                mes = parseInt(partes[1]) - 1;
+                anio = parseInt(partes[2]);
+            } else {
+                return null; // Formato desconocido
+            }
+
+            // Añadir hora si existe
+            let hora = 0, minuto = 0;
+            if(horaStr) {
+                const hPartes = horaStr.split(':');
+                hora = parseInt(hPartes[0]);
+                minuto = parseInt(hPartes[1]);
+            }
+
+            const fechaObj = new Date(anio, mes, dia, hora, minuto);
+            return fechaObj.getTime(); // Devolver timestamp numérico
+        }
+
+        async function cargarClases() {
             const container = document.getElementById('listaClases');
-            container.innerHTML = "<p style='text-align:center'>Cargando datos...</p>";
+            container.innerHTML = "<p style='text-align:center; color:#888;'>Cargando base de datos...</p>";
             
             try {
-                // 1. Traemos TODAS las clases (para evitar error de índice)
+                // 1. Traemos TODO sin filtros de Firebase para evitar errores de índice
                 const querySnapshot = await getDocs(collection(db, "clases"));
                 
                 todasLasClases = [];
-                
+                let totalEncontradas = 0;
+
                 querySnapshot.forEach((doc) => {
+                    totalEncontradas++;
                     let data = doc.data();
                     data.id = doc.id;
 
-                    // 2. CORRECCIÓN AUTOMÁTICA DE FECHA
-                    // Si no tiene timestamp, lo creamos a partir de la fecha (string)
-                    if (!data.timestamp && data.fecha) {
-                        // Intenta convertir "2024-05-12" + "10:00" a timestamp
-                        // Asumimos formato fecha ISO "YYYY-MM-DD" o similar
-                        let fechaStr = data.fecha; 
-                        let horaStr = data.hora || "00:00";
-                        let fechaObj = new Date(fechaStr + "T" + horaStr);
-                        
-                        if(isNaN(fechaObj.getTime())) {
-                            // Si falla, probamos solo la fecha
-                             fechaObj = new Date(fechaStr);
-                        }
-                        data.timestamp = fechaObj.getTime();
+                    // CORRECCIÓN DE FECHA
+                    // Si no tiene timestamp o queremos asegurarnos, lo recalculamos
+                    const ts = parseFechaSegura(data.fecha, data.hora);
+                    if (ts) {
+                        data.timestamp = ts;
+                        todasLasClases.push(data);
+                    } else {
+                        console.warn("Clase con fecha inválida omitida:", data.nombre, data.fecha);
                     }
-
-                    todasLasClases.push(data);
                 });
 
-                // 3. Ordenar manualmente por timestamp
+                // Ordenar por fecha
                 todasLasClases.sort((a, b) => a.timestamp - b.timestamp);
 
-                console.log("Clases cargadas:", todasLasClases.length); // DEBUG
+                if (todasLasClases.length === 0) {
+                     if (totalEncontradas > 0) {
+                         container.innerHTML = `<p style='text-align:center; color:orange'>⚠️ Hay ${totalEncontradas} clases en la BD pero las fechas tienen un formato incorrecto. Revisa que sean YYYY-MM-DD.</p>`;
+                     } else {
+                         container.innerHTML = "<p style='text-align:center'>📭 La base de datos de clases está vacía.</p>";
+                     }
+                     return;
+                }
+
                 renderizarClases();
 
             } catch (error) {
-                console.error("Error cargando clases:", error);
-                container.innerHTML = `<p style='text-align:center; color:red;'>Error: ${error.message}</p>`;
+                console.error("Error grave:", error);
+                container.innerHTML = `<p style='text-align:center; color:red;'>Error de conexión: ${error.message}</p>`;
             }
         }
 
@@ -269,34 +312,39 @@
             const container = document.getElementById('listaClases');
             container.innerHTML = "";
 
-            // Calcular fecha fin (Inicio + 7 días)
+            // Calcular rango visual (Semana actual)
             const fechaFinVista = new Date(fechaInicioVista);
             fechaFinVista.setDate(fechaInicioVista.getDate() + 7);
 
-            // Actualizar texto rango visual
-            const opcionesFecha = { day: 'numeric', month: 'short' };
+            // Texto fecha
+            const opt = { day: 'numeric', month: 'short' };
             document.getElementById('rangoFechas').innerText = 
-                `${fechaInicioVista.toLocaleDateString('es-ES', opcionesFecha)} - ${fechaFinVista.toLocaleDateString('es-ES', opcionesFecha)}`;
+                `${fechaInicioVista.toLocaleDateString('es-ES', opt)} - ${fechaFinVista.toLocaleDateString('es-ES', opt)}`;
 
-            // FILTRADO EN MEMORIA (JAVASCRIPT)
+            // FILTRADO LOCAL
             const clasesFiltradas = todasLasClases.filter(clase => {
-                if (!clase.timestamp) return false; // Si no hay fecha válida, ignorar
-
-                // 1. Filtro Tipo (Ignora mayúsculas/minúsculas)
-                if (currentFilter !== 'all') {
-                    if (clase.tipo.toLowerCase() !== currentFilter.toLowerCase()) return false;
-                }
+                // 1. Filtro Tipo
+                if (currentFilter !== 'all' && clase.tipo.toLowerCase() !== currentFilter.toLowerCase()) return false;
                 
-                // 2. Filtro Fecha (Semana actual)
+                // 2. Filtro Tiempo (Dentro de la semana seleccionada)
                 return clase.timestamp >= fechaInicioVista.getTime() && clase.timestamp < fechaFinVista.getTime();
             });
 
             if (clasesFiltradas.length === 0) {
+                // DIAGNÓSTICO INTELIGENTE
+                // Si no hay clases esta semana, miramos si hay clases en el futuro para avisar al usuario
+                const futuras = todasLasClases.filter(c => c.timestamp >= fechaFinVista.getTime());
+                const pasadas = todasLasClases.filter(c => c.timestamp < fechaInicioVista.getTime());
+                
+                let mensajeExtra = "";
+                if (futuras.length > 0) mensajeExtra = `<br><small style="color:#ff007f; cursor:pointer" onclick="cambiarSemana(1)">👉 Hay ${futuras.length} clases más adelante. Dale a 'Siguiente'.</small>`;
+                else if (pasadas.length > 0) mensajeExtra = `<br><small style="color:#aaa">Hay ${pasadas.length} clases pasadas.</small>`;
+
                 container.innerHTML = `
                     <div style="text-align:center; padding: 40px; color: #666;">
-                        <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
-                        <p>No hay clases para esta semana.</p>
-                        <small>Prueba a dar a "Siguiente" -></small>
+                        <i class="bi bi-calendar4-week" style="font-size: 2rem;"></i>
+                        <p>No hay clases visibles esta semana.</p>
+                        ${mensajeExtra}
                     </div>`;
                 return;
             }
@@ -308,16 +356,17 @@
                 const plazasLibres = data.plazas_totales - plazasOcupadas;
                 const estaApuntado = currentUser && data.apuntados && data.apuntados.includes(currentUser.uid);
                 
-                // Separador de Fechas
+                // Divisor de Fecha
                 if(data.fecha !== lastDate) {
-                    // Formateo bonito de fecha
-                    let fechaBonita = data.fecha;
+                    let fechaTexto = data.fecha;
                     try {
                         const f = new Date(data.timestamp);
-                        fechaBonita = f.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-                    } catch(e) {}
-
-                    container.innerHTML += `<div class="date-divider">${fechaBonita.toUpperCase()}</div>`;
+                        const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
+                        fechaTexto = f.toLocaleDateString('es-ES', opciones);
+                        fechaTexto = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
+                    } catch(e){}
+                    
+                    container.innerHTML += `<div class="date-divider">${fechaTexto}</div>`;
                     lastDate = data.fecha;
                 }
 
@@ -333,8 +382,7 @@
                     btnDisabled = true;
                 }
 
-                // Clases CSS por tipo
-                let tipoClass = "type-" + data.tipo.toLowerCase(); 
+                let tipoClass = "type-" + (data.tipo ? data.tipo.toLowerCase() : 'fuerza');
 
                 const html = `
                     <div class="class-card ${tipoClass}">
@@ -342,7 +390,7 @@
                             <h3>${data.nombre}</h3>
                             <div class="class-meta">
                                 <span><i class="bi bi-clock"></i> ${data.hora}</span>
-                                <span><i class="bi bi-tag"></i> ${data.tipo.toUpperCase()}</span>
+                                <span><i class="bi bi-tag"></i> ${data.tipo ? data.tipo.toUpperCase() : ''}</span>
                                 <span class="spots-badge ${plazasLibres===0 ? 'spots-full':''}">
                                     Libres: ${plazasLibres}/${data.plazas_totales}
                                 </span>
@@ -385,11 +433,12 @@
                 const userSnap = await getDoc(userRef);
                 const userData = userSnap.data();
 
-                // Lógica de saldo
                 let bolsa = userData.creditos_detalle || {};
-                if (typeof userData.creditos === 'number' && bolsa.fuerza === undefined) bolsa.fuerza = userData.creditos;
+                // Fallback para usuarios viejos
+                if (typeof userData.creditos === 'number' && bolsa.fuerza === undefined) {
+                    bolsa.fuerza = userData.creditos;
+                }
 
-                // Normalizar tipo (fuerza vs Fuerza)
                 const tipoKey = tipoClase.toLowerCase();
                 const creds = bolsa[tipoKey] || 0;
 
@@ -398,17 +447,16 @@
                     return;
                 }
 
-                // Chequeo de Plazas
                 const claseRef = doc(db, "clases", claseId);
                 const claseSnap = await getDoc(claseRef);
                 
                 if (claseSnap.data().apuntados?.length >= claseSnap.data().plazas_totales) {
                     alert("⛔ Clase completa.");
-                    cargarClasesRobust();
+                    cargarClases();
                     return;
                 }
 
-                // Ejecutar
+                // Descontar y reservar
                 bolsa[tipoKey] = creds - 1;
                 await updateDoc(userRef, { creditos_detalle: bolsa, creditos: bolsa.fuerza });
                 await updateDoc(claseRef, { apuntados: arrayUnion(currentUser.uid) });
@@ -416,7 +464,7 @@
                 registrarLog(currentUser.email, "RESERVA", `Clase: ${nombreClase}`);
                 alert("✅ ¡Reserva confirmada!");
                 
-                // Actualizar localmente
+                // Actualizar localmente para feedback instantáneo
                 const idx = todasLasClases.findIndex(c => c.id === claseId);
                 if(idx !== -1) {
                     if(!todasLasClases[idx].apuntados) todasLasClases[idx].apuntados = [];
