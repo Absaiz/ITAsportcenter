@@ -286,7 +286,7 @@
         </div>
     </div>
 
-    <script type="module">
+<script type="module">
         import { auth, db } from "./firebase-config.js";
         import { registrarLog } from "./logger.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -310,6 +310,27 @@
             }
         });
 
+        // --- FUNCIÓN INTELIGENTE PARA LEER FECHAS ---
+        function parseFechaInteligente(fechaStr, horaStr = "00:00") {
+            if (!fechaStr) return null;
+            let dia, mes, anio;
+            let fechaLimpia = fechaStr.replace(/\//g, '-'); 
+            let partes = fechaLimpia.split('-');
+            if (partes.length !== 3) return null;
+
+            if (partes[0].length === 4) { // YYYY-MM-DD
+                anio = parseInt(partes[0]);
+                mes = parseInt(partes[1]) - 1;
+                dia = parseInt(partes[2]);
+            } else { // DD-MM-YYYY
+                dia = parseInt(partes[0]);
+                mes = parseInt(partes[1]) - 1;
+                anio = parseInt(partes[2]);
+            }
+            let [hora, minuto] = horaStr.split(':').map(n => parseInt(n));
+            return new Date(anio, mes, dia, hora || 0, minuto || 0).getTime();
+        }
+
         // 1. CARGAR CRÉDITOS
         async function cargarCreditos(uid) {
             const userSnap = await getDoc(doc(db, "usuarios", uid));
@@ -317,7 +338,6 @@
                 const data = userSnap.data();
                 const creds = data.creditos_detalle || {};
                 
-                // Compatibilidad legacy
                 if (typeof data.creditos === 'number' && creds.fuerza === undefined) {
                     creds.fuerza = data.creditos;
                 }
@@ -329,39 +349,52 @@
             }
         }
 
-        // 2. CARGAR RESERVAS (Separar Futuras / Histórico)
+        // 2. CARGAR RESERVAS (CORREGIDO)
         async function cargarReservas(uid) {
             const container = document.getElementById('misReservas');
             const historyContainer = document.getElementById('listaHistorial');
+            container.innerHTML = '<p class="empty-msg">Cargando tus clases...</p>';
             
             try {
+                // Buscamos clases donde esté el usuario
                 const q = query(collection(db, "clases"), where("apuntados", "array-contains", uid));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    container.innerHTML = '<p class="empty-msg">No tienes clases reservadas.</p>';
+                    container.innerHTML = '<p class="empty-msg">No tienes clases reservadas aún.</p>';
                     return;
                 }
 
-                const now = Date.now();
+                // Fecha de hoy (inicio del día para no fallar por horas)
+                const now = new Date();
+                now.setHours(0,0,0,0);
+                const nowTs = now.getTime();
+
                 const futureClasses = [];
                 const pastClasses = [];
 
                 querySnapshot.forEach(doc => {
                     const d = doc.data();
                     d.id = doc.id;
-                    // Asegurarse de tener timestamp en la BD. Si no, convertir fecha string.
-                    // Aquí asumimos d.timestamp existe.
-                    if (d.timestamp >= now) {
-                        futureClasses.push(d);
-                    } else {
-                        pastClasses.push(d);
+
+                    // AQUI ESTÁ LA MAGIA: Calculamos el timestamp si falta
+                    if (!d.timestamp) {
+                        d.timestamp = parseFechaInteligente(d.fecha, d.hora);
+                    }
+
+                    // Si logramos sacar una fecha válida, la clasificamos
+                    if (d.timestamp) {
+                        if (d.timestamp >= nowTs) {
+                            futureClasses.push(d);
+                        } else {
+                            pastClasses.push(d);
+                        }
                     }
                 });
 
-                // Ordenar Futuras: Más próximas primero (Ascendente)
+                // Ordenar: Próximas (más cerca a hoy primero)
                 futureClasses.sort((a, b) => a.timestamp - b.timestamp);
-                // Ordenar Histórico: Más recientes primero (Descendente)
+                // Ordenar: Pasadas (más recientes primero)
                 pastClasses.sort((a, b) => b.timestamp - a.timestamp);
 
                 allFutureClasses = futureClasses;
@@ -382,7 +415,7 @@
                     });
                     historyContainer.innerHTML = historyHtml;
                 } else {
-                    historyContainer.innerHTML = "<p class='text-center text-secondary'>No hay historial disponible.</p>";
+                    historyContainer.innerHTML = "<p class='text-center text-secondary'>No tienes clases pasadas.</p>";
                 }
 
             } catch (e) {
@@ -401,18 +434,19 @@
             const pageClasses = allFutureClasses.slice(start, end);
 
             if (allFutureClasses.length === 0) {
-                container.innerHTML = '<p class="empty-msg">No tienes clases próximas.</p>';
+                container.innerHTML = '<p class="empty-msg">No tienes clases próximas reservadas.</p>';
                 controls.style.display = "none";
                 return;
             }
 
             let html = "";
             pageClasses.forEach(clase => {
-                // Colores Dinámicos
+                // Colores
+                const tipoKey = clase.tipo ? clase.tipo.toLowerCase() : 'fuerza';
                 const bordeColor = 
-                    clase.tipo === 'fuerza' ? '#ff007f' :
-                    clase.tipo === 'pilates' ? '#54a0ff' : 
-                    clase.tipo === 'personal' ? '#9b59b6' : '#1dd1a1';
+                    tipoKey === 'fuerza' ? '#ff007f' :
+                    tipoKey === 'pilates' ? '#54a0ff' : 
+                    tipoKey === 'personal' ? '#9b59b6' : '#1dd1a1';
 
                 html += `
                     <div class="booking-card" style="border-left-color: ${bordeColor}">
@@ -420,7 +454,7 @@
                             <strong>${clase.nombre}</strong>
                             <span>📅 ${clase.fecha} - ⏰ ${clase.hora}</span>
                         </div>
-                        <button class="btn-cancel" onclick="cancelarReserva('${clase.id}', '${clase.tipo}', '${clase.nombre}')">
+                        <button class="btn-cancel" onclick="cancelarReserva('${clase.id}', '${tipoKey}', '${clase.nombre}')">
                             ❌ CANCELAR
                         </button>
                     </div>
@@ -428,7 +462,6 @@
             });
             container.innerHTML = html;
 
-            // Mostrar controles si hay más de 10
             if (allFutureClasses.length > itemsPerPage) {
                 controls.style.display = "block";
                 document.getElementById('pageIndicator').innerText = `Página ${currentPage}`;
@@ -476,6 +509,8 @@
 
                 registrarLog(currentUser.email, "Cancela", `Cancela: ${nombreClase}`);
                 alert("✅ Reserva cancelada.");
+                
+                // Recargar todo para ver cambios
                 cargarCreditos(currentUser.uid);
                 cargarReservas(currentUser.uid);
 
