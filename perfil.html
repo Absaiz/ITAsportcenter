@@ -16,20 +16,16 @@
     <title>ITA | Mi Perfil</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
     <script>
-        // Generamos un número único (la hora actual)
         const v = Date.now();
-
-        // Función para cargar CSS con versión
         function cargarCSS(archivo) {
             var link = document.createElement("link");
             link.rel = "stylesheet";
             link.href = archivo + "?v=" + v;
             document.head.appendChild(link);
         }
-
-        // Función para cargar JS con versión
         function cargarJS(archivo) {
             var script = document.createElement('script');
             script.type = 'module';
@@ -37,49 +33,74 @@
             document.head.appendChild(script);
         }
 
-        // --- CARGAMOS TODO FRESCO ---
-        cargarCSS('style.css');       // Estilos
-        cargarJS('layout.js');        // Menú
-        cargarJS('user-logic.js');    // Lógica Usuario
+        cargarCSS('style.css');       
+        cargarJS('layout.js');        
+        cargarJS('user-logic.js');    
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        .profile-container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        /* 1. LAYOUT GENERAL */
+        .profile-container { 
+            max-width: 1200px; 
+            margin: 40px auto; 
+            padding: 20px; 
+        }
         
         /* CABECERA */
         .profile-header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 20px; }
         .user-name { font-family: 'Oswald'; font-size: 2.5rem; color: white; margin: 0; }
         .user-email { color: #888; margin-top: 5px; }
 
-        /* GRID DE CRÉDITOS */
-        .credits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 50px; }
+        /* 2. GRID DE CRÉDITOS (SALDO) */
+        .credits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 50px; }
         
         .credit-card { background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333; border-top: 4px solid #555; }
         .credit-number { font-family: 'Oswald'; font-size: 2.5rem; color: white; display: block; }
         .credit-label { font-size: 0.8rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Colores por tipo */
-        .border-fuerza { border-top-color: #ff9f43; }
-        .text-fuerza { color: #ff9f43; }
+        /* COLORES PERSONALIZADOS */
+        .border-fuerza { border-top-color: #ff007f; } /* ROSA ITA */
+        .text-fuerza { color: #ff007f; }
         
-        .border-pilates { border-top-color: #54a0ff; }
+        .border-pilates { border-top-color: #54a0ff; } /* AZUL */
         .text-pilates { color: #54a0ff; }
         
-        .border-personal { border-top-color: #ff6b6b; }
-        .text-personal { color: #ff6b6b; }
+        .border-personal { border-top-color: #9b59b6; } /* MORADO */
+        .text-personal { color: #9b59b6; }
         
-        .border-nutri { border-top-color: #1dd1a1; }
+        .border-nutri { border-top-color: #1dd1a1; } /* VERDE */
         .text-nutri { color: #1dd1a1; }
 
-        /* SECCIÓN RESERVAS */
-        .reservations-section h3 { font-family: 'Oswald'; color: white; margin-bottom: 20px; border-left: 4px solid var(--accent-pink); padding-left: 15px; }
+        /* 3. SECCIÓN RESERVAS */
+        .reservations-section h3 { 
+            font-family: 'Oswald'; 
+            color: white; 
+            margin-bottom: 20px; 
+            border-left: 4px solid #ff007f; 
+            padding-left: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         
-        .booking-card { background: #222; padding: 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #555; }
+        .booking-card { background: #222; padding: 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #555; transition: transform 0.2s; }
+        .booking-card:hover { transform: translateX(5px); }
+        
         .booking-info strong { display: block; font-size: 1.1rem; color: white; margin-bottom: 5px; }
         .booking-info span { color: #aaa; font-size: 0.9rem; }
         
         .btn-cancel { background: transparent; border: 1px solid #ff4444; color: #ff4444; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; transition: 0.3s; }
         .btn-cancel:hover { background: #ff4444; color: white; }
+
+        /* Paginación y Botones */
+        .pagination-controls { text-align: center; margin-top: 20px; }
+        .btn-page { background: #333; color: white; border: none; padding: 8px 16px; margin: 0 5px; border-radius: 4px; cursor: pointer; }
+        .btn-page:hover { background: #ff007f; }
+        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .history-btn { font-size: 0.8rem; background: #333; border: 1px solid #555; color: #aaa; padding: 5px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; }
+        .history-btn:hover { background: #555; color: white; }
 
         .empty-msg { text-align: center; color: #666; font-style: italic; padding: 20px; border: 1px dashed #333; border-radius: 10px; }
 
@@ -89,6 +110,7 @@
         @media (max-width: 600px) {
             .booking-card { flex-direction: column; text-align: center; gap: 15px; }
             .btn-cancel { width: 100%; }
+            .credits-grid { grid-template-columns: 1fr 1fr; } 
         }
     </style>
     
@@ -123,9 +145,24 @@
         </div>
 
         <div class="reservations-section">
-            <h3>PRÓXIMAS CLASES</h3>
+            <h3>
+                PRÓXIMAS CLASES
+                <button class="history-btn" onclick="toggleHistorial()">📜 Ver Historial</button>
+            </h3>
+            
             <div id="misReservas">
                 <p class="empty-msg">Cargando reservas...</p>
+            </div>
+
+            <div class="pagination-controls" id="paginationControls" style="display:none;">
+                <button class="btn-page" id="btnPrev" onclick="cambiarPagina(-1)">Anterior</button>
+                <span id="pageIndicator" style="color:white; margin: 0 10px;">Página 1</span>
+                <button class="btn-page" id="btnNext" onclick="cambiarPagina(1)">Siguiente</button>
+            </div>
+
+            <div id="historialClases" style="display:none; margin-top:30px; border-top:1px solid #333; padding-top:20px;">
+                <h4 style="color:#aaa; font-family:'Oswald'; text-align:center;">HISTORIAL DE CLASES</h4>
+                <div id="listaHistorial"></div>
             </div>
         </div>
 
@@ -133,7 +170,7 @@
 
     </div>
 
-    <div class="container mt-5 mb-5">
+    <div class="container mt-5 mb-5" style="max-width: 1200px;">
         <div class="row">
             <div class="col-12 text-center mb-4">
                 <h2 class="text-white">TU <span style="color: #ff007f;">EVOLUCIÓN</span></h2>
@@ -141,29 +178,35 @@
             </div>
         </div>
 
-        <div class="row text-center mb-4">
-            <div class="col-md-3 col-6 mb-3">
-                <div class="card bg-dark border-secondary text-white p-3">
-                    <h5 class="text-secondary" style="font-size: 0.9rem;">PESO ACTUAL</h5>
-                    <h3 style="color: #ff007f;">72.5 <small style="font-size:1rem; color:white;">kg</small></h3>
+        <div class="row text-center mb-4 d-flex justify-content-center">
+            <div class="col-md-2 col-4 mb-3">
+                <div class="card bg-dark border-secondary text-white p-2">
+                    <h6 class="text-secondary" style="font-size: 0.8rem;">PESO</h6>
+                    <h4 style="color: #ff007f;">72.5 <small style="font-size:0.8rem; color:white;">kg</small></h4>
                 </div>
             </div>
-            <div class="col-md-3 col-6 mb-3">
-                <div class="card bg-dark border-secondary text-white p-3">
-                    <h5 class="text-secondary" style="font-size: 0.9rem;">% GRASA</h5>
-                    <h3 style="color: #ff007f;">18.2 <small style="font-size:1rem; color:white;">%</small></h3>
+            <div class="col-md-2 col-4 mb-3">
+                <div class="card bg-dark border-secondary text-white p-2">
+                    <h6 class="text-secondary" style="font-size: 0.8rem;">CINTURA</h6>
+                    <h4>82 <small style="font-size:0.8rem; color:white;">cm</small></h4>
                 </div>
             </div>
-            <div class="col-md-3 col-6 mb-3">
-                <div class="card bg-dark border-secondary text-white p-3">
-                    <h5 class="text-secondary" style="font-size: 0.9rem;">CINTURA</h5>
-                    <h3>82 <small style="font-size:1rem; color:white;">cm</small></h3>
+            <div class="col-md-2 col-4 mb-3">
+                <div class="card bg-dark border-secondary text-white p-2">
+                    <h6 class="text-secondary" style="font-size: 0.8rem;">CADERA</h6>
+                    <h4>95 <small style="font-size:0.8rem; color:white;">cm</small></h4>
                 </div>
             </div>
-            <div class="col-md-3 col-6 mb-3">
-                <div class="card bg-dark border-secondary text-white p-3">
-                    <h5 class="text-secondary" style="font-size: 0.9rem;">CADERA</h5>
-                    <h3>95 <small style="font-size:1rem; color:white;">cm</small></h3>
+            <div class="col-md-2 col-4 mb-3">
+                <div class="card bg-dark border-secondary text-white p-2">
+                    <h6 class="text-secondary" style="font-size: 0.8rem;">BÍCEPS</h6>
+                    <h4>34 <small style="font-size:0.8rem; color:white;">cm</small></h4>
+                </div>
+            </div>
+            <div class="col-md-2 col-4 mb-3">
+                <div class="card bg-dark border-secondary text-white p-2">
+                    <h6 class="text-secondary" style="font-size: 0.8rem;">GEMELOS</h6>
+                    <h4>38 <small style="font-size:0.8rem; color:white;">cm</small></h4>
                 </div>
             </div>
         </div>
@@ -171,11 +214,12 @@
         <div class="row mb-5">
             <div class="col-12">
                 <div class="card bg-dark border-secondary p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                         <h5 class="text-white">Progreso Anual</h5>
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-outline-light btn-sm active" onclick="updateChart('peso')">Peso</button>
-                            <button type="button" class="btn btn-outline-light btn-sm" onclick="updateChart('grasa')">Grasa %</button>
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="updateChart('biceps')">Bíceps</button>
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="updateChart('gemelos')">Gemelos</button>
                         </div>
                     </div>
                     <canvas id="evolutionChart" style="max-height: 400px;"></canvas>
@@ -184,9 +228,14 @@
         </div>
 
         <div class="row">
-            <div class="col-12 text-end">
-                <button class="btn" style="background-color: #ff007f; color: white;" data-bs-toggle="modal" data-bs-target="#modalMedidas">
-                    <i class="bi bi-plus-circle"></i> Añadir Nueva Medición (Admin)
+            <div class="col-6">
+                 <button class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-table"></i> Ver Tabla Completa
+                </button>
+            </div>
+            <div class="col-6 text-end">
+                <button class="btn w-100" style="background-color: #ff007f; color: white;" data-bs-toggle="modal" data-bs-target="#modalMedidas">
+                    <i class="bi bi-plus-circle"></i> Añadir (Admin)
                 </button>
             </div>
         </div>
@@ -211,15 +260,19 @@
                                 <input type="number" step="0.1" class="form-control bg-secondary text-white border-0">
                             </div>
                             <div class="col-6 mb-3">
-                                <label class="form-label">% Grasa</label>
-                                <input type="number" step="0.1" class="form-control bg-secondary text-white border-0">
-                            </div>
-                            <div class="col-6 mb-3">
                                 <label class="form-label">Cintura (cm)</label>
                                 <input type="number" class="form-control bg-secondary text-white border-0">
                             </div>
                             <div class="col-6 mb-3">
                                 <label class="form-label">Cadera (cm)</label>
+                                <input type="number" class="form-control bg-secondary text-white border-0">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Bíceps (cm)</label>
+                                <input type="number" class="form-control bg-secondary text-white border-0">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Gemelos (cm)</label>
                                 <input type="number" class="form-control bg-secondary text-white border-0">
                             </div>
                         </div>
@@ -240,6 +293,9 @@
         import { doc, getDoc, collection, query, where, getDocs, updateDoc, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         let currentUser = null;
+        let allFutureClasses = []; 
+        let currentPage = 1;
+        const itemsPerPage = 10;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -261,7 +317,7 @@
                 const data = userSnap.data();
                 const creds = data.creditos_detalle || {};
                 
-                // Compatibilidad con saldo antiguo (lo tratamos como fuerza)
+                // Compatibilidad legacy
                 if (typeof data.creditos === 'number' && creds.fuerza === undefined) {
                     creds.fuerza = data.creditos;
                 }
@@ -273,12 +329,12 @@
             }
         }
 
-        // 2. CARGAR RESERVAS
+        // 2. CARGAR RESERVAS (Separar Futuras / Histórico)
         async function cargarReservas(uid) {
             const container = document.getElementById('misReservas');
+            const historyContainer = document.getElementById('listaHistorial');
             
             try {
-                // Buscamos clases donde el usuario esté apuntado
                 const q = query(collection(db, "clases"), where("apuntados", "array-contains", uid));
                 const querySnapshot = await getDocs(q);
 
@@ -287,36 +343,47 @@
                     return;
                 }
 
-                let html = "";
-                const clases = [];
+                const now = Date.now();
+                const futureClasses = [];
+                const pastClasses = [];
+
                 querySnapshot.forEach(doc => {
                     const d = doc.data();
                     d.id = doc.id;
-                    clases.push(d);
+                    // Asegurarse de tener timestamp en la BD. Si no, convertir fecha string.
+                    // Aquí asumimos d.timestamp existe.
+                    if (d.timestamp >= now) {
+                        futureClasses.push(d);
+                    } else {
+                        pastClasses.push(d);
+                    }
                 });
 
-                // Ordenamos por fecha
-                clases.sort((a, b) => a.timestamp - b.timestamp);
+                // Ordenar Futuras: Más próximas primero (Ascendente)
+                futureClasses.sort((a, b) => a.timestamp - b.timestamp);
+                // Ordenar Histórico: Más recientes primero (Descendente)
+                pastClasses.sort((a, b) => b.timestamp - a.timestamp);
 
-                clases.forEach(clase => {
-                    const bordeColor = 
-                        clase.tipo === 'fuerza' ? '#ff9f43' :
-                        clase.tipo === 'pilates' ? '#54a0ff' : 
-                        clase.tipo === 'personal' ? '#ff6b6b' : '#1dd1a1';
+                allFutureClasses = futureClasses;
+                renderFutureClasses();
 
-                    html += `
-                        <div class="booking-card" style="border-left-color: ${bordeColor}">
-                            <div class="booking-info">
-                                <strong>${clase.nombre}</strong>
-                                <span>📅 ${clase.fecha} - ⏰ ${clase.hora}</span>
+                // Render Historial
+                if (pastClasses.length > 0) {
+                    let historyHtml = "";
+                    pastClasses.forEach(clase => {
+                         historyHtml += `
+                            <div class="booking-card" style="opacity:0.6; border-left-color: #555;">
+                                <div class="booking-info">
+                                    <strong>${clase.nombre} (Finalizada)</strong>
+                                    <span>📅 ${clase.fecha} - ⏰ ${clase.hora}</span>
+                                </div>
                             </div>
-                            <button class="btn-cancel" onclick="cancelarReserva('${clase.id}', '${clase.tipo}', '${clase.nombre}')">
-                                ❌ CANCELAR
-                            </button>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
+                        `;
+                    });
+                    historyContainer.innerHTML = historyHtml;
+                } else {
+                    historyContainer.innerHTML = "<p class='text-center text-secondary'>No hay historial disponible.</p>";
+                }
 
             } catch (e) {
                 console.error(e);
@@ -324,27 +391,79 @@
             }
         }
 
-        // 3. CANCELAR RESERVA (Devolución automática)
+        // 3. PAGINACIÓN
+        window.renderFutureClasses = function() {
+            const container = document.getElementById('misReservas');
+            const controls = document.getElementById('paginationControls');
+            
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageClasses = allFutureClasses.slice(start, end);
+
+            if (allFutureClasses.length === 0) {
+                container.innerHTML = '<p class="empty-msg">No tienes clases próximas.</p>';
+                controls.style.display = "none";
+                return;
+            }
+
+            let html = "";
+            pageClasses.forEach(clase => {
+                // Colores Dinámicos
+                const bordeColor = 
+                    clase.tipo === 'fuerza' ? '#ff007f' :
+                    clase.tipo === 'pilates' ? '#54a0ff' : 
+                    clase.tipo === 'personal' ? '#9b59b6' : '#1dd1a1';
+
+                html += `
+                    <div class="booking-card" style="border-left-color: ${bordeColor}">
+                        <div class="booking-info">
+                            <strong>${clase.nombre}</strong>
+                            <span>📅 ${clase.fecha} - ⏰ ${clase.hora}</span>
+                        </div>
+                        <button class="btn-cancel" onclick="cancelarReserva('${clase.id}', '${clase.tipo}', '${clase.nombre}')">
+                            ❌ CANCELAR
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+
+            // Mostrar controles si hay más de 10
+            if (allFutureClasses.length > itemsPerPage) {
+                controls.style.display = "block";
+                document.getElementById('pageIndicator').innerText = `Página ${currentPage}`;
+                document.getElementById('btnPrev').disabled = (currentPage === 1);
+                document.getElementById('btnNext').disabled = (end >= allFutureClasses.length);
+            } else {
+                controls.style.display = "none";
+            }
+        }
+
+        window.cambiarPagina = function(delta) {
+            currentPage += delta;
+            renderFutureClasses();
+        }
+
+        window.toggleHistorial = function() {
+            const div = document.getElementById('historialClases');
+            div.style.display = (div.style.display === 'none') ? 'block' : 'none';
+        }
+
+        // 4. CANCELAR RESERVA
         window.cancelarReserva = async (claseId, tipoClase, nombreClase) => {
-            if(!confirm(`¿Cancelar asistencia a ${nombreClase}? Te devolveremos el crédito.`)) return;
+            if(!confirm(`¿Cancelar asistencia a ${nombreClase}? Se te devolverá el crédito.`)) return;
 
             try {
-                
-
-
-                // A) Quitar usuario de la clase
                 const claseRef = doc(db, "clases", claseId);
                 await updateDoc(claseRef, {
                     apuntados: arrayRemove(currentUser.uid)
                 });
 
-                // B) Devolver crédito
                 const userRef = doc(db, "usuarios", currentUser.uid);
                 const userSnap = await getDoc(userRef);
                 let data = userSnap.data();
                 let creds = data.creditos_detalle || {};
                 
-                // Fallback
                 if (typeof data.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = data.creditos;
 
                 if (!creds[tipoClase]) creds[tipoClase] = 0;
@@ -352,11 +471,11 @@
 
                 await updateDoc(userRef, {
                     creditos_detalle: creds,
-                    creditos: creds.fuerza // Legacy
+                    creditos: creds.fuerza
                 });
 
-                registrarLog(currentUser.email, "Candela", `Cancela: ${nombreClase} (${tipoClase})`);
-                alert("✅ Reserva cancelada. Crédito devuelto.");
+                registrarLog(currentUser.email, "Cancela", `Cancela: ${nombreClase}`);
+                alert("✅ Reserva cancelada.");
                 cargarCreditos(currentUser.uid);
                 cargarReservas(currentUser.uid);
 
@@ -365,24 +484,21 @@
             }
         }
 
-
-        // 4. CERRAR SESIÓN
         document.getElementById('btnLogout').addEventListener('click', (e) => {
             e.preventDefault();
-            registrarLog(currentUser.email, "Cierra Session", `Cierra Session')`);
             signOut(auth).then(() => window.location.href = "index.html");
         });
     </script>
 
     <script>
-        // DATOS DE EJEMPLO (Esto vendría de tu Base de Datos)
+        // DATOS DE EJEMPLO (Simulados)
         const fechas = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
         const datosPeso = [80, 78.5, 77.2, 76.0, 74.5, 72.5];
-        const datosGrasa = [24, 23.5, 22.1, 21.0, 19.5, 18.2];
+        const datosBiceps = [30, 31, 31.5, 32, 33, 34]; 
+        const datosGemelos = [36, 36, 36.5, 37, 37.5, 38];
 
         const ctx = document.getElementById('evolutionChart').getContext('2d');
         
-        // Configuración inicial de la gráfica
         let myChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -390,44 +506,48 @@
                 datasets: [{
                     label: 'Peso Corporal (kg)',
                     data: datosPeso,
-                    borderColor: '#ff007f', // Color ITA
-                    backgroundColor: 'rgba(255, 0, 127, 0.1)', // Relleno rosita transparente
+                    borderColor: '#ff007f', // Rosa ITA por defecto
+                    backgroundColor: 'rgba(255, 0, 127, 0.1)',
                     borderWidth: 3,
                     pointBackgroundColor: '#fff',
                     pointBorderColor: '#ff007f',
                     pointRadius: 5,
-                    tension: 0.4, // Curva suave en la línea
+                    tension: 0.4,
                     fill: true
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: {
-                        labels: { color: 'white' }
-                    }
+                    legend: { labels: { color: 'white' } }
                 },
                 scales: {
-                    y: {
-                        grid: { color: '#333' }, // Líneas de cuadrícula oscuras
-                        ticks: { color: '#aaa' }
-                    },
-                    x: {
-                        grid: { color: '#333' },
-                        ticks: { color: '#aaa' }
-                    }
+                    y: { grid: { color: '#333' }, ticks: { color: '#aaa' } },
+                    x: { grid: { color: '#333' }, ticks: { color: '#aaa' } }
                 }
             }
         });
 
-        // Función para cambiar entre Peso y Grasa
+        // Función cambio métrica
         function updateChart(tipo) {
             if(tipo === 'peso') {
                 myChart.data.datasets[0].label = 'Peso Corporal (kg)';
                 myChart.data.datasets[0].data = datosPeso;
-            } else {
-                myChart.data.datasets[0].label = 'Porcentaje de Grasa (%)';
-                myChart.data.datasets[0].data = datosGrasa;
+                myChart.data.datasets[0].borderColor = '#ff007f';
+                myChart.data.datasets[0].pointBorderColor = '#ff007f';
+                myChart.data.datasets[0].backgroundColor = 'rgba(255, 0, 127, 0.1)';
+            } else if (tipo === 'biceps') {
+                myChart.data.datasets[0].label = 'Bíceps (cm)';
+                myChart.data.datasets[0].data = datosBiceps;
+                myChart.data.datasets[0].borderColor = '#54a0ff'; // Azul Fuerza/Gym
+                myChart.data.datasets[0].pointBorderColor = '#54a0ff';
+                myChart.data.datasets[0].backgroundColor = 'rgba(84, 160, 255, 0.1)';
+            } else if (tipo === 'gemelos') {
+                myChart.data.datasets[0].label = 'Gemelos (cm)';
+                myChart.data.datasets[0].data = datosGemelos;
+                myChart.data.datasets[0].borderColor = '#9b59b6'; // Morado Personal
+                myChart.data.datasets[0].pointBorderColor = '#9b59b6';
+                myChart.data.datasets[0].backgroundColor = 'rgba(155, 89, 182, 0.1)';
             }
             myChart.update();
         }
