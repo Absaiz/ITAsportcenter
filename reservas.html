@@ -200,55 +200,71 @@
         </div>
     </div>
 
-    <script type="module">
+   <script type="module">
         import { db, auth } from "./firebase-config.js";
         import { registrarLog } from "./logger.js";
-        import { collection, getDocs, doc, getDoc, updateDoc, arrayUnion, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { collection, getDocs, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         let currentUser = null;
-        let todasLasClases = []; // Almacenamos todas para no recargar
+        let todasLasClases = []; 
         let currentFilter = 'all';
-        let fechaInicioVista = new Date(); // Fecha de inicio de la visualización (Hoy)
+        let fechaInicioVista = new Date(); 
         
-        // Ajustamos al principio del día de hoy
+        // Ajustamos al principio del día de hoy (00:00:00)
         fechaInicioVista.setHours(0,0,0,0);
 
-        // 1. Detectar usuario y cargar
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            cargarClasesFirebase();
+            cargarClasesRobust();
         });
 
-        // 2. Cargar Clases desde Firebase (Solo futuras)
-        async function cargarClasesFirebase() {
+        // --- FUNCIÓN DE CARGA ROBUSTA (Sin filtros complejos de DB) ---
+        async function cargarClasesRobust() {
             const container = document.getElementById('listaClases');
+            container.innerHTML = "<p style='text-align:center'>Cargando datos...</p>";
             
             try {
-                // Obtenemos clases desde ayer (para evitar problemas de zona horaria) en adelante
-                const ayer = new Date();
-                ayer.setDate(ayer.getDate() - 1);
-                const timestampAyer = ayer.getTime();
-
-                const q = query(collection(db, "clases"), where("timestamp", ">=", timestampAyer), orderBy("timestamp", "asc"));
-                const querySnapshot = await getDocs(q);
+                // 1. Traemos TODAS las clases (para evitar error de índice)
+                const querySnapshot = await getDocs(collection(db, "clases"));
                 
                 todasLasClases = [];
+                
                 querySnapshot.forEach((doc) => {
                     let data = doc.data();
                     data.id = doc.id;
+
+                    // 2. CORRECCIÓN AUTOMÁTICA DE FECHA
+                    // Si no tiene timestamp, lo creamos a partir de la fecha (string)
+                    if (!data.timestamp && data.fecha) {
+                        // Intenta convertir "2024-05-12" + "10:00" a timestamp
+                        // Asumimos formato fecha ISO "YYYY-MM-DD" o similar
+                        let fechaStr = data.fecha; 
+                        let horaStr = data.hora || "00:00";
+                        let fechaObj = new Date(fechaStr + "T" + horaStr);
+                        
+                        if(isNaN(fechaObj.getTime())) {
+                            // Si falla, probamos solo la fecha
+                             fechaObj = new Date(fechaStr);
+                        }
+                        data.timestamp = fechaObj.getTime();
+                    }
+
                     todasLasClases.push(data);
                 });
 
+                // 3. Ordenar manualmente por timestamp
+                todasLasClases.sort((a, b) => a.timestamp - b.timestamp);
+
+                console.log("Clases cargadas:", todasLasClases.length); // DEBUG
                 renderizarClases();
 
             } catch (error) {
                 console.error("Error cargando clases:", error);
-                container.innerHTML = "<p style='text-align:center; color:red;'>Error al cargar horarios. Verifica tu conexión.</p>";
+                container.innerHTML = `<p style='text-align:center; color:red;'>Error: ${error.message}</p>`;
             }
         }
 
-        // 3. Renderizar Clases (Con Filtros de Tipo y Fecha)
         window.renderizarClases = function() {
             const container = document.getElementById('listaClases');
             container.innerHTML = "";
@@ -257,18 +273,21 @@
             const fechaFinVista = new Date(fechaInicioVista);
             fechaFinVista.setDate(fechaInicioVista.getDate() + 7);
 
-            // Actualizar texto del rango
+            // Actualizar texto rango visual
             const opcionesFecha = { day: 'numeric', month: 'short' };
             document.getElementById('rangoFechas').innerText = 
                 `${fechaInicioVista.toLocaleDateString('es-ES', opcionesFecha)} - ${fechaFinVista.toLocaleDateString('es-ES', opcionesFecha)}`;
 
-            // Filtrar Array en Memoria
+            // FILTRADO EN MEMORIA (JAVASCRIPT)
             const clasesFiltradas = todasLasClases.filter(clase => {
-                // 1. Filtro por Tipo
-                if (currentFilter !== 'all' && clase.tipo !== currentFilter) return false;
+                if (!clase.timestamp) return false; // Si no hay fecha válida, ignorar
+
+                // 1. Filtro Tipo (Ignora mayúsculas/minúsculas)
+                if (currentFilter !== 'all') {
+                    if (clase.tipo.toLowerCase() !== currentFilter.toLowerCase()) return false;
+                }
                 
-                // 2. Filtro por Fecha (Dentro de los 7 días)
-                // Asumimos que clase.timestamp es milisegundos
+                // 2. Filtro Fecha (Semana actual)
                 return clase.timestamp >= fechaInicioVista.getTime() && clase.timestamp < fechaFinVista.getTime();
             });
 
@@ -276,7 +295,8 @@
                 container.innerHTML = `
                     <div style="text-align:center; padding: 40px; color: #666;">
                         <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
-                        <p>No hay clases disponibles esta semana con los filtros seleccionados.</p>
+                        <p>No hay clases para esta semana.</p>
+                        <small>Prueba a dar a "Siguiente" -></small>
                     </div>`;
                 return;
             }
@@ -284,22 +304,24 @@
             let lastDate = "";
 
             clasesFiltradas.forEach(data => {
-                // Calcular plazas
                 const plazasOcupadas = data.apuntados ? data.apuntados.length : 0;
                 const plazasLibres = data.plazas_totales - plazasOcupadas;
                 const estaApuntado = currentUser && data.apuntados && data.apuntados.includes(currentUser.uid);
                 
-                // Agrupar por fecha visualmente
+                // Separador de Fechas
                 if(data.fecha !== lastDate) {
-                    // Formatear fecha bonito (Ej: Lunes, 12 Dic)
-                    const fechaObj = new Date(data.timestamp);
-                    const fechaBonita = fechaObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-                    
-                    container.innerHTML += `<div class="date-divider">${fechaBonita.charAt(0).toUpperCase() + fechaBonita.slice(1)}</div>`;
+                    // Formateo bonito de fecha
+                    let fechaBonita = data.fecha;
+                    try {
+                        const f = new Date(data.timestamp);
+                        fechaBonita = f.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+                    } catch(e) {}
+
+                    container.innerHTML += `<div class="date-divider">${fechaBonita.toUpperCase()}</div>`;
                     lastDate = data.fecha;
                 }
 
-                // Estado del botón
+                // Botón
                 let btnText = "RESERVAR";
                 let btnDisabled = false;
                 
@@ -311,14 +333,9 @@
                     btnDisabled = true;
                 }
 
-                // Determinar color borde según tipo
-                let tipoClass = "";
-                if(data.tipo === 'fuerza') tipoClass = "type-fuerza";
-                else if(data.tipo === 'pilates') tipoClass = "type-pilates";
-                else if(data.tipo === 'personal') tipoClass = "type-personal";
-                else tipoClass = "type-nutricion";
+                // Clases CSS por tipo
+                let tipoClass = "type-" + data.tipo.toLowerCase(); 
 
-                // HTML Tarjeta
                 const html = `
                     <div class="class-card ${tipoClass}">
                         <div class="class-info">
@@ -342,94 +359,74 @@
             });
         }
 
-        // FUNCIONES DE INTERFAZ
         window.filtrarTipo = function(tipo, btn) {
             currentFilter = tipo;
-            
-            // Actualizar estilo botones
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
             renderizarClases();
         }
 
         window.cambiarSemana = function(direccion) {
-            // Sumar o restar 7 días
             fechaInicioVista.setDate(fechaInicioVista.getDate() + (direccion * 7));
             renderizarClases();
         }
 
-        // 4. LÓGICA DE RESERVA
         window.reservar = async (claseId, nombreClase, tipoClase) => {
             if (!currentUser) {
-                if(confirm("Debes iniciar sesión para reservar. ¿Ir al login?")) {
-                    window.location.href = "login.html";
-                }
+                if(confirm("Inicia sesión para reservar. ¿Ir ahora?")) window.location.href = "login.html";
                 return;
             }
 
-            const confirmacion = confirm(`¿Gastar 1 crédito de ${tipoClase.toUpperCase()} para esta clase?`);
+            const confirmacion = confirm(`¿Gastar 1 crédito de ${tipoClase.toUpperCase()}?`);
             if (!confirmacion) return;
 
             try {
-                // A) Verificar saldo del usuario
                 const userRef = doc(db, "usuarios", currentUser.uid);
                 const userSnap = await getDoc(userRef);
                 const userData = userSnap.data();
 
-                let bolsaCreditos = userData.creditos_detalle || {};
-                
-                // Fallback Legacy
-                if (typeof userData.creditos === 'number' && bolsaCreditos.fuerza === undefined) {
-                    bolsaCreditos.fuerza = userData.creditos;
-                }
+                // Lógica de saldo
+                let bolsa = userData.creditos_detalle || {};
+                if (typeof userData.creditos === 'number' && bolsa.fuerza === undefined) bolsa.fuerza = userData.creditos;
 
-                const creditosDisponibles = bolsaCreditos[tipoClase] || 0;
+                // Normalizar tipo (fuerza vs Fuerza)
+                const tipoKey = tipoClase.toLowerCase();
+                const creds = bolsa[tipoKey] || 0;
 
-                if (creditosDisponibles < 1) {
-                    registrarLog(currentUser.email, "RESERVA_FAIL", `Intento sin saldo: ${nombreClase}`);
-                    alert(`⛔ No tienes créditos de ${tipoClase.toUpperCase()}.`);
+                if (creds < 1) {
+                    alert(`⛔ No tienes créditos de ${tipoClase}.`);
                     return;
                 }
 
-                // B) Verificar hueco
+                // Chequeo de Plazas
                 const claseRef = doc(db, "clases", claseId);
                 const claseSnap = await getDoc(claseRef);
-                const dataClase = claseSnap.data();
                 
-                if (dataClase.apuntados && dataClase.apuntados.length >= dataClase.plazas_totales) {
-                    alert("⛔ Clase completa. Alguien fue más rápido.");
-                    cargarClasesFirebase(); 
+                if (claseSnap.data().apuntados?.length >= claseSnap.data().plazas_totales) {
+                    alert("⛔ Clase completa.");
+                    cargarClasesRobust();
                     return;
                 }
 
-                // C) EJECUTAR RESERVA
-                bolsaCreditos[tipoClase] = creditosDisponibles - 1;
+                // Ejecutar
+                bolsa[tipoKey] = creds - 1;
+                await updateDoc(userRef, { creditos_detalle: bolsa, creditos: bolsa.fuerza });
+                await updateDoc(claseRef, { apuntados: arrayUnion(currentUser.uid) });
 
-                await updateDoc(userRef, { 
-                    creditos_detalle: bolsaCreditos,
-                    creditos: bolsaCreditos.fuerza 
-                });
-                
-                await updateDoc(claseRef, {
-                    apuntados: arrayUnion(currentUser.uid)
-                });
-
-                registrarLog(currentUser.email, "RESERVA_OK", `Reservó: ${nombreClase}`);
-
+                registrarLog(currentUser.email, "RESERVA", `Clase: ${nombreClase}`);
                 alert("✅ ¡Reserva confirmada!");
                 
-                // Actualizamos el array local para que se refleje inmediato sin petición extra
-                const index = todasLasClases.findIndex(c => c.id === claseId);
-                if(index !== -1) {
-                    if(!todasLasClases[index].apuntados) todasLasClases[index].apuntados = [];
-                    todasLasClases[index].apuntados.push(currentUser.uid);
+                // Actualizar localmente
+                const idx = todasLasClases.findIndex(c => c.id === claseId);
+                if(idx !== -1) {
+                    if(!todasLasClases[idx].apuntados) todasLasClases[idx].apuntados = [];
+                    todasLasClases[idx].apuntados.push(currentUser.uid);
                 }
                 renderizarClases();
 
             } catch (error) {
                 console.error(error);
-                alert("Error al reservar: " + error.message);
+                alert("Error: " + error.message);
             }
         };
     </script>
