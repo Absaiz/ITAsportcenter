@@ -16,21 +16,16 @@
     <title>ITA | Reservas</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
     <script>
-        
-        // Generamos un número único (la hora actual)
         const v = Date.now();
-
-        // Función para cargar CSS con versión
         function cargarCSS(archivo) {
             var link = document.createElement("link");
             link.rel = "stylesheet";
             link.href = archivo + "?v=" + v;
             document.head.appendChild(link);
         }
-
-        // Función para cargar JS con versión
         function cargarJS(archivo) {
             var script = document.createElement('script');
             script.type = 'module';
@@ -38,41 +33,115 @@
             document.head.appendChild(script);
         }
 
-        // --- CARGAMOS TODO FRESCO ---
-        cargarCSS('style.css');       // Estilos
-        cargarJS('layout.js');        // Menú
-        cargarJS('user-logic.js');    // Lógica Usuario
+        cargarCSS('style.css');       
+        cargarJS('layout.js');        
+        cargarJS('user-logic.js');    
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        .classes-container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        /* LAYOUT GENERAL */
+        .classes-container { 
+            max-width: 1200px; /* Ancho ampliado para PC */
+            margin: 40px auto; 
+            padding: 20px; 
+        }
+
+        .section-title {
+            font-family: 'Oswald';
+            color: white;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
         
-        /* TARJETA DE CLASE */
+        /* BARRA DE FILTROS */
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 1px solid #555;
+            color: #aaa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Montserrat';
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .filter-btn:hover { border-color: white; color: white; }
+        
+        .filter-btn.active {
+            background: white;
+            color: black;
+            border-color: white;
+            font-weight: bold;
+        }
+
+        /* PAGINACIÓN SEMANAL */
+        .week-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #222;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+        
+        .week-btn {
+            background: #333;
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .week-btn:hover { background: #ff007f; }
+
+        .week-display {
+            font-family: 'Oswald';
+            color: white;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        /* TARJETAS DE CLASE */
         .class-card {
             background: #1a1a1a;
             border: 1px solid #333;
-            border-left: 5px solid #555; /* Color por defecto */
+            border-left: 5px solid #555; 
             border-radius: 8px;
             padding: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             transition: transform 0.2s;
         }
-        .class-card:hover { transform: translateY(-3px); }
+        .class-card:hover { transform: translateX(5px); }
 
-        /* Colores por tipo */
-        .type-fuerza { border-left-color: #ff9f43; }
-        .type-pilates { border-left-color: #54a0ff; }
-        .type-personal { border-left-color: #ff6b6b; }
-        .type-nutricion { border-left-color: #1dd1a1; }
+        /* COLORES ITA */
+        .type-fuerza { border-left-color: #ff007f; }    /* ROSA */
+        .type-pilates { border-left-color: #54a0ff; }   /* AZUL */
+        .type-personal { border-left-color: #9b59b6; }  /* MORADO */
+        .type-nutricion { border-left-color: #1dd1a1; } /* VERDE */
 
         .class-info h3 { margin: 0; color: white; font-family: 'Oswald'; font-size: 1.4rem; text-transform: uppercase; }
-        .class-meta { color: #aaa; font-size: 0.9rem; margin-top: 5px; display: flex; gap: 15px; }
-        .class-meta span { display: flex; align-items: center; gap: 5px; }
+        .class-meta { color: #aaa; font-size: 0.9rem; margin-top: 5px; display: flex; gap: 15px; flex-wrap: wrap; }
         
         .spots-badge { background: #333; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; color: white; }
         .spots-full { background: #ff4444; color: white; }
@@ -80,32 +149,54 @@
         /* Botón Reservar */
         .btn-book {
             background: white; color: black; border: none;
-            padding: 10px 20px; font-weight: bold; cursor: pointer;
+            padding: 10px 25px; font-weight: bold; cursor: pointer;
             border-radius: 5px; transition: 0.3s;
             text-transform: uppercase;
             font-family: 'Oswald';
+            min-width: 120px;
         }
-        .btn-book:hover { background: var(--accent-pink); color: white; }
+        .btn-book:hover { background: #ff007f; color: white; } /* Hover Rosa */
         .btn-book:disabled { background: #333; color: #555; cursor: not-allowed; }
         
         /* Fecha separador */
-        .date-divider { color: var(--accent-pink); font-weight: bold; margin: 30px 0 10px; border-bottom: 1px solid #333; padding-bottom: 5px; font-family: 'Oswald'; font-size: 1.2rem; }
+        .date-divider { 
+            color: #ff007f; 
+            font-weight: bold; 
+            margin: 40px 0 15px; 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 5px; 
+            font-family: 'Oswald'; 
+            font-size: 1.4rem; 
+        }
 
         @media (max-width: 600px) {
             .class-card { flex-direction: column; text-align: center; gap: 15px; }
             .class-meta { justify-content: center; }
             .btn-book { width: 100%; }
+            .week-display { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
 
     <div class="classes-container">
-        <h1 class="section-title">HORARIO DE CLASES</h1>
-        <p style="text-align:center; color:#888; margin-bottom:30px;">Reserva tu plaza y entrena duro.</p>
+        <h1 class="section-title">RESERVA TU CLASE</h1>
+        
+        <div class="filter-container">
+            <button class="filter-btn active" onclick="filtrarTipo('all', this)">TODAS</button>
+            <button class="filter-btn" onclick="filtrarTipo('fuerza', this)">FUERZA</button>
+            <button class="filter-btn" onclick="filtrarTipo('pilates', this)">PILATES</button>
+            <button class="filter-btn" onclick="filtrarTipo('personal', this)">PERSONAL</button>
+        </div>
+
+        <div class="week-pagination">
+            <button class="week-btn" onclick="cambiarSemana(-1)"><i class="bi bi-chevron-left"></i></button>
+            <span class="week-display" id="rangoFechas">Cargando...</span>
+            <button class="week-btn" onclick="cambiarSemana(1)"><i class="bi bi-chevron-right"></i></button>
+        </div>
 
         <div id="listaClases">
-            <p style="text-align: center; margin-top: 50px;">Cargando calendario...</p>
+            <p style="text-align: center; margin-top: 50px; color:#666;">Cargando calendario...</p>
         </div>
     </div>
 
@@ -116,91 +207,159 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         let currentUser = null;
+        let todasLasClases = []; // Almacenamos todas para no recargar
+        let currentFilter = 'all';
+        let fechaInicioVista = new Date(); // Fecha de inicio de la visualización (Hoy)
+        
+        // Ajustamos al principio del día de hoy
+        fechaInicioVista.setHours(0,0,0,0);
 
-        // 1. Detectar usuario
+        // 1. Detectar usuario y cargar
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            cargarClases();
+            cargarClasesFirebase();
         });
 
-        // 2. Cargar Clases ordenadas por fecha
-        async function cargarClases() {
+        // 2. Cargar Clases desde Firebase (Solo futuras)
+        async function cargarClasesFirebase() {
             const container = document.getElementById('listaClases');
             
             try {
-                // Traemos clases futuras (ordenadas por timestamp)
-                // SI ESTO FALLA: Mira la consola, te pedirá crear un índice.
-                const q = query(collection(db, "clases"), orderBy("timestamp", "asc"));
+                // Obtenemos clases desde ayer (para evitar problemas de zona horaria) en adelante
+                const ayer = new Date();
+                ayer.setDate(ayer.getDate() - 1);
+                const timestampAyer = ayer.getTime();
+
+                const q = query(collection(db, "clases"), where("timestamp", ">=", timestampAyer), orderBy("timestamp", "asc"));
                 const querySnapshot = await getDocs(q);
                 
-                if (querySnapshot.empty) {
-                    container.innerHTML = "<p style='text-align:center'>No hay clases programadas próximamente.</p>";
-                    return;
-                }
-
-                container.innerHTML = ""; // Limpiar mensaje de carga
-                let lastDate = "";
-
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    
-                    // Calcular plazas
-                    const plazasOcupadas = data.apuntados ? data.apuntados.length : 0;
-                    const plazasLibres = data.plazas_totales - plazasOcupadas;
-                    const estaApuntado = currentUser && data.apuntados && data.apuntados.includes(currentUser.uid);
-                    
-                    // Agrupar por fecha visualmente
-                    if(data.fecha !== lastDate) {
-                        container.innerHTML += `<div class="date-divider">${data.fecha}</div>`;
-                        lastDate = data.fecha;
-                    }
-
-                    // Determinar estado del botón
-                    let btnText = "RESERVAR";
-                    let btnDisabled = false;
-                    
-                    if (estaApuntado) {
-                        btnText = "✅ APUNTADO";
-                        btnDisabled = true;
-                    } else if (plazasLibres <= 0) {
-                        btnText = "⛔ COMPLETO";
-                        btnDisabled = true;
-                    }
-
-                    // HTML de la tarjeta
-                    const html = `
-                        <div class="class-card type-${data.tipo}">
-                            <div class="class-info">
-                                <h3>${data.nombre}</h3>
-                                <div class="class-meta">
-                                    <span>⏰ ${data.hora}</span>
-                                    <span>💪 ${data.tipo.toUpperCase()}</span>
-                                    <span class="spots-badge ${plazasLibres===0 ? 'spots-full':''}">
-                                        Libres: ${plazasLibres}/${data.plazas_totales}
-                                    </span>
-                                </div>
-                            </div>
-                            <button class="btn-book" 
-                                onclick="reservar('${docSnap.id}', '${data.nombre}', '${data.tipo}')" 
-                                ${btnDisabled ? 'disabled' : ''}>
-                                ${btnText}
-                            </button>
-                        </div>
-                    `;
-                    container.innerHTML += html;
+                todasLasClases = [];
+                querySnapshot.forEach((doc) => {
+                    let data = doc.data();
+                    data.id = doc.id;
+                    todasLasClases.push(data);
                 });
 
+                renderizarClases();
+
             } catch (error) {
-                console.error(error);
-                if(error.message.includes("index")) {
-                    container.innerHTML = "<p style='color:red; text-align:center'>⚠️ ERROR: Falta crear el índice en Firebase. (Abre la consola F12 y pulsa el enlace)</p>";
-                } else {
-                    container.innerHTML = "<p style='text-align:center'>Error cargando el calendario.</p>";
-                }
+                console.error("Error cargando clases:", error);
+                container.innerHTML = "<p style='text-align:center; color:red;'>Error al cargar horarios. Verifica tu conexión.</p>";
             }
         }
 
-        // 3. Función Reservar Inteligente (Multicrédito)
+        // 3. Renderizar Clases (Con Filtros de Tipo y Fecha)
+        window.renderizarClases = function() {
+            const container = document.getElementById('listaClases');
+            container.innerHTML = "";
+
+            // Calcular fecha fin (Inicio + 7 días)
+            const fechaFinVista = new Date(fechaInicioVista);
+            fechaFinVista.setDate(fechaInicioVista.getDate() + 7);
+
+            // Actualizar texto del rango
+            const opcionesFecha = { day: 'numeric', month: 'short' };
+            document.getElementById('rangoFechas').innerText = 
+                `${fechaInicioVista.toLocaleDateString('es-ES', opcionesFecha)} - ${fechaFinVista.toLocaleDateString('es-ES', opcionesFecha)}`;
+
+            // Filtrar Array en Memoria
+            const clasesFiltradas = todasLasClases.filter(clase => {
+                // 1. Filtro por Tipo
+                if (currentFilter !== 'all' && clase.tipo !== currentFilter) return false;
+                
+                // 2. Filtro por Fecha (Dentro de los 7 días)
+                // Asumimos que clase.timestamp es milisegundos
+                return clase.timestamp >= fechaInicioVista.getTime() && clase.timestamp < fechaFinVista.getTime();
+            });
+
+            if (clasesFiltradas.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding: 40px; color: #666;">
+                        <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
+                        <p>No hay clases disponibles esta semana con los filtros seleccionados.</p>
+                    </div>`;
+                return;
+            }
+
+            let lastDate = "";
+
+            clasesFiltradas.forEach(data => {
+                // Calcular plazas
+                const plazasOcupadas = data.apuntados ? data.apuntados.length : 0;
+                const plazasLibres = data.plazas_totales - plazasOcupadas;
+                const estaApuntado = currentUser && data.apuntados && data.apuntados.includes(currentUser.uid);
+                
+                // Agrupar por fecha visualmente
+                if(data.fecha !== lastDate) {
+                    // Formatear fecha bonito (Ej: Lunes, 12 Dic)
+                    const fechaObj = new Date(data.timestamp);
+                    const fechaBonita = fechaObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+                    
+                    container.innerHTML += `<div class="date-divider">${fechaBonita.charAt(0).toUpperCase() + fechaBonita.slice(1)}</div>`;
+                    lastDate = data.fecha;
+                }
+
+                // Estado del botón
+                let btnText = "RESERVAR";
+                let btnDisabled = false;
+                
+                if (estaApuntado) {
+                    btnText = "✅ APUNTADO";
+                    btnDisabled = true;
+                } else if (plazasLibres <= 0) {
+                    btnText = "⛔ COMPLETO";
+                    btnDisabled = true;
+                }
+
+                // Determinar color borde según tipo
+                let tipoClass = "";
+                if(data.tipo === 'fuerza') tipoClass = "type-fuerza";
+                else if(data.tipo === 'pilates') tipoClass = "type-pilates";
+                else if(data.tipo === 'personal') tipoClass = "type-personal";
+                else tipoClass = "type-nutricion";
+
+                // HTML Tarjeta
+                const html = `
+                    <div class="class-card ${tipoClass}">
+                        <div class="class-info">
+                            <h3>${data.nombre}</h3>
+                            <div class="class-meta">
+                                <span><i class="bi bi-clock"></i> ${data.hora}</span>
+                                <span><i class="bi bi-tag"></i> ${data.tipo.toUpperCase()}</span>
+                                <span class="spots-badge ${plazasLibres===0 ? 'spots-full':''}">
+                                    Libres: ${plazasLibres}/${data.plazas_totales}
+                                </span>
+                            </div>
+                        </div>
+                        <button class="btn-book" 
+                            onclick="reservar('${data.id}', '${data.nombre}', '${data.tipo}')" 
+                            ${btnDisabled ? 'disabled' : ''}>
+                            ${btnText}
+                        </button>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        // FUNCIONES DE INTERFAZ
+        window.filtrarTipo = function(tipo, btn) {
+            currentFilter = tipo;
+            
+            // Actualizar estilo botones
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            renderizarClases();
+        }
+
+        window.cambiarSemana = function(direccion) {
+            // Sumar o restar 7 días
+            fechaInicioVista.setDate(fechaInicioVista.getDate() + (direccion * 7));
+            renderizarClases();
+        }
+
+        // 4. LÓGICA DE RESERVA
         window.reservar = async (claseId, nombreClase, tipoClase) => {
             if (!currentUser) {
                 if(confirm("Debes iniciar sesión para reservar. ¿Ir al login?")) {
@@ -218,56 +377,55 @@
                 const userSnap = await getDoc(userRef);
                 const userData = userSnap.data();
 
-                // Lógica para saber qué saldo mirar
-                // 1. Buscamos en la bolsa nueva 'creditos_detalle'
-                let creditosDisponibles = 0;
                 let bolsaCreditos = userData.creditos_detalle || {};
                 
-                
-
-                // Si no tiene bolsa nueva pero tiene saldo antiguo, asumimos que es Fuerza
+                // Fallback Legacy
                 if (typeof userData.creditos === 'number' && bolsaCreditos.fuerza === undefined) {
                     bolsaCreditos.fuerza = userData.creditos;
                 }
 
-                creditosDisponibles = bolsaCreditos[tipoClase] || 0;
+                const creditosDisponibles = bolsaCreditos[tipoClase] || 0;
 
                 if (creditosDisponibles < 1) {
-                    registrarLog(currentUser.email, "RESERVA", `Intento Reserva, no creditos: ${nombreClase} (${tipoClase})`);
-                    alert(`⛔ No tienes créditos de ${tipoClase.toUpperCase()}. Contacta con el centro.`);
+                    registrarLog(currentUser.email, "RESERVA_FAIL", `Intento sin saldo: ${nombreClase}`);
+                    alert(`⛔ No tienes créditos de ${tipoClase.toUpperCase()}.`);
                     return;
                 }
 
-                // B) Verificar hueco (Doble check)
+                // B) Verificar hueco
                 const claseRef = doc(db, "clases", claseId);
                 const claseSnap = await getDoc(claseRef);
                 const dataClase = claseSnap.data();
                 
                 if (dataClase.apuntados && dataClase.apuntados.length >= dataClase.plazas_totales) {
-                    alert("⛔ Vaya, alguien se te adelantó. La clase está completa.");
-                    cargarClases(); // Recargar para ver el cambio
+                    alert("⛔ Clase completa. Alguien fue más rápido.");
+                    cargarClasesFirebase(); 
                     return;
                 }
 
                 // C) EJECUTAR RESERVA
-                // 1. Restamos el crédito específico
                 bolsaCreditos[tipoClase] = creditosDisponibles - 1;
 
-                // Actualizamos usuario (guardamos la bolsa detallada y el total en 'creditos' para compatibilidad)
                 await updateDoc(userRef, { 
                     creditos_detalle: bolsaCreditos,
-                    creditos: bolsaCreditos.fuerza // Legacy
+                    creditos: bolsaCreditos.fuerza 
                 });
                 
-                // 2. Apuntamos al usuario
                 await updateDoc(claseRef, {
                     apuntados: arrayUnion(currentUser.uid)
                 });
 
-                registrarLog(currentUser.email, "RESERVA", `Reservó: ${nombreClase} (${tipoClase})`);
+                registrarLog(currentUser.email, "RESERVA_OK", `Reservó: ${nombreClase}`);
 
                 alert("✅ ¡Reserva confirmada!");
-                cargarClases(); // Recargar la lista
+                
+                // Actualizamos el array local para que se refleje inmediato sin petición extra
+                const index = todasLasClases.findIndex(c => c.id === claseId);
+                if(index !== -1) {
+                    if(!todasLasClases[index].apuntados) todasLasClases[index].apuntados = [];
+                    todasLasClases[index].apuntados.push(currentUser.uid);
+                }
+                renderizarClases();
 
             } catch (error) {
                 console.error(error);
