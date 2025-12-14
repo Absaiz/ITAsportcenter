@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="imagen/logoico.png">
+    <link rel="icon" type="image/png" href="imagen/logoico.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>ITA | Entrenar</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <script>
+        const v = Date.now();
+        function cargarCSS(archivo) {
+            var link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = archivo + "?v=" + v;
+            document.head.appendChild(link);
+        }
+        function cargarJS(archivo) {
+            var script = document.createElement('script');
+            script.type = 'module';
+            script.src = archivo + '?v=' + v;
+            document.head.appendChild(script);
+        }
+        cargarCSS('style.css');       
+        cargarJS('layout.js');        
+        cargarJS('user-logic.js');    
+    </script>
+
+    <style>
+        .train-container { max-width: 800px; margin: 40px auto; padding: 20px; }
+
+        /* HEADER */
+        .train-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px; 
+        }
+        .train-title { font-family: 'Oswald'; font-size: 2rem; color: white; margin: 0; }
+        
+        /* SELECTOR DE RUTINA */
+        .routine-selector { width: 100%; background: #222; color: white; border: 1px solid #444; padding: 15px; border-radius: 8px; font-size: 1.1rem; margin-bottom: 20px; }
+        
+        /* TARJETA DE EJERCICIO */
+        .exercise-card { 
+            background: #1a1a1a; border: 1px solid #333; border-radius: 10px; 
+            padding: 20px; margin-bottom: 25px; position: relative; overflow: hidden;
+        }
+        .exercise-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: #ff007f; /* Rosa ITA */
+        }
+        
+        .ex-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .ex-name { font-family: 'Oswald'; font-size: 1.4rem; color: white; margin: 0; text-transform: uppercase; }
+        .last-log { font-size: 0.8rem; color: #888; margin-top: 5px; font-style: italic; }
+
+        /* INPUTS DE SERIE */
+        .set-row { 
+            display: flex; gap: 10px; align-items: center; margin-bottom: 10px; 
+            background: #222; padding: 10px; border-radius: 8px;
+        }
+        .input-data { 
+            background: transparent; border: none; border-bottom: 1px solid #555; 
+            color: white; width: 60px; text-align: center; font-size: 1.2rem; font-weight: bold;
+        }
+        .input-data:focus { outline: none; border-color: #ff007f; }
+        .label-data { font-size: 0.8rem; color: #aaa; }
+        
+        .btn-save-set {
+            background: #ff007f; border: none; color: white; width: 40px; height: 40px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-save-set:active { transform: scale(0.9); }
+        .btn-save-set.saved { background: #1dd1a1; pointer-events: none; }
+
+        /* HISTORIAL DE HOY */
+        .today-logs { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #333; }
+        .log-badge { 
+            display: inline-block; background: #333; color: #ddd; 
+            padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; margin-bottom: 5px;
+        }
+
+        /* BOTONES ACCIÓN */
+        .action-bar { display: flex; gap: 10px; margin-bottom: 30px; }
+        .btn-action { flex: 1; padding: 12px; border: 1px solid #444; background: transparent; color: white; border-radius: 5px; font-family: 'Oswald'; cursor: pointer; }
+        .btn-action:hover { background: #333; }
+        .btn-new { border-color: #ff007f; color: #ff007f; }
+    </style>
+</head>
+<body>
+
+    <div class="train-container">
+        
+        <div class="train-header">
+            <div>
+                <h1 class="train-title">MI ENTRENAMIENTO</h1>
+                <p style="color:#888; margin:0;">Registra y supérate.</p>
+            </div>
+            <button class="btn-action btn-new" data-bs-toggle="modal" data-bs-target="#modalCrearRutina">
+                + CREAR RUTINA
+            </button>
+        </div>
+
+        <select id="selectRutina" class="routine-selector" onchange="cargarEjercicios()">
+            <option value="" disabled selected>Selecciona tu rutina de hoy...</option>
+            </select>
+
+        <div id="workoutArea">
+            <p style="text-align:center; color:#666; margin-top:50px;">
+                <i class="bi bi-dumbbell" style="font-size:2rem;"></i><br>
+                Selecciona una rutina o crea una nueva para empezar.
+            </button>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="modalCrearRutina" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title font-oswald">NUEVA RUTINA</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de la Rutina</label>
+                        <input type="text" id="nombreRutina" class="form-control bg-secondary text-white border-0" placeholder="Ej: Torso A, Pierna Glúteo...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ejercicios (Separados por coma)</label>
+                        <textarea id="listaEjercicios" class="form-control bg-secondary text-white border-0" rows="4" placeholder="Press Banca, Dominadas, Sentadilla, Curl Bíceps..."></textarea>
+                        <small class="text-white-50">Escribe los nombres tal cual.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn" style="background-color: #ff007f; color: white;" onclick="guardarNuevaRutina()">Guardar Rutina</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from "./firebase-config.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { collection, addDoc, getDocs, query, where, orderBy, limit, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        let currentUser = null;
+        let rutinasCargadas = [];
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                cargarRutinas();
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // 1. CARGAR RUTINAS DEL USUARIO
+        async function cargarRutinas() {
+            const select = document.getElementById('selectRutina');
+            
+            // Buscar rutinas creadas por este usuario
+            const q = query(collection(db, "rutinas"), where("userId", "==", currentUser.uid));
+            const snap = await getDocs(q);
+            
+            rutinasCargadas = [];
+            select.innerHTML = '<option value="" disabled selected>Selecciona tu rutina...</option>';
+
+            snap.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                rutinasCargadas.push(data);
+                select.innerHTML += `<option value="${data.id}">${data.nombre}</option>`;
+            });
+
+            if (rutinasCargadas.length === 0) {
+                document.getElementById('workoutArea').innerHTML = `
+                    <div style="text-align:center; padding:30px; color:#aaa;">
+                        <p>No tienes rutinas creadas.</p>
+                        <p>Dale al botón <b>+ CREAR RUTINA</b> arriba a la derecha.</p>
+                    </div>`;
+            }
+        }
+
+        // 2. CREAR NUEVA RUTINA
+        window.guardarNuevaRutina = async () => {
+            const nombre = document.getElementById('nombreRutina').value;
+            const ejerciciosTexto = document.getElementById('listaEjercicios').value;
+
+            if(!nombre || !ejerciciosTexto) { alert("Rellena todos los campos"); return; }
+
+            // Convertir texto separado por comas en Array
+            const ejerciciosArr = ejerciciosTexto.split(',').map(e => e.trim()).filter(e => e.length > 0);
+
+            try {
+                await addDoc(collection(db, "rutinas"), {
+                    userId: currentUser.uid,
+                    nombre: nombre,
+                    ejercicios: ejerciciosArr,
+                    creada: Date.now()
+                });
+                
+                alert("Rutina creada! Ahora selecciónala para entrenar.");
+                
+                // Cerrar modal y recargar
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrearRutina'));
+                modal.hide();
+                document.getElementById('nombreRutina').value = "";
+                document.getElementById('listaEjercicios').value = "";
+                cargarRutinas();
+
+            } catch(e) {
+                console.error(e);
+                alert("Error al guardar");
+            }
+        }
+
+        // 3. MOSTRAR INTERFAZ DE ENTRENAMIENTO
+        window.cargarEjercicios = async () => {
+            const rutinaId = document.getElementById('selectRutina').value;
+            const rutina = rutinasCargadas.find(r => r.id === rutinaId);
+            const container = document.getElementById('workoutArea');
+            
+            if(!rutina) return;
+
+            container.innerHTML = '<p style="text-align:center">Cargando historial...</p>';
+            let html = "";
+
+            for (const ejercicio of rutina.ejercicios) {
+                // Buscar último registro de este ejercicio (Progressive Overload)
+                const ultimoLog = await obtenerUltimoLog(ejercicio);
+                let infoLast = "Sin datos previos";
+                if(ultimoLog) {
+                    infoLast = `Última vez: ${ultimoLog.peso}kg x ${ultimoLog.repes} reps`;
+                }
+
+                html += `
+                    <div class="exercise-card">
+                        <div class="ex-header">
+                            <div>
+                                <h3 class="ex-name">${ejercicio}</h3>
+                                <p class="last-log">📊 ${infoLast}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="set-row">
+                            <div>
+                                <input type="number" id="kg-${ejercicio}" class="input-data" placeholder="0">
+                                <span class="label-data">KG</span>
+                            </div>
+                            <div>
+                                <input type="number" id="reps-${ejercicio}" class="input-data" placeholder="0">
+                                <span class="label-data">REPS</span>
+                            </div>
+                            <button class="btn-save-set" onclick="registrarSerie('${rutinaId}', '${ejercicio}', this)">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="today-logs" id="logs-${ejercicio.replace(/\s/g, '')}">
+                            <small style="color:#666;">Series de hoy:</small><br>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // 4. HELPER: OBTENER ÚLTIMO LOG
+        async function obtenerUltimoLog(nombreEjercicio) {
+            // Buscamos en historial_entreno
+            const q = query(
+                collection(db, "historial_entreno"),
+                where("userId", "==", currentUser.uid),
+                where("ejercicio", "==", nombreEjercicio),
+                orderBy("timestamp", "desc"),
+                limit(1)
+            );
+            
+            try {
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    return snap.docs[0].data();
+                }
+            } catch(e) {
+                console.log("No hay historial previo o falta índice para: " + nombreEjercicio);
+            }
+            return null;
+        }
+
+        // 5. GUARDAR SERIE (LOGICA PRINCIPAL)
+        window.registrarSerie = async (rutinaId, ejercicioNombre, btn) => {
+            const kgInput = document.getElementById(`kg-${ejercicioNombre}`);
+            const repsInput = document.getElementById(`reps-${ejercicioNombre}`);
+            
+            const peso = parseFloat(kgInput.value);
+            const repes = parseFloat(repsInput.value);
+
+            if(!peso || !repes) { alert("Pon peso y repes"); return; }
+
+            // Animación botón
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<div class="spinner-border spinner-border-sm"></div>';
+
+            try {
+                const datosSerie = {
+                    userId: currentUser.uid,
+                    rutinaId: rutinaId,
+                    ejercicio: ejercicioNombre,
+                    peso: peso,
+                    repes: repes,
+                    fecha: new Date().toLocaleDateString('es-ES'),
+                    timestamp: Date.now()
+                };
+
+                // Guardar en Firebase
+                await addDoc(collection(db, "historial_entreno"), datosSerie);
+
+                // Feedback Visual
+                btn.innerHTML = '<i class="bi bi-check2-all"></i>';
+                btn.classList.add('saved');
+                setTimeout(() => {
+                    btn.classList.remove('saved');
+                    btn.innerHTML = originalHtml;
+                }, 2000);
+
+                // Añadir al listado visual de hoy
+                const idDiv = ejercicioNombre.replace(/\s/g, '');
+                const divLogs = document.getElementById(`logs-${idDiv}`);
+                divLogs.innerHTML += `<span class="log-badge">${peso}kg x ${repes}</span>`;
+
+                // Limpiar inputs (opcional, algunos prefieren mantener para la siguiente serie)
+                // kgInput.value = ''; 
+                // repsInput.value = '';
+
+            } catch(e) {
+                console.error(e);
+                alert("Error al guardar serie");
+                btn.innerHTML = originalHtml;
+            }
+        }
+    </script>
+
+</body>
+</html>
