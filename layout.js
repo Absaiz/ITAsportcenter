@@ -35,7 +35,7 @@ const menuHTML = `
         <div class="nav-links" id="navLinks">
             <a href="index.html#sobre-mi">SOBRE MÍ</a>
             <a href="filosofia.html">Filosofía</a>
-            <a href="Entrenar.html">Rutinas</a>
+            <a href="entrenar.html">Rutinas</a>
             <a href="reservas.html">Horarios</a>
             <a href="planes.html">Tarifas</a>
             <a href="contacto.html">Contacto</a>
