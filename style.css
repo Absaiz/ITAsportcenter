@@ -160,7 +160,6 @@ footer {
 .footer-logo:hover { opacity: 1; }
 
  
-
 .hero-logo-img {
     max-width: 250px; /* Limitamos el ancho para que no sea gigante */
     width: 100%;      /* Se adapta si la pantalla es más pequeña que 250px */
