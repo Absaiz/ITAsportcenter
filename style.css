@@ -159,6 +159,16 @@ footer {
 }
 .footer-logo:hover { opacity: 1; }
 
+ 
+
+.hero-logo-img {
+    max-width: 250px; /* Limitamos el ancho para que no sea gigante */
+    width: 100%;      /* Se adapta si la pantalla es más pequeña que 250px */
+    height: auto;     /* Mantiene la proporción */
+    display: block;   /* Importante para que el margen automático funcione */
+    margin: 0 auto 20px auto; /* '0 auto' centra horizontalmente */
+    filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+}
 
 /* --- RESPONSIVE (MÓVIL) --- */
 @media (max-width: 768px) {
@@ -209,11 +219,20 @@ footer {
     }
 }
  
- /* En style.css */
+/* En style.css */
+
 .hero {
-    /* ... resto de propiedades ... */
-    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('imagen/image_02.jpg');
-    background-size: cover;
+    flex: 1; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    
+    /* CAMBIO: Quitamos url('imagen/image_02.jpg') y dejamos solo un degradado oscuro */
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000000 70%);
+    
+    background-size: cover; 
     background-position: center;
+    text-align: center; 
+    padding: 100px 20px;
+    min-height: 80vh; /* Asegura que la portada tenga buena altura */
 }
- 
