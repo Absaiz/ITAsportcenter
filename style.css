@@ -209,5 +209,11 @@ footer {
     }
 }
  
- 
+ /* En style.css */
+.hero {
+    /* ... resto de propiedades ... */
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('imagen/image_02.jpg');
+    background-size: cover;
+    background-position: center;
+}
  
