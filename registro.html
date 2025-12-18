@@ -2,80 +2,150 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="imagen/logoico.png">
-    <link rel="icon" type="image/png" href="imagen/logoico.png">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ITA | Registro</title>
     
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     
-    <script>
-        // Generamos un número único (la hora actual) para evitar caché
-        const v = Date.now();
-
-        function cargarCSS(archivo) {
-            var link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.href = archivo + "?v=" + v;
-            document.head.appendChild(link);
+    <script src="layout.js"></script> <style>
+        /* ESTILOS DE EMERGENCIA (Con !important para que nada los pise) */
+        body { 
+            background-color: #050505; 
+            color: white; 
+            font-family: 'Montserrat', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
         }
 
-        function cargarJS(archivo) {
-            var script = document.createElement('script');
-            script.type = 'module';
-            script.src = archivo + '?v=' + v;
-            document.head.appendChild(script);
+        .auth-container { 
+            max-width: 400px; 
+            margin: 150px auto 50px; 
+            padding: 40px; 
+            background: #121212; 
+            border: 1px solid #333; 
+            border-radius: 10px; 
+            text-align: center; 
         }
 
-        // --- CARGAMOS TODO FRESCO ---
-        // Nota: layout.js ya carga style.css, pero lo dejamos aquí por seguridad anti-caché
-        cargarCSS('style.css');       
-        cargarJS('layout.js');        
-        cargarJS('user-logic.js');    
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <style>
-        body { background-color: #050505; color: white; font-family: 'Montserrat', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
-        .auth-container { max-width: 400px; margin: 150px auto 50px; padding: 40px; background: #121212; border: 1px solid #333; border-radius: 10px; text-align: center; }
-        h2 { font-family: 'Oswald'; color: #C25E75; margin-bottom: 30px; font-size: 2rem; }
-        
-        /* Inputs normales al 100% */
-        input:not([type="checkbox"]) { width: 100%; padding: 12px; margin-bottom: 15px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
-        input:focus { border-color: #C25E75; outline: none; }
-        
-        button { width: 100%; padding: 12px; background: #C25E75; color: white; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        button:hover { background: #ff2a6d; }
-        .link { margin-top: 20px; font-size: 0.9rem; display: block; color: #aaa; text-decoration: none; }
-        .link:hover { color: white; }
+        h2 { 
+            font-family: 'Oswald'; 
+            color: #C25E75; 
+            margin-bottom: 30px; 
+            font-size: 2rem; 
+        }
 
-        /* Estilo específico para el Checkbox Legal */
+        /* Inputs normales (Texto, Email, Pass) */
+        .auth-container input:not([type="checkbox"]) { 
+            width: 100% !important; 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            background: #222; 
+            border: 1px solid #444; 
+            color: white; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+            display: block;
+        }
+
+        /* El Checkbox y su texto */
         .legal-check-container {
-            display: flex;
-            align-items: flex-start;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
             gap: 10px;
             margin: 10px 0 20px 0;
             text-align: left;
             font-size: 0.85rem;
             color: #ccc;
+            width: 100%;
         }
-        input[type="checkbox"] {
-            width: auto; /* Importante para que no se estire */
-            margin-top: 3px;
-            accent-color: #C25E75; /* Color del tick en rosa */
+
+        .legal-check-container input[type="checkbox"] {
+            width: 20px !important;  /* Tamaño fijo para que no desaparezca */
+            height: 20px !important;
+            margin: 0 !important;
+            accent-color: #C25E75;
+            cursor: pointer;
+            display: inline-block !important;
         }
+
+        /* El botón de crear cuenta */
+        .btn-submit-ita { 
+            width: 100% !important; 
+            padding: 15px !important; 
+            background: #C25E75 !important; 
+            color: white !important; 
+            border: none; 
+            font-weight: bold; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            display: block !important; /* Forzamos que se vea */
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .btn-submit-ita:hover { 
+            background: #ff2a6d !important; 
+        }
+
+        .link { margin-top: 20px; font-size: 0.9rem; display: block; color: #aaa; text-decoration: none; }
     </style>
 </head>
 <body>
 
     <div class="auth-container">
         <h2>UNIRSE A ITA</h2>
+        
         <form id="registroForm">
             <input type="text" id="nombre" placeholder="Nombre completo" required>
             <input type="email" id="email" placeholder="Correo electrónico" required>
             <input type="password" id="password" placeholder="Contraseña (mín. 6 caracteres)" required>
+            
+            <div class="legal-check-container">
+                <input type="checkbox" id="legal-check" required>
+                <label for="legal-check">
+                    Acepto la <a href="/politica-privacidad.html" target="_blank" style="color: #C25E75; text-decoration: underline;">política de privacidad</a>.
+                </label>
+            </div>
+
+            <button type="submit" class="btn-submit-ita">CREAR CUENTA</button>
+        </form>
+
+        <a href="login.html" class="link">¿Ya tienes cuenta? Inicia sesión aquí</a>
+    </div>
+
+    <script type="module">
+        import { registrarUsuario } from "./auth.js";
+        
+        const form = document.getElementById('registroForm');
+        
+        if(form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Verificamos manualmente el checkbox por si acaso
+                const check = document.getElementById('legal-check');
+                if(!check.checked) {
+                    alert("Debes aceptar la política de privacidad.");
+                    return;
+                }
+
+                const nombre = document.getElementById('nombre').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                await registrarUsuario(email, password, nombre);
+            });
+        } else {
+            console.error("No encuentro el formulario 'registroForm'");
+        }
+    </script>
+</body>
+</html>
