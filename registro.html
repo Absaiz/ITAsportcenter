@@ -15,10 +15,9 @@
     <link rel="stylesheet" href="style.css">
     
     <script>
-        // Generamos un número único (la hora actual)
+        // Generamos un número único (la hora actual) para evitar caché
         const v = Date.now();
 
-        // Función para cargar CSS con versión
         function cargarCSS(archivo) {
             var link = document.createElement("link");
             link.rel = "stylesheet";
@@ -26,7 +25,6 @@
             document.head.appendChild(link);
         }
 
-        // Función para cargar JS con versión
         function cargarJS(archivo) {
             var script = document.createElement('script');
             script.type = 'module';
@@ -35,9 +33,10 @@
         }
 
         // --- CARGAMOS TODO FRESCO ---
-        cargarCSS('style.css');       // Estilos
-        cargarJS('layout.js');        // Menú
-        cargarJS('user-logic.js');    // Lógica Usuario
+        // Nota: layout.js ya carga style.css, pero lo dejamos aquí por seguridad anti-caché
+        cargarCSS('style.css');       
+        cargarJS('layout.js');        
+        cargarJS('user-logic.js');    
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -45,12 +44,31 @@
         body { background-color: #050505; color: white; font-family: 'Montserrat', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         .auth-container { max-width: 400px; margin: 150px auto 50px; padding: 40px; background: #121212; border: 1px solid #333; border-radius: 10px; text-align: center; }
         h2 { font-family: 'Oswald'; color: #C25E75; margin-bottom: 30px; font-size: 2rem; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
+        
+        /* Inputs normales al 100% */
+        input:not([type="checkbox"]) { width: 100%; padding: 12px; margin-bottom: 15px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
         input:focus { border-color: #C25E75; outline: none; }
+        
         button { width: 100%; padding: 12px; background: #C25E75; color: white; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         button:hover { background: #ff2a6d; }
         .link { margin-top: 20px; font-size: 0.9rem; display: block; color: #aaa; text-decoration: none; }
         .link:hover { color: white; }
+
+        /* Estilo específico para el Checkbox Legal */
+        .legal-check-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 10px 0 20px 0;
+            text-align: left;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+        input[type="checkbox"] {
+            width: auto; /* Importante para que no se estire */
+            margin-top: 3px;
+            accent-color: #C25E75; /* Color del tick en rosa */
+        }
     </style>
 </head>
 <body>
@@ -61,29 +79,3 @@
             <input type="text" id="nombre" placeholder="Nombre completo" required>
             <input type="email" id="email" placeholder="Correo electrónico" required>
             <input type="password" id="password" placeholder="Contraseña (mín. 6 caracteres)" required>
-            <button type="submit">CREAR CUENTA</button>
-        </form>
-        <a href="login.html" class="link">¿Ya tienes cuenta? Inicia sesión aquí</a>
-    </div>
-
-    <script type="module">
-        import { registrarUsuario } from "./auth.js";
-        import { registrarLog } from "./logger.js";
-        console.log("Script de registro cargado correctamente");
-
-        const form = document.getElementById('registroForm');
-        
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault(); // ESTO EVITA QUE LA PÁGINA SE RECARGUE
-            console.log("Botón pulsado. Intentando registrar...");
-
-            const nombre = document.getElementById('nombre').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Llamamos a la función
-            await registrarUsuario(email, password, nombre);
-        });
-    </script>
-</body>
-</html>
