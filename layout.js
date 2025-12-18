@@ -129,3 +129,46 @@ document.addEventListener('click', function(e) {
         window.location.href = anchor.href;
     }
 }, false);
+
+document.addEventListener("DOMContentLoaded", () => {
+    
+    // 1. Verificamos si ya aceptó o rechazó antes
+    const consent = localStorage.getItem("cookieConsent");
+    if (consent) return; // Si ya decidió, no hacemos nada más.
+
+    // 2. Si no ha decidido, CREAMOS el HTML del banner dinámicamente
+    const cookieBanner = document.createElement("div");
+    cookieBanner.id = "cookie-banner";
+    cookieBanner.className = "cookie-container"; // Usa la clase CSS que te di antes
+    
+    cookieBanner.innerHTML = `
+        <p>
+            Usamos cookies para que puedas entrenar fuerte y navegar mejor. 
+            Si sigues aquí, asumimos que aceptas nuestra <a href="/politica-privacidad.html">política de privacidad</a>.
+        </p>
+        <div class="cookie-buttons">
+            <button id="accept-cookies" class="btn-cookie btn-accept">ACEPTAR Y ENTRENAR</button>
+            <button id="reject-cookies" class="btn-cookie btn-reject">Solo funcionales</button>
+        </div>
+    `;
+
+    // 3. Lo añadimos al final del body
+    document.body.appendChild(cookieBanner);
+
+    // 4. Pequeño retraso para la animación de entrada (para que suba suave)
+    setTimeout(() => {
+        cookieBanner.classList.add("show");
+    }, 100);
+
+    // 5. Configurar los botones
+    document.getElementById("accept-cookies").addEventListener("click", () => {
+        localStorage.setItem("cookieConsent", "accepted");
+        cookieBanner.classList.remove("show");
+        // Aquí activarías Google Analytics en el futuro
+    });
+
+    document.getElementById("reject-cookies").addEventListener("click", () => {
+        localStorage.setItem("cookieConsent", "rejected");
+        cookieBanner.classList.remove("show");
+    });
+});
