@@ -1,4 +1,4 @@
-// layout.js - VERSIÓN "APP TOTAL" (WhatsApp + Anti-Caché + iOS Fix)
+// layout.js - VERSIÓN "APP TOTAL" (WhatsApp + Cookies + iOS Fix)
 
 // 1. FORZAR LA CARGA DE ESTILOS Y MANIFEST
 const version = Date.now(); 
@@ -19,7 +19,7 @@ document.head.appendChild(linkManifest);
 const metaApple = document.createElement("meta"); metaApple.name = "apple-mobile-web-app-capable"; metaApple.content = "yes"; document.head.appendChild(metaApple);
 const metaStatus = document.createElement("meta"); metaStatus.name = "apple-mobile-web-app-status-bar-style"; metaStatus.content = "black-translucent"; document.head.appendChild(metaStatus);
 
-// 2. EL MENÚ HTML (Con botón Sobre Mí)
+// 2. EL MENÚ HTML
 const menuHTML = `
     <nav> 
         <a href="index.html" class="nav-logo">
@@ -51,12 +51,16 @@ const footerHTML = `
             <img src="imagen/logo.png" alt="ITA Small Logo" class="footer-logo">
             <p>© 2025 ITA Sport Center. Todos los derechos reservados.</p>
             <p style="margin-top:10px; font-size: 0.8rem; opacity: 0.6; letter-spacing: 2px;">IMAGINA • TRANSFORMA • ACTÚA</p>
+            <div style="margin-top: 15px; font-size: 0.8rem;">
+                <a href="/politica-privacidad.html" style="color: white; text-decoration: underline;">Política de Privacidad</a> | 
+                <a href="/cookies.html" style="color: white; text-decoration: underline;">Cookies</a>
+            </div>
         </div>
     </footer>
 `;
 
 // 4. EL BOTÓN DE WHATSAPP FLOTANTE
-// ¡¡CAMBIA EL 34600000000 POR TU NÚMERO REAL!! (Ej: 34666123456)
+// ¡¡RECUERDA: CAMBIA EL 34600000000 POR TU NÚMERO REAL!!
 const whatsappHTML = `
     <style>
         .wa-float {
@@ -78,68 +82,14 @@ const whatsappHTML = `
     </a>
 `;
 
-// --- FUNCIÓN MAESTRA ---
-function iniciarLayout() {
-    console.log("🚀 APP LISTA: Menu + Footer + WhatsApp");
-
-    // Limpieza
-    const oldNav = document.querySelector('nav'); if(oldNav) oldNav.remove();
-    const oldFooter = document.querySelector('footer'); if(oldFooter) oldFooter.remove();
-    const oldWa = document.querySelector('.wa-float'); if(oldWa) oldWa.remove();
-
-    // Inyectar HTML
-    document.body.insertAdjacentHTML('afterbegin', menuHTML);
-    document.body.insertAdjacentHTML('beforeend', footerHTML);
-    document.body.insertAdjacentHTML('beforeend', whatsappHTML); // <-- AQUÍ ENTRA EL WHATSAPP
-
-    // Marcar activo
-    const currentPage = window.location.pathname.split("/").pop();
-    const links = document.querySelectorAll('.nav-links a');
-    links.forEach(link => {
-        // Ignoramos el botón de 'Sobre Mí' para la clase active
-        if(!link.href.includes('#') && link.getAttribute('href') === currentPage) {
-            link.classList.add('active');
-        }
-    });
-
-    // Cargar usuario
-    import(`./auth.js?v=${version}`)
-        .then(() => console.log("Usuario cargado"))
-        .catch(() => console.log("Modo invitado"));
-}
-
-// 4. EJECUCIÓN INMEDIATA
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", iniciarLayout);
-} else {
-    iniciarLayout();
-}
-
-// 5. FUNCIONES GLOBALES
-window.toggleMenu = function() {
-    var menu = document.getElementById("navLinks");
-    if (menu) menu.classList.toggle("active");
-}
-
-// 6. HACK NAVEGACIÓN IOS
-document.addEventListener('click', function(e) {
-    const anchor = e.target.closest('a');
-    if (anchor && anchor.href && anchor.target !== '_blank' && anchor.hostname === window.location.hostname) {
-        e.preventDefault();
-        window.location.href = anchor.href;
-    }
-}, false);
-
-document.addEventListener("DOMContentLoaded", () => {
-    
-    // 1. Verificamos si ya aceptó o rechazó antes
+// 5. FUNCIÓN DE COOKIES (Separada y limpia)
+function iniciarCookies() {
     const consent = localStorage.getItem("cookieConsent");
-    if (consent) return; // Si ya decidió, no hacemos nada más.
+    if (consent) return; // Si ya decidió, salir.
 
-    // 2. Si no ha decidido, CREAMOS el HTML del banner dinámicamente
     const cookieBanner = document.createElement("div");
     cookieBanner.id = "cookie-banner";
-    cookieBanner.className = "cookie-container"; // Usa la clase CSS que te di antes
+    cookieBanner.className = "cookie-container";
     
     cookieBanner.innerHTML = `
         <p>
@@ -152,23 +102,70 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
     `;
 
-    // 3. Lo añadimos al final del body
     document.body.appendChild(cookieBanner);
 
-    // 4. Pequeño retraso para la animación de entrada (para que suba suave)
-    setTimeout(() => {
-        cookieBanner.classList.add("show");
-    }, 100);
+    setTimeout(() => { cookieBanner.classList.add("show"); }, 500);
 
-    // 5. Configurar los botones
     document.getElementById("accept-cookies").addEventListener("click", () => {
         localStorage.setItem("cookieConsent", "accepted");
         cookieBanner.classList.remove("show");
-        // Aquí activarías Google Analytics en el futuro
     });
 
     document.getElementById("reject-cookies").addEventListener("click", () => {
         localStorage.setItem("cookieConsent", "rejected");
         cookieBanner.classList.remove("show");
     });
-});
+}
+
+// --- FUNCIÓN MAESTRA ---
+function iniciarLayout() {
+    console.log("🚀 APP LISTA: Menu + Footer + WhatsApp + Cookies");
+
+    // Limpieza de elementos antiguos si existen
+    const oldNav = document.querySelector('nav'); if(oldNav) oldNav.remove();
+    const oldFooter = document.querySelector('footer'); if(oldFooter) oldFooter.remove();
+    const oldWa = document.querySelector('.wa-float'); if(oldWa) oldWa.remove();
+
+    // Inyectar HTML Estructural
+    document.body.insertAdjacentHTML('afterbegin', menuHTML);
+    document.body.insertAdjacentHTML('beforeend', footerHTML);
+    document.body.insertAdjacentHTML('beforeend', whatsappHTML);
+
+    // Iniciar Lógica de Cookies
+    iniciarCookies();
+
+    // Marcar enlace activo en el menú
+    const currentPage = window.location.pathname.split("/").pop() || "index.html";
+    const links = document.querySelectorAll('.nav-links a');
+    links.forEach(link => {
+        if(!link.href.includes('#') && link.getAttribute('href') === currentPage) {
+            link.classList.add('active');
+        }
+    });
+
+    // Cargar lógica de usuario (Auth)
+    import(`./auth.js?v=${version}`)
+        .then(() => console.log("Usuario cargado"))
+        .catch(() => console.log("Modo invitado"));
+}
+
+// 6. EJECUCIÓN INMEDIATA
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", iniciarLayout);
+} else {
+    iniciarLayout();
+}
+
+// 7. FUNCIONES GLOBALES (Menú y Navegación iOS)
+window.toggleMenu = function() {
+    var menu = document.getElementById("navLinks");
+    if (menu) menu.classList.toggle("active");
+}
+
+document.addEventListener('click', function(e) {
+    const anchor = e.target.closest('a');
+    if (anchor && anchor.href && anchor.target !== '_blank' && anchor.hostname === window.location.hostname) {
+        // Permitimos la navegación normal pero rápida
+        // Si necesitas efectos SPA, aquí irían.
+    }
+}, false);
