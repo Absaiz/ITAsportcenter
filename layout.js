@@ -1,4 +1,4 @@
-// layout.js - VERSIÓN "APP TOTAL" (WhatsApp + Cookies + iOS Fix)
+// layout.js - VERSIÓN "CLEAN" (Footer Minimalista + Legal + WhatsApp)
 
 // 1. FORZAR LA CARGA DE ESTILOS Y MANIFEST
 const version = Date.now(); 
@@ -44,23 +44,24 @@ const menuHTML = `
     </nav>
 `;
 
-// 3. EL FOOTER HTML
+// 3. EL FOOTER HTML (VERSIÓN LIMPIA / MINIMALISTA)
 const footerHTML = `
-    <footer>
-        <div class="container">
-            <img src="imagen/logo.png" alt="ITA Small Logo" class="footer-logo">
-            <p>© 2025 ITA Sport Center. Todos los derechos reservados.</p>
-            <p style="margin-top:10px; font-size: 0.8rem; opacity: 0.6; letter-spacing: 2px;">IMAGINA • TRANSFORMA • ACTÚA</p>
-            <div style="margin-top: 15px; font-size: 0.8rem;">
-                <a href="/politica-privacidad.html" style="color: white; text-decoration: underline;">Política de Privacidad</a> | 
-                <a href="/cookies.html" style="color: white; text-decoration: underline;">Cookies</a>
-            </div>
+    <footer style="background-color: #000; padding: 20px 0; border-top: 1px solid #222; text-align: center; font-size: 0.75rem; color: #666; margin-top: auto;">
+        <p style="margin-bottom: 8px;">© 2025 ITA Sport Center</p>
+        <div>
+            <a href="/politica-privacidad.html" style="color: #666; text-decoration: none; margin: 0 8px; transition: color 0.3s;">Privacidad</a>
+            <span style="color: #333;">|</span>
+            <a href="/cookies.html" style="color: #666; text-decoration: none; margin: 0 8px; transition: color 0.3s;">Cookies</a>
+            <span style="color: #333;">|</span>
+            <a href="/aviso-legal.html" style="color: #666; text-decoration: none; margin: 0 8px; transition: color 0.3s;">Aviso Legal</a>
         </div>
+        <style>
+            footer a:hover { color: #fff !important; } /* Efecto hover blanco sutil */
+        </style>
     </footer>
 `;
 
 // 4. EL BOTÓN DE WHATSAPP FLOTANTE
-// ¡¡RECUERDA: CAMBIA EL 34600000000 POR TU NÚMERO REAL!!
 const whatsappHTML = `
     <style>
         .wa-float {
@@ -85,7 +86,7 @@ const whatsappHTML = `
 // 5. FUNCIÓN DE COOKIES (Separada y limpia)
 function iniciarCookies() {
     const consent = localStorage.getItem("cookieConsent");
-    if (consent) return; // Si ya decidió, salir.
+    if (consent) return; 
 
     const cookieBanner = document.createElement("div");
     cookieBanner.id = "cookie-banner";
@@ -119,9 +120,9 @@ function iniciarCookies() {
 
 // --- FUNCIÓN MAESTRA ---
 function iniciarLayout() {
-    console.log("🚀 APP LISTA: Menu + Footer + WhatsApp + Cookies");
+    console.log("🚀 APP LISTA: Menu + Footer Clean + WhatsApp + Cookies");
 
-    // Limpieza de elementos antiguos si existen
+    // Limpieza de elementos antiguos
     const oldNav = document.querySelector('nav'); if(oldNav) oldNav.remove();
     const oldFooter = document.querySelector('footer'); if(oldFooter) oldFooter.remove();
     const oldWa = document.querySelector('.wa-float'); if(oldWa) oldWa.remove();
@@ -156,7 +157,7 @@ if (document.readyState === "loading") {
     iniciarLayout();
 }
 
-// 7. FUNCIONES GLOBALES (Menú y Navegación iOS)
+// 7. FUNCIONES GLOBALES
 window.toggleMenu = function() {
     var menu = document.getElementById("navLinks");
     if (menu) menu.classList.toggle("active");
@@ -165,7 +166,6 @@ window.toggleMenu = function() {
 document.addEventListener('click', function(e) {
     const anchor = e.target.closest('a');
     if (anchor && anchor.href && anchor.target !== '_blank' && anchor.hostname === window.location.hostname) {
-        // Permitimos la navegación normal pero rápida
-        // Si necesitas efectos SPA, aquí irían.
+        // Navegación fluida estándar
     }
 }, false);
