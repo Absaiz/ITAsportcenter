@@ -168,6 +168,13 @@
             <p class="user-email" id="userEmail">...</p>
         </div>
 
+        <div class="profile-header">
+            <button id="btnLogout" class="logout-btn">
+                <i class="bi bi-box-arrow-right"></i> CERRAR SESIÓN
+            </button>
+        </div>
+
+
         <h3 style="color:white; font-family:'Oswald'; margin-bottom:15px;">MI SALDO</h3>
         <div class="credits-grid">
             <div class="credit-card border-fuerza">
@@ -202,24 +209,15 @@
             </div>
         </div>
 
-    <div class="settings-card">
-        <h4 class="settings-title">CONFIGURACIÓN DE CUENTA</h4>
-
-        <button class="btn-reset-pass" onclick="enviarResetPassword()">
-            <i class="bi bi-key"></i> CAMBIAR CONTRASEÑA
-        </button>
-
-        <div class="gdpr-box">
-            <input class="form-check-input" type="checkbox" id="checkGDPR" checked disabled style="background-color: #ff007f; border-color: #ff007f;">
-            <p class="gdpr-text">
-                Sus datos están protegidos bajo nuestra política de privacidad. 
-                <a href="#" style="color: white; text-decoration: underline;">Ver términos legales.</a>
-            </p>
-        </div>
-
-        <button id="btnLogout" class="logout-btn">
-            <i class="bi bi-box-arrow-right"></i> CERRAR SESIÓN
-        </button>
+    <div class="gdpr-box" style="border: 1px solid #ff4444; background: rgba(255, 68, 68, 0.05);">
+        <input class="form-check-input" type="checkbox" id="checkGDPR" style="cursor: pointer; border-color: #ff4444;">
+        <p class="gdpr-text" style="color: white;">
+            <strong>Requerido:</strong> He leído y acepto la 
+            <a href="politica-privacidad.html" target="_blank" style="color: #ff007f; text-decoration: underline; font-weight:bold;">
+                Política de Privacidad y Protección de Datos
+            </a>
+            para poder registrar mi progreso físico y rutinas en ITA Sport Center.
+        </p>
     </div>
 
     </div>
@@ -383,6 +381,19 @@
 
         // 1. GESTIÓN DE ANTROPOMETRÍA
         window.guardarMedidas = async () => {
+            // --- BLOQUE DE SEGURIDAD GDPR ---
+            const checkGDPR = document.getElementById('checkGDPR');
+            if (!checkGDPR || !checkGDPR.checked) {
+                alert("⛔ ACCESO DENEGADO\n\nPor normativas legales, no podemos almacenar tus datos de salud (medidas, peso, etc.) si no aceptas explícitamente nuestra Política de Privacidad.\n\nPor favor, marca la casilla en 'Configuración de Cuenta' al final de la página.");
+                
+                // Opcional: Esto hace scroll automático hasta la casilla para que el usuario la vea
+                checkGDPR.scrollIntoView({behavior: "smooth", block: "center"}); 
+                
+                // Importante: evita que se cierre el modal para que el usuario no pierda los datos que estaba escribiendo
+                return; 
+            }
+            // ---------------------------------
+
             if(!currentUser) return;
             const fechaVal = document.getElementById('inputFecha').value;
             if(!fechaVal) { alert("Pon una fecha válida."); return; }
@@ -591,7 +602,7 @@
                 }
             }
         };
-        
+
         window.renderFutureClasses = function() {
             const container = document.getElementById('misReservas');
             const controls = document.getElementById('paginationControls');
