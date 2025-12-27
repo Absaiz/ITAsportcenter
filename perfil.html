@@ -84,6 +84,65 @@
         .logout-btn { display: block; width: 100%; max-width: 200px; margin: 50px auto 0; padding: 15px; background: #333; color: white; text-align: center; text-decoration: none; border-radius: 5px; transition: 0.3s; font-size: 0.9rem; }
         .logout-btn:hover { background: #ff4444; }
 
+
+        /* 4. SECCIÓN CONFIGURACIÓN (NUEVO) */
+        .settings-card {
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 40px;
+            margin-bottom: 60px; /* Espacio extra al final */
+        }
+
+        .settings-title {
+            font-family: 'Oswald';
+            color: white;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .gdpr-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .gdpr-text {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .btn-reset-pass {
+            background: transparent;
+            border: 1px solid #ff9f43; /* Naranja para diferenciar de acciones destructivas */
+            color: #ff9f43;
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-reset-pass:hover {
+            background: #ff9f43;
+            color: white;
+        }
+
+        /* Modificación al botón logout existente para que encaje mejor */
+        .logout-btn {
+            margin: 0; /* Quitamos el margen automático que tenía antes */
+            width: 100%;
+            max-width: 100%; /* Ocupar todo el ancho del contenedor */
+        }
+
         /* SCROLL HORIZONTAL PARA BOTONES DE GRÁFICA EN MÓVIL */
         .chart-controls {
             display: flex;
@@ -143,7 +202,25 @@
             </div>
         </div>
 
-        <a href="#" id="btnLogout" class="logout-btn">CERRAR SESIÓN</a>
+    <div class="settings-card">
+        <h4 class="settings-title">CONFIGURACIÓN DE CUENTA</h4>
+
+        <button class="btn-reset-pass" onclick="enviarResetPassword()">
+            <i class="bi bi-key"></i> CAMBIAR CONTRASEÑA
+        </button>
+
+        <div class="gdpr-box">
+            <input class="form-check-input" type="checkbox" id="checkGDPR" checked disabled style="background-color: #ff007f; border-color: #ff007f;">
+            <p class="gdpr-text">
+                Sus datos están protegidos bajo nuestra política de privacidad. 
+                <a href="#" style="color: white; text-decoration: underline;">Ver términos legales.</a>
+            </p>
+        </div>
+
+        <button id="btnLogout" class="logout-btn">
+            <i class="bi bi-box-arrow-right"></i> CERRAR SESIÓN
+        </button>
+    </div>
 
     </div>
 
@@ -278,7 +355,7 @@
     <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { registrarLog } from "./logger.js";
-        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc, arrayRemove, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         let currentUser = null;
@@ -497,6 +574,24 @@
             } catch (e) { console.error(e); }
         }
 
+        // 4. LÓGICA DE CUENTA
+        window.enviarResetPassword = async () => {
+            if (!currentUser || !currentUser.email) {
+                alert("Error: No se ha detectado un usuario activo.");
+                return;
+            }
+
+            if (confirm(`¿Quieres enviar un correo a ${currentUser.email} para restablecer tu contraseña?`)) {
+                try {
+                    await sendPasswordResetEmail(auth, currentUser.email);
+                    alert("✅ Correo enviado. Revisa tu bandeja de entrada (y spam) para cambiar tu contraseña.");
+                } catch (error) {
+                    console.error(error);
+                    alert("Error al enviar el correo: " + error.message);
+                }
+            }
+        };
+        
         window.renderFutureClasses = function() {
             const container = document.getElementById('misReservas');
             const controls = document.getElementById('paginationControls');
