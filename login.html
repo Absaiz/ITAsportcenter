@@ -68,20 +68,55 @@
             <input type="email" id="email" placeholder="Correo electrónico" required>
             <input type="password" id="password" placeholder="Contraseña" required>
             <button type="submit">ENTRAR</button>
+            
+            <div style="margin-top: 15px; text-align: right;">
+                <a href="#" id="forgotPassword" style="color: #C25E75; font-size: 0.8rem; text-decoration: none;">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </div>
         </form>
         <a href="registro.html" class="link">¿No tienes cuenta? Regístrate gratis</a>
     </div>
 
-    <script type="module">
+<script type="module">
+        // Importamos la instancia de auth desde tu config y las funciones necesarias
+        import { auth } from "./firebase-config.js"; 
         import { iniciarSesion } from "./auth.js";
-        import { registrarLog } from "./logger.js";
-        
+        import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        // Lógica de Login (la que ya tenías)
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
             iniciarSesion(email, password);
+        });
+
+        // NUEVA Lógica de Recuperación de Contraseña
+        document.getElementById('forgotPassword').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+
+            // Validación: El campo email no puede estar vacío
+            if (!email) {
+                alert("⚠️ Por favor, escribe tu correo electrónico en la casilla de arriba para enviarte el enlace de recuperación.");
+                document.getElementById('email').focus();
+                return;
+            }
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert(`✅ Correo enviado a ${email}.\n\nRevisa tu bandeja de entrada (y Spam) para crear una nueva contraseña.`);
+            } catch (error) {
+                console.error(error);
+                if (error.code === 'auth/user-not-found') {
+                    alert("❌ No existe ninguna cuenta con ese correo.");
+                } else if (error.code === 'auth/invalid-email') {
+                    alert("❌ El formato del correo no es válido.");
+                } else {
+                    alert("Error: " + error.message);
+                }
+            }
         });
     </script>
 </body>
