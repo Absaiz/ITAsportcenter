@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 
-
 <head>
     <meta charset="UTF-8">
     <link rel="manifest" href="manifest.json">
@@ -35,10 +34,28 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* ESTILOS ESPECÍFICOS DEL ADMIN */
-        .admin-layout { max-width: 1200px; margin: 40px auto; padding: 20px; display: grid; gap: 40px; }
+        /* LAYOUT GENERAL */
+        body { background-color: #121212; color: white; font-family: 'Montserrat', sans-serif; }
+        .admin-container { max-width: 1200px; margin: 40px auto; padding: 20px; }
+        
+        /* SISTEMA DE PESTAÑAS (TABS) */
+        .admin-tabs { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .tab-btn { 
+            background: #222; color: #888; border: 1px solid #333; padding: 12px 30px; 
+            cursor: pointer; border-radius: 30px; font-family: 'Oswald'; text-transform: uppercase; 
+            letter-spacing: 1px; transition: 0.3s; font-size: 1rem;
+        }
+        .tab-btn.active { background: #ff007f; color: white; border-color: #ff007f; box-shadow: 0 0 15px rgba(255, 0, 127, 0.4); }
+        .tab-btn:hover:not(.active) { background: #333; color: white; }
+
+        /* VISTAS */
+        .view-section { display: none; grid-template-columns: 1fr; gap: 40px; animation: fadeIn 0.3s ease-in-out; }
+        .view-section.active { display: grid; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* PANELES */
         .panel-card { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 25px; }
-        .panel-title { font-family: 'Oswald'; color: var(--accent-pink); margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { font-family: 'Oswald'; color: #ff007f; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
         /* TABLA GENERAL */
         .user-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
@@ -46,39 +63,37 @@
         .user-table td { padding: 15px 10px; border-bottom: 1px solid #222; vertical-align: middle; }
         .user-table tr:hover { background: #222; }
         
-        /* TAGS DE CRÉDITOS */
+        /* TAGS Y BOTONES */
         .credit-tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; margin-right: 5px; margin-bottom: 5px; background: #333; border: 1px solid #444; }
         .tag-fuerza { color: #ff9f43; border-color: #ff9f43; }
         .tag-pilates { color: #54a0ff; border-color: #54a0ff; }
         .tag-personal { color: #ff6b6b; border-color: #ff6b6b; }
         .tag-nutri { color: #1dd1a1; border-color: #1dd1a1; }
 
-        /* BOTONES */
         .btn-mini { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; background: #444; color: white; transition: 0.3s; }
-        .btn-mini:hover { background: var(--accent-pink); }
+        .btn-mini:hover { background: #ff007f; }
         .btn-edit { background: #2e86de; }
         .btn-delete { background: #ff4444; color: white; margin-left: 5px; }
         
-        .btn-kick { background: transparent; border: 1px solid #ff4444; color: #ff4444; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 5px; text-decoration: none; transition: 0.3s;}
-        .btn-kick:hover { background: #ff4444; color: white; }
-        
-        /* Botón WhatsApp Específico */
-        .btn-wa { border-color: #25D366; color: #25D366; }
-        .btn-wa:hover { background: #25D366; color: black; }
+        .btn-icon { background: transparent; border: 1px solid #555; color: #aaa; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 5px; transition: 0.3s; }
+        .btn-icon:hover { color: white; border-color: white; }
+        .btn-wa:hover { background: #25D366; border-color: #25D366; color: black; }
+        .btn-del:hover { background: #ff4444; border-color: #ff4444; color: white; }
 
         /* MODAL */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: #111; padding: 30px; border-radius: 10px; border: 1px solid var(--accent-pink); width: 90%; max-width: 500px; }
+        .modal-content { background: #111; padding: 30px; border-radius: 10px; border: 1px solid #ff007f; width: 90%; max-width: 500px; }
         .credit-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; }
         .btn-circle { width: 30px; height: 30px; border-radius: 50%; border: none; font-weight: bold; cursor: pointer; }
         .btn-minus { background: #444; color: white; }
         .btn-plus { background: #25D366; color: black; }
         
-        /* FORMULARIO Y CALENDARIO */
+        /* FORMULARIO */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
         input, select { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
-        .btn-create { width: 100%; padding: 12px; background: var(--accent-pink); color: white; border: none; font-weight: bold; cursor: pointer; }
+        .btn-create { width: 100%; padding: 12px; background: #ff007f; color: white; border: none; font-weight: bold; cursor: pointer; }
 
+        /* CALENDARIO */
         .calendar-day { margin-bottom: 20px; }
         .day-header { background: #333; color: white; padding: 10px; font-weight: bold; border-radius: 5px; margin-bottom: 10px; }
         .class-item { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 15px; border-left: 4px solid #555; margin-bottom: 5px; border-radius: 4px; }
@@ -92,75 +107,72 @@
 
 <body>
 
-    <div class="admin-layout">
-        <h1 style="text-align: center; font-size: 3rem; margin: 0;">ADMINISTRACIÓN</h1>
+    <div class="admin-container">
+        <h1 style="text-align: center; font-size: 3rem; margin: 0 0 30px 0;">ADMINISTRACIÓN</h1>
 
-        <div class="panel-card">
-            <div class="panel-title">📅 NUEVA CLASE</div>
-            <div class="form-grid">
-                <input type="text" id="nombreClase" placeholder="Nombre (Ej: Pilates Avanzado)">
-                <select id="tipoClase">
-                    <option value="fuerza">Fuerza</option>
-                    <option value="pilates">Pilates</option>
-                    <option value="personal">Entreno Personal</option>
-                    <option value="nutricion">Nutrición</option>
-                </select>
-                <input type="date" id="fechaClase">
-                <input type="time" id="horaClase">
-                <input type="number" id="plazasClase" placeholder="Plazas Max" value="6">
-            </div>
-            <button class="btn-create" onclick="crearClase()">PROGRAMAR CLASE</button>
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="cambiarPestana('clases')">🏋️ GESTIÓN CLASES</button>
+            <button class="tab-btn" onclick="cambiarPestana('socios')">👥 GESTIÓN SOCIOS</button>
         </div>
 
-        <div class="panel-card">
-            <div class="panel-title">
-                <span>🗓️ CALENDARIO DE CLASES</span>
-                <button class="btn-mini" onclick="cargarCalendario()">🔄 Refrescar</button>
+        <div id="vista-clases" class="view-section active">
+            <div class="panel-card">
+                <div class="panel-title">📅 NUEVA CLASE</div>
+                <div class="form-grid">
+                    <input type="text" id="nombreClase" placeholder="Nombre (Ej: Pilates Avanzado)">
+                    <select id="tipoClase">
+                        <option value="fuerza">Fuerza</option>
+                        <option value="pilates">Pilates</option>
+                        <option value="personal">Entreno Personal</option>
+                        <option value="nutricion">Nutrición</option>
+                    </select>
+                    <input type="date" id="fechaClase">
+                    <input type="time" id="horaClase">
+                    <input type="number" id="plazasClase" placeholder="Plazas Max" value="6">
+                </div>
+                <button class="btn-create" onclick="crearClase()">PROGRAMAR CLASE</button>
             </div>
-            <div id="calendarioContainer">
-                <p style="text-align: center; color: #666;">Cargando clases...</p>
+
+            <div class="panel-card">
+                <div class="panel-title">
+                    <span>🗓️ CALENDARIO DE CLASES</span>
+                    <button class="btn-mini" onclick="cargarCalendario()">🔄 Refrescar</button>
+                </div>
+                <div id="calendarioContainer">
+                    <p style="text-align: center; color: #666;">Cargando clases...</p>
+                </div>
             </div>
         </div>
 
-        <div class="panel-card" style="border-color: #ff007f;">
-            <div class="panel-title">
-                <span>🚀 LISTA DE PRE-INSCRITOS (LEADS)</span>
-                <button class="btn-mini" onclick="cargarInteresados()">🔄 Refrescar</button>
+        <div id="vista-socios" class="view-section">
+            <div class="panel-card" style="border-color: #ff007f;">
+                <div class="panel-title">
+                    <span>🚀 LISTA DE PRE-INSCRITOS (LEADS)</span>
+                    <button class="btn-mini" onclick="cargarInteresados()">🔄 Refrescar</button>
+                </div>
+                <p style="color: #888; font-size: 0.9rem;">Interesados desde la web (sin cuenta todavía).</p>
+                <div class="table-responsive">
+                    <table class="user-table">
+                        <thead>
+                            <tr><th>Fecha</th><th>Nombre</th><th>Contacto</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="tablaLeads"><tr><td colspan="4" style="text-align:center">Cargando...</td></tr></tbody>
+                    </table>
+                </div>
             </div>
-            <p style="color: #888; font-size: 0.9rem;">Personas que se han apuntado en la portada pero aún no tienen cuenta.</p>
-            <div class="table-responsive">
+
+            <div class="panel-card">
+                <div class="panel-title">
+                    <span>👥 SOCIOS REGISTRADOS (APP)</span>
+                    <button class="btn-mini" onclick="cargarUsuarios()">🔄 Refrescar</button>
+                </div>
                 <table class="user-table">
                     <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Nombre</th>
-                            <th>Contacto</th>
-                            <th>Acciones</th>
-                        </tr>
+                        <tr><th>Usuario</th><th>Saldos</th><th>Acción</th></tr>
                     </thead>
-                    <tbody id="tablaLeads">
-                        <tr><td colspan="4" style="text-align:center">Cargando leads...</td></tr>
-                    </tbody>
+                    <tbody id="tablaUsuarios"></tbody>
                 </table>
             </div>
-        </div>
-
-        <div class="panel-card">
-            <div class="panel-title">
-                <span>👥 SOCIOS REGISTRADOS (APP)</span>
-                <button class="btn-mini" onclick="cargarUsuarios()">🔄 Refrescar</button>
-            </div>
-            <table class="user-table">
-                <thead>
-                    <tr>
-                        <th>Usuario</th>
-                        <th>Saldos</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaUsuarios">
-                    </tbody>
-            </table>
         </div>
     </div>
 
@@ -175,12 +187,25 @@
 
     <script type="module">
         import { db } from "./firebase-config.js";
-        import { registrarLog } from "./logger.js";
-        import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, query, orderBy, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, query, orderBy, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         let allUsers = [];
 
-        // --- 1. CARGAR USUARIOS REGISTRADOS ---
+        // --- SISTEMA DE PESTAÑAS ---
+        window.cambiarPestana = (pestana) => {
+            // Ocultar todas
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            // Mostrar seleccionada
+            document.getElementById(`vista-${pestana}`).classList.add('active');
+            // Activar botón (buscamos por texto o índice, simple hack visual)
+            const btns = document.querySelectorAll('.tab-btn');
+            if(pestana === 'clases') btns[0].classList.add('active');
+            else btns[1].classList.add('active');
+        }
+
+        // --- 1. CARGAR USUARIOS REGISTRADOS Y BORRAR ---
         window.cargarUsuarios = async () => {
             const tbody = document.getElementById('tablaUsuarios');
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Cargando...</td></tr>';
@@ -193,7 +218,6 @@
                     u.id = docSnap.id;
                     allUsers.push(u);
                     const creds = u.creditos_detalle || {};
-                    // Lógica para compatibilidad con saldos viejos
                     if (typeof u.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = u.creditos;
 
                     html += `
@@ -210,6 +234,7 @@
                             </td>
                             <td>
                                 <button class="btn-mini btn-edit" onclick="abrirModal('${u.id}')">EDITAR</button>
+                                <button class="btn-icon btn-del" onclick="borrarUsuario('${u.id}')" title="Eliminar Usuario Definitivamente">🗑️</button>
                             </td>
                         </tr>
                     `;
@@ -217,6 +242,18 @@
                 tbody.innerHTML = html;
             } catch (e) { console.error(e); }
         };
+
+        window.borrarUsuario = async (uid) => {
+            if(confirm("⚠️ ¿Estás SEGURO de eliminar a este socio?\n\nEsta acción borrará sus datos de la base de datos (créditos, perfil, etc). NO se puede deshacer.")) {
+                try {
+                    await deleteDoc(doc(db, "usuarios", uid));
+                    alert("Usuario eliminado correctamente.");
+                    cargarUsuarios();
+                } catch(e) {
+                    alert("Error al eliminar: " + e.message);
+                }
+            }
+        }
 
         // --- 2. MODAL Y CRÉDITOS ---
         window.abrirModal = (uid) => {
@@ -271,14 +308,14 @@
 
                 await updateDoc(userRef, {
                     creditos_detalle: newCreds,
-                    creditos: newCreds.fuerza // Sincronizar legacy
+                    creditos: newCreds.fuerza
                 });
                 await cargarUsuarios();
                 abrirModal(uid);
             } catch (e) { alert("Error: " + e.message); }
         }
 
-        // --- 3. GESTIÓN DE CLASES (CREAR/BORRAR) ---
+        // --- 3. GESTIÓN DE CLASES ---
         window.crearClase = async () => {
             const nombre = document.getElementById('nombreClase').value;
             const tipo = document.getElementById('tipoClase').value;
@@ -300,14 +337,14 @@
         }
 
         window.eliminarClase = async (id) => {
-            if(!confirm("¿Seguro que quieres borrar esta clase? Se borrará para siempre.")) return;
+            if(!confirm("¿Seguro que quieres borrar esta clase?")) return;
             try {
                 await deleteDoc(doc(db, "clases", id));
                 cargarCalendario();
             } catch(e) { alert("Error al borrar: " + e.message); }
         }
 
-        // --- 4. CALENDARIO Y EXPULSAR ---
+        // --- 4. CALENDARIO ---
         window.cargarCalendario = async () => {
             const container = document.getElementById('calendarioContainer');
             container.innerHTML = "Cargando...";
@@ -351,27 +388,22 @@
         window.verAsistentes = async (claseId, tipoClase) => {
             const div = document.getElementById(`asistentes-${claseId}`);
             if(div.style.display === 'block') { div.style.display = 'none'; return; }
-            
             div.style.display = 'block';
             div.innerHTML = "Cargando...";
-
             try {
                 const claseRef = doc(db, "clases", claseId);
                 const claseSnap = await getDoc(claseRef);
                 const ids = claseSnap.data().apuntados || [];
-
                 if(ids.length === 0) { div.innerHTML = "Nadie apuntado."; return; }
-
                 let html = "";
                 for(const uid of ids) {
                     const uSnap = await getDoc(doc(db, "usuarios", uid));
                     const nombre = uSnap.exists() ? uSnap.data().nombre : "Desconocido";
                     const email = uSnap.exists() ? uSnap.data().email : "---";
-                    
                     html += `
                         <div class="attendee-row">
                             <span>${nombre} <small>(${email})</small></span>
-                            <button class="btn-kick" title="Expulsar y Devolver Crédito" 
+                            <button class="btn-icon btn-del" style="width:25px; height:25px;" title="Expulsar" 
                                 onclick="expulsarUsuario('${claseId}', '${uid}', '${tipoClase}')">❌</button>
                         </div>
                     `;
@@ -382,60 +414,39 @@
 
         window.expulsarUsuario = async (claseId, userId, tipoClase) => {
             if(!confirm("¿Quitar usuario de la clase y devolverle el crédito?")) return;
-            
             try {
-                // 1. Quitar de la clase
                 const claseRef = doc(db, "clases", claseId);
-                await updateDoc(claseRef, {
-                    apuntados: arrayRemove(userId)
-                });
-
-                // 2. Devolver Crédito
+                await updateDoc(claseRef, { apuntados: arrayRemove(userId) });
                 const userRef = doc(db, "usuarios", userId);
                 const userSnap = await getDoc(userRef);
-                
                 let data = userSnap.data();
                 let creds = data.creditos_detalle || {};
-                
                 if (typeof data.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = data.creditos;
-
                 if (!creds[tipoClase]) creds[tipoClase] = 0;
                 creds[tipoClase] += 1;
-
-                await updateDoc(userRef, {
-                    creditos_detalle: creds,
-                    creditos: creds.fuerza
-                });
-
+                await updateDoc(userRef, { creditos_detalle: creds, creditos: creds.fuerza });
                 alert("Usuario expulsado y crédito devuelto.");
                 verAsistentes(claseId, tipoClase);
                 cargarCalendario();
-
-            } catch(e) {
-                alert("Error: " + e.message);
-            }
+            } catch(e) { alert("Error: " + e.message); }
         }
 
-        // --- 5. NUEVO: GESTIÓN DE LEADS (PRE-INSCRITOS) ---
+        // --- 5. GESTIÓN DE LEADS ---
         window.cargarInteresados = async () => {
             const tbody = document.getElementById('tablaLeads');
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Cargando...</td></tr>';
-
             try {
                 const q = query(collection(db, "interesados"), orderBy("fecha", "desc"));
                 const querySnapshot = await getDocs(q);
-
                 if (querySnapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#666;">No hay nadie apuntado aún.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#666;">No hay leads.</td></tr>';
                     return;
                 }
-
                 let html = "";
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const fecha = data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleDateString() : "-";
                     const telLimpio = data.telefono ? data.telefono.replace(/\D/g,'') : '';
-
                     html += `
                         <tr>
                             <td style="color:#888;">${fecha}</td>
@@ -445,37 +456,31 @@
                                 <div style="color:#888; font-size:0.8rem;">${data.telefono || ''}</div>
                             </td>
                             <td>
-                                <a href="https://wa.me/${telLimpio}" target="_blank" class="btn-kick btn-wa" title="Abrir WhatsApp">💬</a>
-                                <button onclick="borrarLead('${docSnap.id}')" class="btn-kick" title="Borrar de la lista">🗑️</button>
+                                <a href="https://wa.me/${telLimpio}" target="_blank" class="btn-icon btn-wa" title="WhatsApp">💬</a>
+                                <button onclick="borrarLead('${docSnap.id}')" class="btn-icon btn-del" title="Borrar">🗑️</button>
                             </td>
                         </tr>
                     `;
                 });
                 tbody.innerHTML = html;
-
-            } catch (error) {
-                console.error(error);
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Error cargando: ${error.message}</td></tr>`;
-            }
+            } catch (error) { tbody.innerHTML = `<tr><td colspan="4" style="color:red;">Error: ${error.message}</td></tr>`; }
         };
 
         window.borrarLead = async (id) => {
-            if(confirm("¿Seguro que quieres borrar este contacto de la lista de interesados?")) {
+            if(confirm("¿Borrar lead?")) {
                 try {
                     await deleteDoc(doc(db, "interesados", id));
-                    cargarInteresados(); // Refrescar tabla
+                    cargarInteresados();
                 } catch(e) { alert("Error: " + e.message); }
             }
         }
 
-        // --- INICIALIZACIÓN ---
         window.onload = () => { 
             cargarUsuarios(); 
             cargarCalendario(); 
-            cargarInteresados(); // Cargar también los leads al iniciar
+            cargarInteresados();
         };
     </script>
-
 
 </body>
 </html>
