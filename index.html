@@ -105,7 +105,7 @@
 
         // LÓGICA DE CONTADOR DE VISITAS
         // Solo registramos si no ha sido registrado ya en esta sesión de navegador
-        if (!sessionStorage.getItem('visitaRegistrada')) {
+        if ((!sessionStorage.getItem('visitaRegistrada')) && (1==0)) {
             
             // Intentamos obtener una referencia vaga de si es usuario o anónimo
             // Nota: Al cargar la página, Firebase tarda un poco en saber si hay user logueado,
