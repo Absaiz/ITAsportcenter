@@ -166,7 +166,7 @@ window.toggleMenu = function() {
 // ==========================================
 // 📊 INTEGRACIÓN GOOGLE ANALYTICS (GA4)
 // ==========================================
-(function cargarAnalytics() {
+function cargarAnalytics() {
     // 1. TU ID DE MEDICIÓN (Pégalo aquí dentro de las comillas)
     const GA_ID = 'GTM-M8KPV5QJ'; 
 
@@ -184,7 +184,7 @@ window.toggleMenu = function() {
     gtag('config', GA_ID);
     
     console.log("📊 Analytics activado:", GA_ID);
-})();
+};
 
 document.addEventListener('click', function(e) {
     const anchor = e.target.closest('a');
