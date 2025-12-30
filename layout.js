@@ -163,6 +163,29 @@ window.toggleMenu = function() {
     if (menu) menu.classList.toggle("active");
 }
 
+// ==========================================
+// 📊 INTEGRACIÓN GOOGLE ANALYTICS (GA4)
+// ==========================================
+(function cargarAnalytics() {
+    // 1. TU ID DE MEDICIÓN (Pégalo aquí dentro de las comillas)
+    const GA_ID = 'GTM-M8KPV5QJ'; 
+
+    // 2. Inyectamos la librería de Google en el <head>
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+    document.head.appendChild(script);
+
+    // 3. Inicializamos el comando de tracking
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', GA_ID);
+    
+    console.log("📊 Analytics activado:", GA_ID);
+})();
+
 document.addEventListener('click', function(e) {
     const anchor = e.target.closest('a');
     if (anchor && anchor.href && anchor.target !== '_blank' && anchor.hostname === window.location.hostname) {
