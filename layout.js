@@ -168,7 +168,7 @@ window.toggleMenu = function() {
 // ==========================================
 function cargarAnalytics() {
     // 1. TU ID DE MEDICIÓN (Pégalo aquí dentro de las comillas)
-    const GA_ID = 'GTM-M8KPV5QJ'; 
+    const GA_ID = 'G-6RFKZJZWF2'; 
 
     // 2. Inyectamos la librería de Google en el <head>
     const script = document.createElement('script');
