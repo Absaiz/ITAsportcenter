@@ -69,7 +69,7 @@
         <div style="text-align: center; margin: 0 auto;">
             <h2 style="color: white; font-family: 'Oswald'; text-transform: uppercase; margin-bottom: 10px;">🚀 ÚNETE A LA <span style="color: #ff007f;">PRE-APERTURA</span></h2>
             <p style="color: #ccc; margin-bottom: 25px; font-size: 1.1rem;">
-                Las primeras <strong> personas</strong> tendrán acceso prioritario.
+                Las primeras <strong>50 personas</strong> tendrán acceso prioritario y ofertas especiales.
                 <br>Déjanos tus datos y asegura tu lugar antes de que abramos.
             </p>
 
@@ -78,6 +78,13 @@
                 <input type="email" id="preEmail" placeholder="Tu Correo Electrónico" required style="padding: 15px; border-radius: 5px; border: 1px solid #444; background: #333; color: white; font-family: 'Montserrat';">
                 <input type="tel" id="preTelefono" placeholder="Tu WhatsApp (Opcional)" style="padding: 15px; border-radius: 5px; border: 1px solid #444; background: #333; color: white; font-family: 'Montserrat';">
                 
+                <div style="display: flex; align-items: start; gap: 10px; text-align: left; font-size: 0.85rem; color: #aaa; margin-top: 5px;">
+                    <input type="checkbox" id="checkGDPR" style="width: 20px; height: 20px; accent-color: #ff007f; cursor: pointer;">
+                    <label for="checkGDPR" style="cursor: pointer; line-height: 1.4;">
+                        He leído y acepto la <a href="politica-privacidad.html" target="_blank" style="color: #ff007f; text-decoration: underline;">Política de Privacidad</a> y autorizo el tratamiento de mis datos para la gestión de la pre-inscripción.
+                    </label>
+                </div>
+
                 <button type="submit" style="background-color: white; color: black; padding: 15px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; font-size: 1.1rem; transition: 0.3s; margin-top: 10px; text-transform: uppercase;">
                     RESERVAR MI OFERTA AHORA
                 </button>
@@ -120,6 +127,17 @@
             
             const btn = e.target.querySelector('button');
             const originalText = btn.innerText;
+            
+            // --- VALIDACIÓN DE PROTECCIÓN DE DATOS ---
+            const checkGDPR = document.getElementById('checkGDPR');
+            if (!checkGDPR.checked) {
+                alert("⚠️ Por favor, debes aceptar la Política de Privacidad para poder apuntarte.");
+                // Hacemos que la casilla parpadee o resalte para que la vean
+                checkGDPR.focus();
+                return; // DETENEMOS EL ENVÍO AQUÍ
+            }
+            // ----------------------------------------
+
             btn.innerText = "GUARDANDO...";
             btn.disabled = true;
             btn.style.opacity = "0.7";
@@ -135,6 +153,7 @@
                     email: email,
                     telefono: telefono,
                     fecha: new Date(),
+                    aceptacion_legal: true, // Guardamos que aceptó
                     origen: "Web Pre-Inscripción"
                 });
 

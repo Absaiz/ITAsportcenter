@@ -21,56 +21,50 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     
     <script>
-        // Generamos un número único (la hora actual)
         const v = Date.now();
-
-        // Función para cargar CSS con versión
         function cargarCSS(archivo) {
-            var link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.href = archivo + "?v=" + v;
-            document.head.appendChild(link);
+            var link = document.createElement("link"); link.rel = "stylesheet"; link.href = archivo + "?v=" + v; document.head.appendChild(link);
         }
-
-        // Función para cargar JS con versión
         function cargarJS(archivo) {
-            var script = document.createElement('script');
-            script.type = 'module';
-            script.src = archivo + '?v=' + v;
-            document.head.appendChild(script);
+            var script = document.createElement('script'); script.type = 'module'; script.src = archivo + '?v=' + v; document.head.appendChild(script);
         }
-
-        // --- CARGAMOS TODO FRESCO ---
-        cargarCSS('style.css');       // Estilos
-        cargarJS('layout.js');        // Menú
-        cargarJS('user-logic.js');    // Lógica Usuario
+        cargarCSS('style.css');       
+        cargarJS('layout.js');        
+        cargarJS('user-logic.js');    
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* ESTILOS ESPECÍFICOS DEL ADMIN (Estos no se cachean porque están en el HTML) */
+        /* ESTILOS ESPECÍFICOS DEL ADMIN */
         .admin-layout { max-width: 1200px; margin: 40px auto; padding: 20px; display: grid; gap: 40px; }
         .panel-card { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 25px; }
         .panel-title { font-family: 'Oswald'; color: var(--accent-pink); margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* TABLA DE USUARIOS */
+        /* TABLA GENERAL */
         .user-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .user-table th { text-align: left; color: #888; padding: 10px; border-bottom: 1px solid #444; }
         .user-table td { padding: 15px 10px; border-bottom: 1px solid #222; vertical-align: middle; }
         .user-table tr:hover { background: #222; }
         
+        /* TAGS DE CRÉDITOS */
         .credit-tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; margin-right: 5px; margin-bottom: 5px; background: #333; border: 1px solid #444; }
         .tag-fuerza { color: #ff9f43; border-color: #ff9f43; }
         .tag-pilates { color: #54a0ff; border-color: #54a0ff; }
         .tag-personal { color: #ff6b6b; border-color: #ff6b6b; }
         .tag-nutri { color: #1dd1a1; border-color: #1dd1a1; }
 
+        /* BOTONES */
         .btn-mini { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; background: #444; color: white; transition: 0.3s; }
         .btn-mini:hover { background: var(--accent-pink); }
         .btn-edit { background: #2e86de; }
         .btn-delete { background: #ff4444; color: white; margin-left: 5px; }
-        .btn-kick { background: transparent; border: 1px solid #ff4444; color: #ff4444; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; }
+        
+        .btn-kick { background: transparent; border: 1px solid #ff4444; color: #ff4444; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 5px; text-decoration: none; transition: 0.3s;}
         .btn-kick:hover { background: #ff4444; color: white; }
+        
+        /* Botón WhatsApp Específico */
+        .btn-wa { border-color: #25D366; color: #25D366; }
+        .btn-wa:hover { background: #25D366; color: black; }
 
         /* MODAL */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; }
@@ -120,7 +114,7 @@
 
         <div class="panel-card">
             <div class="panel-title">
-                <span>🗓️ CALENDARIO</span>
+                <span>🗓️ CALENDARIO DE CLASES</span>
                 <button class="btn-mini" onclick="cargarCalendario()">🔄 Refrescar</button>
             </div>
             <div id="calendarioContainer">
@@ -128,9 +122,32 @@
             </div>
         </div>
 
+        <div class="panel-card" style="border-color: #ff007f;">
+            <div class="panel-title">
+                <span>🚀 LISTA DE PRE-INSCRITOS (LEADS)</span>
+                <button class="btn-mini" onclick="cargarInteresados()">🔄 Refrescar</button>
+            </div>
+            <p style="color: #888; font-size: 0.9rem;">Personas que se han apuntado en la portada pero aún no tienen cuenta.</p>
+            <div class="table-responsive">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nombre</th>
+                            <th>Contacto</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaLeads">
+                        <tr><td colspan="4" style="text-align:center">Cargando leads...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div class="panel-card">
             <div class="panel-title">
-                <span>👥 TODOS LOS USUARIOS</span>
+                <span>👥 SOCIOS REGISTRADOS (APP)</span>
                 <button class="btn-mini" onclick="cargarUsuarios()">🔄 Refrescar</button>
             </div>
             <table class="user-table">
@@ -163,7 +180,7 @@
 
         let allUsers = [];
 
-        // --- 1. CARGAR USUARIOS ---
+        // --- 1. CARGAR USUARIOS REGISTRADOS ---
         window.cargarUsuarios = async () => {
             const tbody = document.getElementById('tablaUsuarios');
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Cargando...</td></tr>';
@@ -244,7 +261,6 @@
                 const userSnap = await getDoc(userRef);
                 let newCreds = userSnap.data().creditos_detalle || {};
                 
-                // Inicializar si no existe
                 if (typeof userSnap.data().creditos === 'number' && newCreds.fuerza === undefined) {
                     newCreds.fuerza = userSnap.data().creditos;
                 }
@@ -262,7 +278,7 @@
             } catch (e) { alert("Error: " + e.message); }
         }
 
-        // --- 3. CREAR Y BORRAR CLASE ---
+        // --- 3. GESTIÓN DE CLASES (CREAR/BORRAR) ---
         window.crearClase = async () => {
             const nombre = document.getElementById('nombreClase').value;
             const tipo = document.getElementById('tipoClase').value;
@@ -298,7 +314,7 @@
             try {
                 const q = query(collection(db, "clases"), orderBy("timestamp", "asc"));
                 const snap = await getDocs(q);
-                if(snap.empty) { container.innerHTML = "No hay clases."; return; }
+                if(snap.empty) { container.innerHTML = "No hay clases programadas."; return; }
 
                 const grupos = {};
                 snap.forEach(d => {
@@ -374,17 +390,13 @@
                     apuntados: arrayRemove(userId)
                 });
 
-                // 2. Devolver Crédito (Según el tipo de clase)
+                // 2. Devolver Crédito
                 const userRef = doc(db, "usuarios", userId);
                 const userSnap = await getDoc(userRef);
                 
-                // Necesitamos la ruta exacta del crédito (ej: creditos_detalle.pilates)
-                // Firestore no deja usar variables dinámicas en claves anidadas fácilmente con 'increment' directo en updateDoc simple
-                // Así que leemos, sumamos y guardamos.
                 let data = userSnap.data();
                 let creds = data.creditos_detalle || {};
                 
-                // Fallback para antiguos
                 if (typeof data.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = data.creditos;
 
                 if (!creds[tipoClase]) creds[tipoClase] = 0;
@@ -392,19 +404,76 @@
 
                 await updateDoc(userRef, {
                     creditos_detalle: creds,
-                    creditos: creds.fuerza // Sincronizar legacy
+                    creditos: creds.fuerza
                 });
 
                 alert("Usuario expulsado y crédito devuelto.");
-                verAsistentes(claseId, tipoClase); // Refrescar lista visual
-                cargarCalendario(); // Refrescar contadores de plazas
+                verAsistentes(claseId, tipoClase);
+                cargarCalendario();
 
             } catch(e) {
                 alert("Error: " + e.message);
             }
         }
 
-        window.onload = () => { cargarUsuarios(); cargarCalendario(); };
+        // --- 5. NUEVO: GESTIÓN DE LEADS (PRE-INSCRITOS) ---
+        window.cargarInteresados = async () => {
+            const tbody = document.getElementById('tablaLeads');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Cargando...</td></tr>';
+
+            try {
+                const q = query(collection(db, "interesados"), orderBy("fecha", "desc"));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#666;">No hay nadie apuntado aún.</td></tr>';
+                    return;
+                }
+
+                let html = "";
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const fecha = data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleDateString() : "-";
+                    const telLimpio = data.telefono ? data.telefono.replace(/\D/g,'') : '';
+
+                    html += `
+                        <tr>
+                            <td style="color:#888;">${fecha}</td>
+                            <td style="font-weight:bold; color:white;">${data.nombre}</td>
+                            <td>
+                                <div style="color:#ccc;">${data.email}</div>
+                                <div style="color:#888; font-size:0.8rem;">${data.telefono || ''}</div>
+                            </td>
+                            <td>
+                                <a href="https://wa.me/${telLimpio}" target="_blank" class="btn-kick btn-wa" title="Abrir WhatsApp">💬</a>
+                                <button onclick="borrarLead('${docSnap.id}')" class="btn-kick" title="Borrar de la lista">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Error cargando: ${error.message}</td></tr>`;
+            }
+        };
+
+        window.borrarLead = async (id) => {
+            if(confirm("¿Seguro que quieres borrar este contacto de la lista de interesados?")) {
+                try {
+                    await deleteDoc(doc(db, "interesados", id));
+                    cargarInteresados(); // Refrescar tabla
+                } catch(e) { alert("Error: " + e.message); }
+            }
+        }
+
+        // --- INICIALIZACIÓN ---
+        window.onload = () => { 
+            cargarUsuarios(); 
+            cargarCalendario(); 
+            cargarInteresados(); // Cargar también los leads al iniciar
+        };
     </script>
 
 
