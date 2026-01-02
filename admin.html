@@ -16,6 +16,7 @@
         function cargarJS(a) { var s = document.createElement('script'); s.type = 'module'; s.src = a + "?v=" + v; document.head.appendChild(s); }
         cargarCSS('style.css'); cargarJS('layout.js'); cargarJS('user-logic.js');
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         body { background-color: #121212; color: white; font-family: 'Montserrat', sans-serif; }
@@ -74,6 +75,11 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         .class-item-admin:hover { background: #333; }
+
+        /* BOTONES GRÁFICA */
+        .chart-controls { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
+        .chart-controls::-webkit-scrollbar { height: 4px; }
+        .chart-controls::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
     </style>
 </head>
 <body>
@@ -129,7 +135,7 @@
                 </table>
             </div>
             <div class="panel-card mt-4">
-                <div class="panel-title">INTERESADOS (WEB) <button class="btn-mini" onclick="cargarInteresados()">Refrescar</button></div>
+                <div class="panel-title">LEADS (WEB) <button class="btn-mini" onclick="cargarInteresados()">Refrescar</button></div>
                 <table class="user-table"><tbody id="tablaLeads"></tbody></table>
             </div>
         </div>
@@ -147,12 +153,10 @@
         <div class="modal-content">
             <h3 id="detalleTitulo" style="color:#ff007f; font-family:'Oswald'; margin-bottom:5px;">Clase</h3>
             <p id="detalleInfo" style="color:#aaa; font-size:0.9rem; margin-bottom:20px;"></p>
-            
             <div style="background:#222; padding:15px; border-radius:5px; margin-bottom:20px;">
                 <h5 style="color:white; margin-top:0;">👥 Asistentes:</h5>
                 <ul id="listaAsistentes" style="list-style:none; padding:0; margin:0; color:#ccc;"></ul>
             </div>
-
             <div style="background:#111; padding:15px; border:1px dashed #555; border-radius:5px;">
                 <h5 style="color:#ff007f; margin-top:0;">➕ Añadir Alumno (Admin)</h5>
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -161,12 +165,52 @@
                 <div style="margin-bottom:10px;">
                     <label style="color:#aaa; font-size:0.9rem; display:flex; align-items:center; gap:10px; cursor:pointer;">
                         <input type="checkbox" id="checkRecurrenteAdd" style="width:18px; height:18px; accent-color:#ff007f;">
-                        <span>🔁 Apuntar a las siguientes 8 semanas (si tiene saldo)</span>
+                        <span>🔁 Apuntar 8 semanas (si tiene saldo)</span>
                     </label>
                 </div>
                 <button class="btn-create" id="btnAddUserClass" style="font-size:0.9rem;">INSCRIBIR AHORA</button>
             </div>
             <button class="btn-create" style="background:#444; margin-top:20px;" onclick="cerrarModales()">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="modalPerfilCompleto" class="modal-overlay">
+        <div class="modal-content" style="max-width:700px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:15px; margin-bottom:15px;">
+                <div>
+                    <h2 id="perfilNombre" style="color:white; margin:0; font-family:'Oswald';">Usuario</h2>
+                    <p id="perfilEmail" style="color:#888; margin:0; font-size:0.9rem;">email@test.com</p>
+                </div>
+                <a id="btnPerfilWA" href="#" target="_blank" class="btn-mini" style="background:#25D366; text-decoration:none; font-size:1.2rem; display:none;">
+                    <i class="bi bi-whatsapp"></i>
+                </a>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
+                <div style="background:#222; padding:15px; border-radius:10px;">
+                    <h5 style="color:#ff007f; margin-top:0;">📈 Evolución</h5>
+                    <div class="chart-controls">
+                        <button class="btn-mini" onclick="updateAdminChart('peso')">Peso</button>
+                        <button class="btn-mini" onclick="updateAdminChart('biceps')">Bíceps</button>
+                        <button class="btn-mini" onclick="updateAdminChart('cintura')">Cintura</button>
+                    </div>
+                    <canvas id="adminChart" style="max-height:200px;"></canvas>
+                </div>
+
+                <div style="background:#222; padding:15px; border-radius:10px;">
+                    <h5 style="color:#ff007f; margin-top:0;">📝 Registrar Medidas</h5>
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap:5px;">
+                        <input type="date" id="adminInputFecha" style="grid-column: span 2;">
+                        <input type="number" id="adminInputPeso" placeholder="Peso (kg)">
+                        <input type="number" id="adminInputAltura" placeholder="Altura">
+                        <input type="number" id="adminInputBiceps" placeholder="Bíceps">
+                        <input type="number" id="adminInputCintura" placeholder="Cintura">
+                    </div>
+                    <button class="btn-create" onclick="adminGuardarMedidas()">GUARDAR DATOS</button>
+                </div>
+            </div>
+
+            <button class="btn-create" style="background:#444;" onclick="cerrarModales()">CERRAR FICHA</button>
         </div>
     </div>
 
@@ -212,6 +256,9 @@
         import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, arrayRemove, getDoc, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         let allUsersGlobal = []; 
+        let currentAdminUser = null; // Usuario seleccionado en el modal perfil
+        let currentAdminChart = null; // Instancia de la gráfica
+        let currentAdminMedidas = []; // Datos de medidas del usuario actual
 
         window.cambiarPestana = (p) => {
             document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
@@ -245,8 +292,9 @@
                         <td><strong>${u.nombre||'Socio'}</strong><br><small style="color:#888">${u.email}</small></td>
                         <td>${estadoHtml}</td>
                         <td>
-                            <button class="btn-mini" onclick="abrirModalCreditos('${u.id}')">💰</button>
-                            <button class="btn-mini" style="background:#54a0ff;" onclick="verCalendarioSocio('${u.id}')">📅</button>
+                            <button class="btn-mini" onclick="abrirModalCreditos('${u.id}')" title="Créditos">💰</button>
+                            <button class="btn-mini" style="background:#54a0ff;" onclick="verCalendarioSocio('${u.id}')" title="Horario">📅</button>
+                            <button class="btn-mini" style="background:#e056fd;" onclick="verPerfilSocio('${u.id}')" title="Expediente Completo">👤</button>
                             <button class="btn-del" onclick="borrarUsuario('${u.id}')">🗑️</button>
                         </td>
                     </tr>`;
@@ -255,7 +303,93 @@
             } catch(e) { console.error(e); }
         };
 
-        // --- 2. GESTIÓN DE CLASES (DETALLE Y ALTA ADMIN) ---
+        // --- 1.5 PERFIL DE SOCIO (NUEVO) ---
+        window.verPerfilSocio = async (uid) => {
+            const u = allUsersGlobal.find(x => x.id === uid);
+            if(!u) return;
+            currentAdminUser = u;
+
+            // 1. Datos cabecera
+            document.getElementById('perfilNombre').innerText = u.nombre || 'Socio';
+            document.getElementById('perfilEmail').innerText = u.email;
+            
+            // Botón WA
+            const btnWa = document.getElementById('btnPerfilWA');
+            if(u.telefono) {
+                btnWa.style.display = 'block';
+                btnWa.href = `https://wa.me/${u.telefono.replace(/\D/g,'')}`;
+            } else {
+                btnWa.style.display = 'none';
+            }
+
+            // 2. Cargar Medidas para la gráfica
+            document.getElementById('adminInputFecha').valueAsDate = new Date();
+            await cargarMedidasAdmin(uid);
+
+            document.getElementById('modalPerfilCompleto').style.display = 'flex';
+        }
+
+        async function cargarMedidasAdmin(uid) {
+            const q = query(collection(db, "medidas"), where("userId", "==", uid), orderBy("timestamp", "asc"));
+            const s = await getDocs(q);
+            currentAdminMedidas = [];
+            s.forEach(d => currentAdminMedidas.push(d.data()));
+            renderAdminChart('peso'); // Por defecto peso
+        }
+
+        window.renderAdminChart = (tipo) => {
+            const ctx = document.getElementById('adminChart').getContext('2d');
+            if(currentAdminChart) currentAdminChart.destroy();
+
+            const labels = currentAdminMedidas.map(m => new Date(m.timestamp).toLocaleDateString());
+            const data = currentAdminMedidas.map(m => m[tipo] || 0);
+
+            currentAdminChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: tipo.toUpperCase(),
+                        data: data,
+                        borderColor: '#ff007f',
+                        backgroundColor: 'rgba(255, 0, 127, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display:false } }, scales: { y:{grid:{color:'#333'}}, x:{grid:{color:'#333'}} } }
+            });
+        }
+        window.updateAdminChart = (t) => renderAdminChart(t);
+
+        window.adminGuardarMedidas = async () => {
+            if(!currentAdminUser) return;
+            const fecha = document.getElementById('adminInputFecha').value;
+            if(!fecha) return alert("Pon fecha");
+
+            const datos = {
+                userId: currentAdminUser.id,
+                fecha: fecha,
+                timestamp: new Date(fecha).getTime(),
+                peso: parseFloat(document.getElementById('adminInputPeso').value) || 0,
+                altura: parseFloat(document.getElementById('adminInputAltura').value) || 0,
+                biceps: parseFloat(document.getElementById('adminInputBiceps').value) || 0,
+                cintura: parseFloat(document.getElementById('adminInputCintura').value) || 0
+                // Añadir más si quieres
+            };
+
+            try {
+                await addDoc(collection(db, "medidas"), datos);
+                alert("Medida guardada al usuario.");
+                // Limpiar inputs
+                document.getElementById('adminInputPeso').value = "";
+                // Recargar gráfica
+                await cargarMedidasAdmin(currentAdminUser.id);
+            } catch(e) { alert("Error: " + e.message); }
+        }
+
+
+        // --- 2. GESTIÓN DE CLASES ---
         window.cargarCalendario = async () => {
             const div = document.getElementById('calendarioContainer'); div.innerHTML = "Cargando...";
             const q = query(collection(db, "clases"), orderBy("timestamp", "asc"));
@@ -315,7 +449,6 @@
             const usuario = allUsersGlobal.find(u => u.id === uid);
             const tipo = datosClase.tipo || 'fuerza';
             
-            // 1. Inscribir en ESTA clase (solo si tiene saldo)
             let creds = usuario.creditos_detalle || {};
             if(typeof usuario.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = usuario.creditos;
             
@@ -324,11 +457,9 @@
             }
             
             try {
-                // Restar 1 crédito
                 creds[tipo]--;
                 await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: creds, creditos: creds.fuerza });
                 
-                // Meter en clase
                 const nuevosApuntados = datosClase.apuntados || [];
                 if(!nuevosApuntados.includes(uid)) {
                     nuevosApuntados.push(uid);
@@ -337,7 +468,6 @@
 
                 alert(`✅ Inscrito en la clase del ${datosClase.fecha}. Saldo restante: ${creds[tipo]}`);
 
-                // 2. Si es RECURRENTE (8 semanas)
                 if(recurrente) {
                     await procesarRecurrenciaAdmin(usuario, datosClase, uid, creds, tipo);
                 }
@@ -350,33 +480,22 @@
         async function procesarRecurrenciaAdmin(usuario, claseOriginal, uid, credsActualizados, tipo) {
             const fechaOriginal = new Date(claseOriginal.fecha + 'T' + claseOriginal.hora);
             const limite = new Date(); limite.setDate(limite.getDate() + 60); 
-            
             let cursor = new Date(fechaOriginal);
             cursor.setDate(cursor.getDate() + 7); 
-
             let inscritas = 0;
             let saldoLocal = credsActualizados[tipo];
 
             while(cursor <= limite) {
-                // CHECK SALDO
                 if(saldoLocal <= 0) {
                     alert(`⚠️ Saldo agotado tras inscribir ${inscritas} clases extra.`);
                     break;
                 }
-
                 const fechaStr = cursor.toISOString().split('T')[0];
-                
-                const q = query(collection(db, "clases"), 
-                    where("fecha", "==", fechaStr), 
-                    where("hora", "==", claseOriginal.hora),
-                    where("tipo", "==", claseOriginal.tipo)
-                );
+                const q = query(collection(db, "clases"), where("fecha", "==", fechaStr), where("hora", "==", claseOriginal.hora), where("tipo", "==", claseOriginal.tipo));
                 const snaps = await getDocs(q);
-
                 let apuntado = false;
 
                 if(snaps.empty) {
-                    // Crear y apuntar
                     await addDoc(collection(db, "clases"), {
                         nombre: claseOriginal.nombre, tipo: claseOriginal.tipo,
                         fecha: fechaStr, hora: claseOriginal.hora, plazas_totales: claseOriginal.plazas_totales,
@@ -385,7 +504,6 @@
                     });
                     apuntado = true;
                 } else {
-                    // Apuntar a existente
                     snaps.forEach(async (docClase) => {
                         const d = docClase.data();
                         const ap = d.apuntados || [];
@@ -396,43 +514,35 @@
                         }
                     });
                 }
-                
-                if(apuntado) {
-                    inscritas++;
-                    saldoLocal--;
-                }
+                if(apuntado) { inscritas++; saldoLocal--; }
                 cursor.setDate(cursor.getDate() + 7);
             }
-            
-            // Guardar saldo final
             credsActualizados[tipo] = saldoLocal;
             await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: credsActualizados, creditos: credsActualizados.fuerza });
         }
 
         window.expulsarDeClase = async (cid, uid) => {
-            if(!confirm("¿Quitar usuario de la clase? (No devuelve crédito automático aquí)")) return;
+            if(!confirm("¿Quitar usuario?")) return;
             await updateDoc(doc(db, "clases", cid), { apuntados: arrayRemove(uid) });
             verDetalleClase(cid);
         }
 
-        // --- 3. GENERACIÓN AUTOMÁTICA DESDE CONFIRMACIÓN (LÓGICA MEJORADA) ---
+        // --- 3. GENERACIÓN AUTOMÁTICA ---
         window.confirmarHorario = async (uid) => {
             const tipoClase = document.getElementById('selectTipoConfirmacion').value;
             const btn = document.getElementById('btnConfirmarHorario');
             const user = allUsersGlobal.find(x => x.id === uid);
             
             if(!user || !user.preferencias_horario || user.preferencias_horario.length === 0) return alert("Sin preferencias.");
-            if(!confirm(`⚠️ ¿Generar horario para ${user.nombre}? \nSe crearán clases para 2 meses.\nSolo se le inscribirá si tiene saldo.`)) return;
+            if(!confirm(`⚠️ ¿Generar horario para ${user.nombre}?`)) return;
 
             btn.innerText = "⏳ Procesando..."; btn.disabled = true;
 
             try {
                 await updateDoc(doc(db, "usuarios", uid), { horario_confirmado: true });
-
                 const diasMapa = {'L':1, 'Ma':2, 'X':3, 'J':4, 'V':5, 'S':6};
                 const hoy = new Date();
                 const limite = new Date(); limite.setDate(hoy.getDate() + 60);
-
                 const slots = [];
                 user.preferencias_horario.forEach(pref => {
                     const [d, h] = pref.split('-');
@@ -440,7 +550,6 @@
                     if(diasMapa[d]) slots.push({ dia: diasMapa[d], hora: horaStr });
                 });
 
-                // LEER CRÉDITOS ACTUALES
                 let creds = user.creditos_detalle || {};
                 if(typeof user.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = user.creditos;
                 let saldoDisponible = creds[tipoClase] || 0;
@@ -451,22 +560,15 @@
                 while(cursor <= limite) {
                     const diaSemana = cursor.getDay();
                     const matches = slots.filter(s => s.dia === diaSemana);
-                    
                     for (const slot of matches) {
-                        // LÓGICA CRÍTICA: La clase se crea SIEMPRE. El usuario entra SI TIENE SALDO.
                         let meterUsuario = false;
-                        if(saldoDisponible > 0) {
-                            meterUsuario = true;
-                            saldoDisponible--;
-                            inscripciones++;
-                        }
+                        if(saldoDisponible > 0) { meterUsuario = true; saldoDisponible--; inscripciones++; }
 
                         const fechaStr = cursor.toISOString().split('T')[0];
                         const q = query(collection(db, "clases"), where("fecha", "==", fechaStr), where("hora", "==", slot.hora), where("tipo", "==", tipoClase));
                         const snaps = await getDocs(q);
 
                         if(snaps.empty) {
-                            // NO EXISTE -> CREARLA (con o sin usuario)
                             await addDoc(collection(db, "clases"), {
                                 nombre: (tipoClase==='fuerza'?'Grupo Fuerza':'Grupo Pilates'), tipo: tipoClase,
                                 fecha: fechaStr, hora: slot.hora, plazas_totales: 4,
@@ -475,14 +577,11 @@
                             });
                             clasesCreadas++;
                         } else {
-                            // EXISTE -> METER SOLO SI TENÍA SALDO
                             if(meterUsuario) {
                                 snaps.forEach(async (docClase) => {
-                                    const d = docClase.data();
-                                    const ap = d.apuntados || [];
+                                    const d = docClase.data(); const ap = d.apuntados || [];
                                     if(!ap.includes(uid) && ap.length < d.plazas_totales) {
-                                        ap.push(uid);
-                                        await updateDoc(doc(db, "clases", docClase.id), { apuntados: ap });
+                                        ap.push(uid); await updateDoc(doc(db, "clases", docClase.id), { apuntados: ap });
                                     }
                                 });
                             }
@@ -490,19 +589,15 @@
                     }
                     cursor.setDate(cursor.getDate() + 1);
                 }
-
-                // Guardar saldo restante
                 creds[tipoClase] = saldoDisponible;
                 await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: creds, creditos: creds.fuerza });
-
-                alert(`✅ HECHO:\n- Horario confirmado.\n- Se han generado/revisado las clases de 2 meses.\n- Usuario inscrito en ${inscripciones} sesiones (hasta agotar su saldo).`);
+                alert(`✅ HECHO: ${inscripciones} sesiones inscritas.`);
                 cerrarModales(); cargarTodo();
-
             } catch(e) { console.error(e); alert("Error: " + e.message); } 
             finally { btn.innerText = "✅ CONFIRMAR Y GENERAR"; btn.disabled = false; }
         }
 
-        // --- RESTO DE FUNCIONES (Heatmap, Modales, etc) ---
+        // --- RESTO DE FUNCIONES ---
         window.cargarMapaCalor = () => {
             const tbody = document.getElementById('tablaCalor'); if(!tbody) return;
             let heatMap = {}; const dias = ['L', 'Ma', 'X', 'J', 'V', 'S'];
@@ -549,7 +644,6 @@
         }
 
         window.cerrarModales = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-        
         window.borrarUsuario = async (uid) => { if(confirm("¿Eliminar?")) { await deleteDoc(doc(db,"usuarios",uid)); cargarTodo(); } };
         window.borrarClase = async(id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db,"clases",id)); cargarCalendario(); } };
         
@@ -577,31 +671,18 @@
             alert("Creada"); cargarCalendario();
         }
 
-        // --- CARGAR LEADS CON ENLACE DE WHATSAPP ---
         window.cargarInteresados = async () => {
-            const tb = document.getElementById('tablaLeads');
-            if (!tb) return;
+            const tb = document.getElementById('tablaLeads'); if (!tb) return;
             const s = await getDocs(query(collection(db, "interesados"), orderBy("fecha", "desc")));
             let h = "";
             s.forEach(d => {
                 const l = d.data();
-                
-                // Formatear teléfono para enlace WhatsApp (solo dígitos)
                 let telDisplay = '-';
                 if (l.telefono) {
-                    const cleanTel = l.telefono.replace(/\D/g, ''); // Quita todo lo que no sea número
-                    // Enlace a la API de WhatsApp con icono
-                    telDisplay = `<a href="https://wa.me/${cleanTel}" target="_blank" style="color:#25D366; text-decoration:none; font-weight:bold;">
-                                    <i class="bi bi-whatsapp"></i> ${l.telefono}
-                                  </a>`;
+                    const cleanTel = l.telefono.replace(/\D/g, '');
+                    telDisplay = `<a href="https://wa.me/${cleanTel}" target="_blank" style="color:#25D366; text-decoration:none; font-weight:bold;"><i class="bi bi-whatsapp"></i> ${l.telefono}</a>`;
                 }
-
-                h += `<tr>
-                        <td>${new Date(l.fecha.seconds * 1000).toLocaleDateString()}</td>
-                        <td>${l.nombre}<br><small style="color:#888">${l.email}</small></td>
-                        <td>${telDisplay}</td>
-                        <td><button class="btn-del" onclick="borrarLead('${d.id}')">🗑️</button></td>
-                      </tr>`;
+                h += `<tr><td>${new Date(l.fecha.seconds * 1000).toLocaleDateString()}</td><td>${l.nombre}<br><small style="color:#888">${l.email}</small></td><td>${telDisplay}</td><td><button class="btn-del" onclick="borrarLead('${d.id}')">🗑️</button></td></tr>`;
             });
             tb.innerHTML = h;
         }
