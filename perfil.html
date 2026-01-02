@@ -150,9 +150,9 @@
         </div>
 
         <div class="prefs-card">
-            <h4 style="color:white; font-family:'Oswald'; margin-bottom:10px;">📅 MIS PREFERENCIAS DE HORARIO</h4>
+            <h4 style="color:white; font-family:'Oswald'; margin-bottom:10px;">📅 MIS PREFERENCIAS DE HORARIO <span id="statusHorario"></span></h4>
             <p style="color:#aaa; font-size:0.9rem;">
-                Marca las horas en las que te gustaría entrenar para ayudarnos a organizar los grupos.
+                Marca las horas en las que te gustaría entrenar.
                 <br><strong>Franja horaria:</strong> 07:00 a 22:00.
             </p>
             
@@ -382,7 +382,25 @@
                 cargarCreditos(user.uid);
                 cargarReservas(user.uid);
                 cargarMedidas(user.uid); 
-                cargarPreferencias(user.uid); // NUEVO: Cargamos sus preferencias guardadas
+                
+                // NUEVO: COMPROBAR SI ESTÁ CONFIRMADO EL HORARIO
+                const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+                if(userSnap.exists()) {
+                    const data = userSnap.data();
+                    if(data.horario_confirmado) {
+                        document.getElementById('statusHorario').innerHTML = `<span class="badge bg-success" style="vertical-align:middle; font-size:0.7rem;">✅ HORARIO CONFIRMADO</span>`;
+                    } else {
+                        document.getElementById('statusHorario').innerHTML = `<span class="badge bg-secondary" style="vertical-align:middle; font-size:0.7rem;">PENDIENTE</span>`;
+                    }
+                    
+                    // Cargar checks
+                    const prefs = data.preferencias_horario || [];
+                    prefs.forEach(code => {
+                        const check = document.querySelector(`.pref-check[data-code="${code}"]`);
+                        if(check) check.checked = true;
+                    });
+                }
+
             } else {
                 window.location.href = "login.html";
             }
@@ -401,20 +419,6 @@
                 console.error(e);
                 alert("Error: " + e.message); 
             }
-        }
-
-        async function cargarPreferencias(uid) {
-            try {
-                const snap = await getDoc(doc(db, "usuarios", uid));
-                if(snap.exists()) {
-                    const data = snap.data();
-                    const prefs = data.preferencias_horario || [];
-                    prefs.forEach(code => {
-                        const check = document.querySelector(`.pref-check[data-code="${code}"]`);
-                        if(check) check.checked = true;
-                    });
-                }
-            } catch(e) { console.error("Error cargando preferencias", e); }
         }
 
         // --- 4. GESTIÓN DE ANTROPOMETRÍA ---
