@@ -8,6 +8,8 @@
     <title>ITA | ADMIN PRO</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
     <script>
         const v = Date.now();
         function cargarCSS(a) { var l = document.createElement("link"); l.rel = "stylesheet"; l.href = a + "?v=" + v; document.head.appendChild(l); }
@@ -40,7 +42,7 @@
         .h-med { background: rgba(255, 0, 127, 0.4); color: white !important; font-weight: bold; }
         .h-high { background: rgba(255, 0, 127, 0.8); color: white !important; font-weight: bold; }
 
-        /* TABLAS */
+        /* TABLAS SOCIOS */
         .user-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .user-table th, .user-table td { padding: 10px; text-align: left; border-bottom: 1px solid #333; }
         .btn-mini { padding: 5px 10px; border-radius: 4px; background: #444; color: white; border: none; cursor: pointer; font-size: 0.8rem; margin-right: 5px; }
@@ -575,11 +577,33 @@
             alert("Creada"); cargarCalendario();
         }
 
+        // --- CARGAR LEADS CON ENLACE DE WHATSAPP ---
         window.cargarInteresados = async () => {
-            const tb=document.getElementById('tablaLeads'); if(!tb)return;
-            const s=await getDocs(query(collection(db,"interesados"),orderBy("fecha","desc")));
-            let h=""; s.forEach(d=>{ const l=d.data(); h+=`<tr><td>${new Date(l.fecha.seconds*1000).toLocaleDateString()}</td><td>${l.nombre}</td><td>${l.telefono||'-'}</td><td><button class="btn-del" onclick="borrarLead('${d.id}')">🗑️</button></td></tr>`; });
-            tb.innerHTML=h;
+            const tb = document.getElementById('tablaLeads');
+            if (!tb) return;
+            const s = await getDocs(query(collection(db, "interesados"), orderBy("fecha", "desc")));
+            let h = "";
+            s.forEach(d => {
+                const l = d.data();
+                
+                // Formatear teléfono para enlace WhatsApp (solo dígitos)
+                let telDisplay = '-';
+                if (l.telefono) {
+                    const cleanTel = l.telefono.replace(/\D/g, ''); // Quita todo lo que no sea número
+                    // Enlace a la API de WhatsApp con icono
+                    telDisplay = `<a href="https://wa.me/${cleanTel}" target="_blank" style="color:#25D366; text-decoration:none; font-weight:bold;">
+                                    <i class="bi bi-whatsapp"></i> ${l.telefono}
+                                  </a>`;
+                }
+
+                h += `<tr>
+                        <td>${new Date(l.fecha.seconds * 1000).toLocaleDateString()}</td>
+                        <td>${l.nombre}<br><small style="color:#888">${l.email}</small></td>
+                        <td>${telDisplay}</td>
+                        <td><button class="btn-del" onclick="borrarLead('${d.id}')">🗑️</button></td>
+                      </tr>`;
+            });
+            tb.innerHTML = h;
         }
         window.borrarLead=async(id)=>{if(confirm("¿Borrar?")) {await deleteDoc(doc(db,"interesados",id)); cargarInteresados();}}
 
