@@ -8,7 +8,6 @@
     <title>ITA | ADMIN PRO</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-    
     <script>
         const v = Date.now();
         function cargarCSS(a) { var l = document.createElement("link"); l.rel = "stylesheet"; l.href = a + "?v=" + v; document.head.appendChild(l); }
@@ -25,7 +24,6 @@
         .tab-btn { background: #222; color: #888; border: 1px solid #333; padding: 10px 25px; cursor: pointer; border-radius: 30px; font-family: 'Oswald'; text-transform: uppercase; transition: 0.3s; }
         .tab-btn.active { background: #ff007f; color: white; border-color: #ff007f; box-shadow: 0 0 10px rgba(255,0,127,0.3); }
 
-        /* VISTAS */
         .view-section { display: none; grid-template-columns: 1fr; gap: 30px; }
         .view-section.active { display: grid; }
 
@@ -33,20 +31,20 @@
         .panel-card { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 20px; }
         .panel-title { font-family: 'Oswald'; color: #ff007f; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* MAPA DE CALOR (HEATMAP) */
+        /* HEATMAP */
         .heat-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.85rem; }
         .heat-table th { color: #ff007f; padding: 8px; border-bottom: 1px solid #444; font-family: 'Oswald'; }
-        .heat-table td { padding: 8px; border: 1px solid #333; color: #555; }
+        .heat-table td { padding: 8px; border: 1px solid #333; color: #555; cursor: pointer; transition: 0.2s; }
+        .heat-table td:hover { border: 1px solid white; }
         
-        /* Colores según intensidad */
         .h-low { background: rgba(255, 0, 127, 0.1); color: white !important; font-weight: bold; }
         .h-med { background: rgba(255, 0, 127, 0.4); color: white !important; font-weight: bold; }
         .h-high { background: rgba(255, 0, 127, 0.8); color: white !important; font-weight: bold; }
 
-        /* TABLAS NORMALES */
+        /* TABLAS SOCIOS */
         .user-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .user-table th, .user-table td { padding: 10px; text-align: left; border-bottom: 1px solid #333; }
-        .btn-mini { padding: 5px 10px; border-radius: 4px; background: #444; color: white; border: none; cursor: pointer; font-size: 0.8rem; }
+        .btn-mini { padding: 5px 10px; border-radius: 4px; background: #444; color: white; border: none; cursor: pointer; font-size: 0.8rem; margin-right: 5px; }
         .btn-mini:hover { background: #ff007f; }
         .btn-del { background: transparent; border: 1px solid #ff4444; color: #ff4444; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; }
         
@@ -56,8 +54,18 @@
         .btn-create { width: 100%; padding: 10px; background: #ff007f; border: none; color: white; font-weight: bold; cursor: pointer; }
         
         /* MODAL */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; justify-content: center; align-items: center; }
-        .modal-content { background: #111; padding: 30px; border: 1px solid #ff007f; border-radius: 10px; width: 90%; max-width: 400px; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; }
+        .modal-content { background: #1a1a1a; padding: 30px; border: 1px solid #ff007f; border-radius: 10px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        
+        /* CALENDARIO SOCIO (MODAL) */
+        .socio-calendar-table { width: 100%; text-align: center; font-size: 0.8rem; }
+        .socio-calendar-table th { color: #ff007f; font-family:'Oswald'; }
+        .socio-calendar-table td { padding: 4px; border: 1px solid #333; }
+        .cell-selected { background-color: #ff007f; color: white; }
+        
+        .status-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        .badge-pending { background: #444; color: #aaa; }
+        .badge-confirmed { background: #25D366; color: black; }
     </style>
 </head>
 <body>
@@ -74,8 +82,8 @@
         <div id="vista-demanda" class="view-section active">
             <div class="panel-card" style="border-color: #ff007f;">
                 <div class="panel-title">
-                    <span>🔥 PREFERENCIAS HORARIAS</span>
-                    <button class="btn-mini" onclick="cargarMapaCalor()">Actualizar</button>
+                    <span>🔥 PREFERENCIAS (Haz clic en un nº para ver quiénes son)</span>
+                    <button class="btn-mini" onclick="cargarTodo()">Actualizar</button>
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="heat-table">
@@ -110,9 +118,9 @@
 
         <div id="vista-socios" class="view-section">
             <div class="panel-card">
-                <div class="panel-title">LISTA DE SOCIOS <button class="btn-mini" onclick="cargarUsuarios()">Refrescar</button></div>
+                <div class="panel-title">LISTA DE SOCIOS <button class="btn-mini" onclick="cargarTodo()">Refrescar</button></div>
                 <table class="user-table">
-                    <thead><tr><th>Usuario</th><th>Saldos</th><th>Acción</th></tr></thead>
+                    <thead><tr><th>Usuario</th><th>Estado Horario</th><th>Acción</th></tr></thead>
                     <tbody id="tablaUsuarios"></tbody>
                 </table>
             </div>
@@ -126,116 +134,220 @@
     </div>
 
     <div id="modalCreditos" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width:400px;">
             <h3 id="modalUserNombre">Usuario</h3>
             <div id="creditEditors"></div>
-            <button class="btn-create" style="background:#444; margin-top:20px;" onclick="cerrarModal()">CERRAR</button>
+            <button class="btn-create" style="background:#444; margin-top:20px;" onclick="cerrarModales()">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="modalQuien" class="modal-overlay">
+        <div class="modal-content" style="max-width:400px; text-align:center;">
+            <h3 style="color:#ff007f; font-family:'Oswald';">INTERESADOS</h3>
+            <h5 id="modalQuienTitulo" style="color:#aaa; margin-bottom:20px;"></h5>
+            <ul id="listaInteresados" style="list-style:none; padding:0; text-align:left; border:1px solid #333; padding:10px; background:#222;"></ul>
+            <button class="btn-create" style="background:#444; margin-top:20px;" onclick="cerrarModales()">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="modalCalendarioSocio" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 id="calSocioNombre" style="color:white; font-family:'Oswald'; margin:0;"></h3>
+                <span id="calSocioStatus"></span>
+            </div>
+            <p style="color:#aaa; font-size:0.9rem;">Preferencias marcadas por el usuario:</p>
+            
+            <div style="max-height:400px; overflow-y:auto; margin-bottom:20px;">
+                <table class="socio-calendar-table">
+                    <thead><tr><th>H</th><th>L</th><th>M</th><th>X</th><th>J</th><th>V</th><th>S</th></tr></thead>
+                    <tbody id="calSocioBody"></tbody>
+                </table>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <button class="btn-create" style="background:#444;" onclick="cerrarModales()">CERRAR</button>
+                <button id="btnConfirmarHorario" class="btn-create" style="background:#25D366; color:black;">✅ CONFIRMAR</button>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { db } from "./firebase-config.js";
-        import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, arrayRemove, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // --- PESTAÑAS ---
+        let allUsersGlobal = []; // Para tener los datos siempre a mano
+
+        // --- SISTEMA DE PESTAÑAS ---
         window.cambiarPestana = (p) => {
             document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('active'));
             document.getElementById(`vista-${p}`).classList.add('active');
-            
-            // Hack visual botones
             const btns = document.querySelectorAll('.tab-btn');
             if(p==='demanda') btns[0].classList.add('active');
             if(p==='clases') btns[1].classList.add('active');
             if(p==='socios') btns[2].classList.add('active');
         }
 
-        // --- 1. MAPA DE CALOR (LÓGICA ACTUALIZADA POR HORAS) ---
-        window.cargarMapaCalor = async () => {
-            const tbody = document.getElementById('tablaCalor');
-            tbody.innerHTML = '<tr><td colspan="7">Calculando...</td></tr>';
+        // --- CARGA DE DATOS GENERAL ---
+        window.cargarTodo = async () => {
+            await cargarUsuarios(); // Esto llena allUsersGlobal
+            cargarMapaCalor();      // Esto usa allUsersGlobal
+            cargarCalendario();
+            cargarInteresados();
+        }
+
+        // --- 1. USUARIOS Y SOCIOS ---
+        window.cargarUsuarios = async () => {
+            const tbody = document.getElementById('tablaUsuarios');
+            if(tbody) tbody.innerHTML = '<tr><td>Cargando...</td></tr>';
             
             try {
                 const snap = await getDocs(collection(db, "usuarios"));
-                // Matriz de datos: Clave = "Dia-Hora" (ej: "L-18")
-                let heatMap = {}; 
-                
-                // Inicializar a 0
-                const dias = ['L', 'Ma', 'X', 'J', 'V', 'S'];
-                for(let h=7; h<=22; h++) {
-                    dias.forEach(d => { heatMap[`${d}-${h}`] = 0; });
-                }
-
-                // Sumar votos
-                snap.forEach(doc => {
-                    const u = doc.data();
-                    if(u.preferencias_horario && Array.isArray(u.preferencias_horario)) {
-                        u.preferencias_horario.forEach(voto => {
-                            // voto es "L-7", "X-18", etc.
-                            if(heatMap[voto] !== undefined) heatMap[voto]++;
-                        });
-                    }
-                });
-
-                // Pintar Tabla
-                let html = "";
-                for(let h=7; h<=22; h++) {
-                    let horaStr = h < 10 ? `0${h}:00` : `${h}:00`;
-                    html += `<tr><td style="color:#ff007f; font-weight:bold;">${horaStr}</td>`;
-                    
-                    dias.forEach(d => {
-                        const val = heatMap[`${d}-${h}`];
-                        let clase = "";
-                        if(val > 0) clase = "h-low";
-                        if(val > 3) clase = "h-med";
-                        if(val > 7) clase = "h-high";
-                        
-                        html += `<td class="${clase}">${val > 0 ? val : '-'}</td>`;
-                    });
-                    html += `</tr>`;
-                }
-                tbody.innerHTML = html;
-
-            } catch(e) { console.error(e); tbody.innerHTML = "Error cargando."; }
-        };
-
-        // --- 2. GESTIÓN USUARIOS (RESTAURADA) ---
-        let allUsers = [];
-        window.cargarUsuarios = async () => {
-            const tbody = document.getElementById('tablaUsuarios');
-            tbody.innerHTML = '<tr><td>Cargando...</td></tr>';
-            try {
-                const snap = await getDocs(collection(db, "usuarios"));
-                allUsers = [];
+                allUsersGlobal = [];
                 let html = "";
                 snap.forEach(d => {
-                    const u = d.data(); u.id = d.id; allUsers.push(u);
+                    const u = d.data(); u.id = d.id; allUsersGlobal.push(u);
                     const c = u.creditos_detalle || {};
                     if(typeof u.creditos === 'number' && !c.fuerza) c.fuerza = u.creditos;
                     
+                    // Estado del horario
+                    let estadoHtml = `<span class="status-badge badge-pending">Pendiente</span>`;
+                    if(u.horario_confirmado) estadoHtml = `<span class="status-badge badge-confirmed">Confirmado</span>`;
+
                     html += `<tr>
                         <td><strong>${u.nombre||'Socio'}</strong><br><small style="color:#888">${u.email}</small></td>
-                        <td>F:${c.fuerza||0} P:${c.pilates||0}</td>
+                        <td>${estadoHtml}</td>
                         <td>
-                            <button class="btn-mini" onclick="abrirModal('${u.id}')">EDIT</button>
+                            <button class="btn-mini" onclick="abrirModalCreditos('${u.id}')">💰</button>
+                            <button class="btn-mini" style="background:#54a0ff;" onclick="verCalendarioSocio('${u.id}')">📅</button>
                             <button class="btn-del" onclick="borrarUsuario('${u.id}')">🗑️</button>
                         </td>
                     </tr>`;
                 });
-                tbody.innerHTML = html;
+                if(tbody) tbody.innerHTML = html;
             } catch(e) { console.error(e); }
         };
 
-        window.borrarUsuario = async (uid) => {
-            if(confirm("¿Eliminar usuario?")) {
-                await deleteDoc(doc(db, "usuarios", uid));
-                cargarUsuarios();
+        // --- 2. MAPA DE CALOR INTERACTIVO ---
+        window.cargarMapaCalor = () => {
+            // Usamos allUsersGlobal que ya cargó en cargarUsuarios
+            const tbody = document.getElementById('tablaCalor');
+            if(!tbody) return;
+            
+            // Matriz: Clave = "Dia-Hora" (ej: "L-18") -> Array de nombres
+            let heatMap = {}; 
+            const dias = ['L', 'Ma', 'X', 'J', 'V', 'S'];
+            for(let h=7; h<=22; h++) { dias.forEach(d => { heatMap[`${d}-${h}`] = []; }); }
+
+            // Llenar con nombres
+            allUsersGlobal.forEach(u => {
+                if(u.preferencias_horario && Array.isArray(u.preferencias_horario)) {
+                    u.preferencias_horario.forEach(voto => {
+                        if(heatMap[voto] !== undefined) heatMap[voto].push(u.nombre || u.email);
+                    });
+                }
+            });
+
+            // Pintar HTML
+            let html = "";
+            for(let h=7; h<=22; h++) {
+                let horaStr = h < 10 ? `0${h}:00` : `${h}:00`;
+                html += `<tr><td style="color:#ff007f; font-weight:bold;">${horaStr}</td>`;
+                
+                dias.forEach(d => {
+                    const lista = heatMap[`${d}-${h}`];
+                    const val = lista.length;
+                    let clase = "";
+                    let clickFn = "";
+                    
+                    if(val > 0) {
+                        if(val <= 3) clase = "h-low";
+                        else if(val <= 7) clase = "h-med";
+                        else clase = "h-high";
+                        
+                        // Aquí guardamos los nombres en el atributo data para no complicar el string
+                        const nombresSafe = JSON.stringify(lista).replace(/"/g, '&quot;');
+                        clickFn = `onclick="verQuien('${d}', ${h}, ${nombresSafe})"`;
+                    }
+                    
+                    html += `<td class="${clase}" ${clickFn}>${val > 0 ? val : '-'}</td>`;
+                });
+                html += `</tr>`;
             }
+            tbody.innerHTML = html;
         };
 
-        // --- 3. MODAL EDICIÓN ---
-        window.abrirModal = (uid) => {
-            const u = allUsers.find(x => x.id === uid);
+        // --- 3. MODAL: QUIÉN QUIERE ESTA HORA ---
+        window.verQuien = (dia, hora, listaNombres) => {
+            const diasFull = {'L':'Lunes', 'Ma':'Martes', 'X':'Miércoles', 'J':'Jueves', 'V':'Viernes', 'S':'Sábado'};
+            document.getElementById('modalQuienTitulo').innerText = `${diasFull[dia]} a las ${hora}:00`;
+            const ul = document.getElementById('listaInteresados');
+            ul.innerHTML = "";
+            listaNombres.forEach(nom => {
+                ul.innerHTML += `<li style="padding:5px; border-bottom:1px solid #444;">👤 ${nom}</li>`;
+            });
+            document.getElementById('modalQuien').style.display = 'flex';
+        }
+
+        // --- 4. MODAL: CALENDARIO SOCIO (CONFIRMACIÓN) ---
+        window.verCalendarioSocio = (uid) => {
+            const u = allUsersGlobal.find(x => x.id === uid);
+            if(!u) return;
+
+            document.getElementById('calSocioNombre').innerText = u.nombre || "Socio";
+            const statusSpan = document.getElementById('calSocioStatus');
+            
+            if(u.horario_confirmado) {
+                statusSpan.innerHTML = '<span class="status-badge badge-confirmed">CONFIRMADO</span>';
+                document.getElementById('btnConfirmarHorario').style.display = 'none';
+            } else {
+                statusSpan.innerHTML = '<span class="status-badge badge-pending">PENDIENTE</span>';
+                document.getElementById('btnConfirmarHorario').style.display = 'block';
+                document.getElementById('btnConfirmarHorario').onclick = () => confirmarHorario(uid);
+            }
+
+            // Pintar tabla miniatura
+            const tbody = document.getElementById('calSocioBody');
+            const dias = ['L', 'Ma', 'X', 'J', 'V', 'S'];
+            const prefs = u.preferencias_horario || [];
+            let html = "";
+
+            for(let h=7; h<=22; h++) {
+                html += `<tr><td>${h}</td>`;
+                dias.forEach(d => {
+                    const code = `${d}-${h}`;
+                    const isSelected = prefs.includes(code);
+                    const bg = isSelected ? 'cell-selected' : '';
+                    html += `<td class="${bg}">${isSelected ? '✓' : ''}</td>`;
+                });
+                html += `</tr>`;
+            }
+            tbody.innerHTML = html;
+            document.getElementById('modalCalendarioSocio').style.display = 'flex';
+        }
+
+        window.confirmarHorario = async (uid) => {
+            if(!confirm("¿Confirmar que este horario es definitivo? El usuario verá la confirmación en su perfil.")) return;
+            try {
+                await updateDoc(doc(db, "usuarios", uid), { horario_confirmado: true });
+                alert("✅ Horario confirmado.");
+                cerrarModales();
+                cargarTodo(); // Recargar tablas
+            } catch(e) { alert("Error: " + e.message); }
+        }
+
+        // --- UTILIDADES ---
+        window.cerrarModales = () => {
+            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+        }
+        window.borrarUsuario = async (uid) => {
+            if(confirm("¿Eliminar usuario?")) { await deleteDoc(doc(db, "usuarios", uid)); cargarTodo(); }
+        };
+
+        // --- MODAL CREDITOS (ANTIGUO) ---
+        window.abrirModalCreditos = (uid) => {
+            const u = allUsersGlobal.find(x => x.id === uid);
             if(!u) return;
             document.getElementById('modalUserNombre').innerText = u.nombre || 'Usuario';
             const div = document.getElementById('creditEditors');
@@ -256,19 +368,26 @@
             });
             document.getElementById('modalCreditos').style.display = 'flex';
         };
-        window.cerrarModal = () => document.getElementById('modalCreditos').style.display = 'none';
 
         window.cambiarSaldo = async (uid, tipo, delta) => {
             const ref = doc(db, "usuarios", uid);
-            // (Nota: lógica simplificada de lectura/escritura para brevedad, idealmente usar transaction)
-            // Aquí recargamos usuarios para tener dato fresco, luego actualizamos
-            // Para admin rápido, asumimos estado actual de 'allUsers' podría estar obsoleto, mejor leer snap
-            // Implementación básica:
-            alert("Función disponible. Recarga la página si quieres ver cambios inmediatos tras editar.");
-            // (Puedes pegar tu lógica anterior de cambiarSaldo aquí si la necesitas robusta)
+            // Nota: Para hacerlo bien en tiempo real, deberíamos leer el doc actual. 
+            // Aquí usamos el dato en memoria por rapidez, pero en producción mejor getDoc antes.
+            const u = allUsersGlobal.find(x => x.id === uid);
+            let c = u.creditos_detalle || {};
+            if(typeof u.creditos === 'number' && !c.fuerza) c.fuerza = u.creditos;
+            
+            c[tipo] = (c[tipo] || 0) + delta;
+            if(c[tipo] < 0) c[tipo] = 0;
+
+            await updateDoc(ref, { creditos_detalle: c, creditos: c.fuerza });
+            // Actualizamos en local visualmente y recargamos silenciosamente
+            u.creditos_detalle = c; 
+            abrirModalCreditos(uid); // Refrescar modal
+            cargarUsuarios(); // Refrescar tabla fondo
         };
 
-        // --- 4. CLASES Y CALENDARIO ---
+        // --- CLASES Y CALENDARIO ---
         window.crearClase = async () => {
             const nom = document.getElementById('nombreClase').value;
             const fecha = document.getElementById('fechaClase').value;
@@ -297,39 +416,25 @@
             });
             div.innerHTML = html;
         };
+        window.borrarClase = async(id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db,"clases",id)); cargarCalendario(); } }
 
-        window.borrarClase = async(id) => {
-            if(confirm("¿Borrar clase?")) { await deleteDoc(doc(db,"clases",id)); cargarCalendario(); }
-        }
-
-        // --- 5. LEADS ---
+        // --- LEADS ---
         window.cargarInteresados = async () => {
             const tbody = document.getElementById('tablaLeads');
+            if(!tbody) return;
             const q = query(collection(db, "interesados"), orderBy("fecha", "desc"));
             const snap = await getDocs(q);
             let html = "";
             snap.forEach(d => {
                 const l = d.data();
-                html += `<tr>
-                    <td>${new Date(l.fecha.seconds*1000).toLocaleDateString()}</td>
-                    <td>${l.nombre}<br><small>${l.email}</small></td>
-                    <td>${l.telefono||'-'}</td>
-                    <td><button class="btn-del" onclick="borrarLead('${d.id}')">🗑️</button></td>
-                </tr>`;
+                html += `<tr><td>${new Date(l.fecha.seconds*1000).toLocaleDateString()}</td><td>${l.nombre}</td><td>${l.telefono||'-'}</td><td><button class="btn-del" onclick="borrarLead('${d.id}')">🗑️</button></td></tr>`;
             });
             tbody.innerHTML = html;
         }
-        window.borrarLead = async(id) => { 
-            if(confirm("¿Borrar?")) { await deleteDoc(doc(db,"interesados",id)); cargarInteresados(); }
-        }
+        window.borrarLead = async(id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db,"interesados",id)); cargarInteresados(); } }
 
         // INICIALIZAR
-        window.onload = () => {
-            cargarMapaCalor();
-            cargarUsuarios();
-            cargarCalendario();
-            cargarInteresados();
-        };
+        window.onload = () => { cargarTodo(); };
     </script>
 </body>
 </html>
