@@ -81,77 +81,32 @@
         .pagination-controls { text-align: center; margin-top: 20px; }
         .btn-page { background: #333; color: white; border: none; padding: 8px 16px; margin: 0 5px; border-radius: 4px; cursor: pointer; }
         .history-btn { font-size: 0.8rem; background: #333; border: 1px solid #555; color: #aaa; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-        .logout-btn { display: block; width: 100%; max-width: 200px; margin: 50px auto 0; padding: 15px; background: #333; color: white; text-align: center; text-decoration: none; border-radius: 5px; transition: 0.3s; font-size: 0.9rem; }
+        
+        /* 4. SECCIÓN CONFIGURACIÓN */
+        .logout-btn { display: block; width: 100%; max-width: 100%; margin: 0; padding: 15px; background: #333; color: white; text-align: center; text-decoration: none; border-radius: 5px; transition: 0.3s; font-size: 0.9rem; }
         .logout-btn:hover { background: #ff4444; }
 
-
-        /* 4. SECCIÓN CONFIGURACIÓN (NUEVO) */
-        .settings-card {
-            background: #222;
-            border: 1px solid #444;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 40px;
-            margin-bottom: 60px; /* Espacio extra al final */
-        }
-
-        .settings-title {
-            font-family: 'Oswald';
-            color: white;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #444;
-            padding-bottom: 10px;
-        }
-
         .gdpr-box {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 68, 68, 0.05);
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
+            border: 1px solid #ff4444;
         }
+        .gdpr-text { color: white; font-size: 0.85rem; margin: 0; }
 
-        .gdpr-text {
-            color: #aaa;
-            font-size: 0.85rem;
-            margin: 0;
-        }
-
-        .btn-reset-pass {
-            background: transparent;
-            border: 1px solid #ff9f43; /* Naranja para diferenciar de acciones destructivas */
-            color: #ff9f43;
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            transition: 0.3s;
-            font-weight: bold;
-        }
-
-        .btn-reset-pass:hover {
-            background: #ff9f43;
-            color: white;
-        }
-
-        /* Modificación al botón logout existente para que encaje mejor */
-        .logout-btn {
-            margin: 0; /* Quitamos el margen automático que tenía antes */
-            width: 100%;
-            max-width: 100%; /* Ocupar todo el ancho del contenedor */
-        }
+        /* 5. NUEVO: ESTILOS PARA LA TABLA DE HORARIOS (PREFERENCIAS) */
+        .prefs-card { background: #222; border: 1px solid #ff007f; border-radius: 10px; padding: 20px; margin-bottom: 40px; }
+        .table-custom th { color: #ff007f; font-family: 'Oswald'; text-align: center; font-size: 0.9rem; border-bottom: 1px solid #444; }
+        .table-custom td { text-align: center; padding: 5px; border-color: #333; vertical-align: middle; }
+        .pref-check { width: 18px; height: 18px; accent-color: #ff007f; cursor: pointer; }
+        .row-hour { color: #aaa; font-weight: bold; font-size: 0.8rem; background: #1a1a1a; border-right: 1px solid #333; }
 
         /* SCROLL HORIZONTAL PARA BOTONES DE GRÁFICA EN MÓVIL */
-        .chart-controls {
-            display: flex;
-            gap: 5px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-            -webkit-overflow-scrolling: touch;
-        }
+        .chart-controls { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; -webkit-overflow-scrolling: touch; }
         .chart-controls::-webkit-scrollbar { height: 4px; }
         .chart-controls::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
         
@@ -168,12 +123,11 @@
             <p class="user-email" id="userEmail">...</p>
         </div>
 
-        <div class="profile-header">
+        <div class="profile-header" style="border:none; padding-bottom:0; margin-bottom:20px;">
             <button id="btnLogout" class="logout-btn">
                 <i class="bi bi-box-arrow-right"></i> CERRAR SESIÓN
             </button>
         </div>
-
 
         <h3 style="color:white; font-family:'Oswald'; margin-bottom:15px;">MI SALDO</h3>
         <div class="credits-grid">
@@ -195,6 +149,35 @@
             </div>
         </div>
 
+        <div class="prefs-card">
+            <h4 style="color:white; font-family:'Oswald'; margin-bottom:10px;">📅 MIS PREFERENCIAS DE HORARIO</h4>
+            <p style="color:#aaa; font-size:0.9rem;">
+                Marca las horas en las que te gustaría entrenar para ayudarnos a organizar los grupos.
+                <br><strong>Franja horaria:</strong> 07:00 a 22:00.
+            </p>
+            
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-dark table-custom">
+                    <thead>
+                        <tr>
+                            <th>H</th>
+                            <th>LUN</th>
+                            <th>MAR</th>
+                            <th>MIÉ</th>
+                            <th>JUE</th>
+                            <th>VIE</th>
+                            <th>SÁB</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaHorariosCuerpo">
+                        <tr><td colspan="7" class="text-center text-secondary">Cargando tabla...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn w-100 mt-3" style="background:#ff007f; color:white; font-weight:bold;" onclick="guardarPreferencias()">
+                GUARDAR HORARIO PREFERIDO
+            </button>
+        </div>
         <div class="reservations-section">
             <h3>PRÓXIMAS CLASES <button class="history-btn" onclick="toggleHistorial()">📜 Ver Historial</button></h3>
             <div id="misReservas"><p class="empty-msg">Cargando reservas...</p></div>
@@ -209,16 +192,16 @@
             </div>
         </div>
 
-    <div class="gdpr-box" style="border: 1px solid #ff4444; background: rgba(255, 68, 68, 0.05);">
-        <input class="form-check-input" type="checkbox" id="checkGDPR" style="cursor: pointer; border-color: #ff4444;">
-        <p class="gdpr-text" style="color: white;">
-            <strong>Requerido:</strong> He leído y acepto la 
-            <a href="politica-privacidad.html" target="_blank" style="color: #ff007f; text-decoration: underline; font-weight:bold;">
-                Política de Privacidad y Protección de Datos
-            </a>
-            para poder registrar mi progreso físico y rutinas en ITA Sport Center.
-        </p>
-    </div>
+        <div class="gdpr-box">
+            <input class="form-check-input" type="checkbox" id="checkGDPR" style="cursor: pointer; border-color: #ff4444;">
+            <p class="gdpr-text">
+                <strong>Requerido:</strong> He leído y acepto la 
+                <a href="politica-privacidad.html" target="_blank" style="color: #ff007f; text-decoration: underline; font-weight:bold;">
+                    Política de Privacidad y Protección de Datos
+                </a>
+                para poder registrar mi progreso físico y rutinas en ITA Sport Center.
+            </p>
+        </div>
 
     </div>
 
@@ -364,6 +347,31 @@
         let historialMedidas = [];
         let myChart = null; 
 
+        // --- 1. GENERAR TABLA DE HORARIOS (NUEVO) ---
+        function renderTablaHorarios() {
+            const tbody = document.getElementById('tablaHorariosCuerpo');
+            let html = "";
+            const dias = ['L', 'Ma', 'X', 'J', 'V', 'S'];
+            
+            // Bucle de horas: 7:00 a 22:00
+            for (let h = 7; h <= 22; h++) {
+                let horaStr = h < 10 ? `0${h}:00` : `${h}:00`;
+                html += `<tr>`;
+                html += `<td class="row-hour">${horaStr}</td>`;
+                
+                dias.forEach(d => {
+                    // Identificador único: Día-Hora (Ej: L-7, Ma-18)
+                    let disabled = (d === 'S' && h > 13) ? 'disabled style="opacity:0.2"' : ''; // Sábados tarde cerrado (opcional)
+                    html += `<td><input type="checkbox" class="pref-check" ${disabled} data-code="${d}-${h}"></td>`;
+                });
+                html += `</tr>`;
+            }
+            tbody.innerHTML = html;
+        }
+        // Ejecutamos al inicio
+        renderTablaHorarios();
+
+        // --- 2. AUTH CHANGED ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -374,25 +382,49 @@
                 cargarCreditos(user.uid);
                 cargarReservas(user.uid);
                 cargarMedidas(user.uid); 
+                cargarPreferencias(user.uid); // NUEVO: Cargamos sus preferencias guardadas
             } else {
                 window.location.href = "login.html";
             }
         });
 
-        // 1. GESTIÓN DE ANTROPOMETRÍA
+        // --- 3. FUNCIONES DE PREFERENCIAS (NUEVO) ---
+        window.guardarPreferencias = async () => {
+            if(!currentUser) return;
+            const checks = document.querySelectorAll('.pref-check:checked');
+            const seleccion = Array.from(checks).map(c => c.dataset.code); // Array ["L-7", "X-18", ...]
+            
+            try {
+                await updateDoc(doc(db, "usuarios", currentUser.uid), { preferencias_horario: seleccion });
+                alert("✅ Horario guardado. ¡Gracias por ayudarnos a organizar!");
+            } catch(e) { 
+                console.error(e);
+                alert("Error: " + e.message); 
+            }
+        }
+
+        async function cargarPreferencias(uid) {
+            try {
+                const snap = await getDoc(doc(db, "usuarios", uid));
+                if(snap.exists()) {
+                    const data = snap.data();
+                    const prefs = data.preferencias_horario || [];
+                    prefs.forEach(code => {
+                        const check = document.querySelector(`.pref-check[data-code="${code}"]`);
+                        if(check) check.checked = true;
+                    });
+                }
+            } catch(e) { console.error("Error cargando preferencias", e); }
+        }
+
+        // --- 4. GESTIÓN DE ANTROPOMETRÍA ---
         window.guardarMedidas = async () => {
-            // --- BLOQUE DE SEGURIDAD GDPR ---
             const checkGDPR = document.getElementById('checkGDPR');
             if (!checkGDPR || !checkGDPR.checked) {
-                alert("⛔ ACCESO DENEGADO\n\nPor normativas legales, no podemos almacenar tus datos de salud (medidas, peso, etc.) si no aceptas explícitamente nuestra Política de Privacidad.\n\nPor favor, marca la casilla en 'Configuración de Cuenta' al final de la página.");
-                
-                // Opcional: Esto hace scroll automático hasta la casilla para que el usuario la vea
+                alert("⛔ ACCESO DENEGADO\n\nDebes aceptar la Política de Privacidad en la casilla roja de arriba.");
                 checkGDPR.scrollIntoView({behavior: "smooth", block: "center"}); 
-                
-                // Importante: evita que se cierre el modal para que el usuario no pierda los datos que estaba escribiendo
                 return; 
             }
-            // ---------------------------------
 
             if(!currentUser) return;
             const fechaVal = document.getElementById('inputFecha').value;
@@ -415,14 +447,11 @@
             try {
                 await addDoc(collection(db, "medidas"), datos);
                 alert("✅ Medidas guardadas correctamente");
-                
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalMedidas'));
                 modal.hide();
-
                 cargarMedidas(currentUser.uid);
                 document.getElementById("formMedidas").reset();
                 document.getElementById('inputFecha').valueAsDate = new Date();
-
             } catch(e) {
                 console.error("Error guardando:", e);
                 alert("Error al guardar: " + e.message);
@@ -449,14 +478,10 @@
                     document.getElementById('valGemelo').innerText = ultimo.gemelo || '--';
                 }
                 initChart();
-
-            } catch(e) {
-                console.error("Error cargando medidas:", e);
-                if(e.message.includes("index")) { console.warn("Falta índice en Firebase. Crea el índice compuesto userId + timestamp"); }
-            }
+            } catch(e) { console.error("Error medidas:", e); }
         }
 
-        // 2. LÓGICA GRÁFICA
+        // --- 5. LÓGICA GRÁFICA ---
         function initChart() {
             const ctx = document.getElementById('evolutionChart').getContext('2d');
             if(myChart) myChart.destroy();
@@ -522,7 +547,7 @@
             event.target.classList.add('active');
         }
 
-        // 3. RESTO DE LÓGICA
+        // --- 6. RESTO DE LÓGICA (Créditos, Reservas, Password) ---
         async function cargarCreditos(uid) {
             const userSnap = await getDoc(doc(db, "usuarios", uid));
             if (userSnap.exists()) {
@@ -584,24 +609,6 @@
 
             } catch (e) { console.error(e); }
         }
-
-        // 4. LÓGICA DE CUENTA
-        window.enviarResetPassword = async () => {
-            if (!currentUser || !currentUser.email) {
-                alert("Error: No se ha detectado un usuario activo.");
-                return;
-            }
-
-            if (confirm(`¿Quieres enviar un correo a ${currentUser.email} para restablecer tu contraseña?`)) {
-                try {
-                    await sendPasswordResetEmail(auth, currentUser.email);
-                    alert("✅ Correo enviado. Revisa tu bandeja de entrada (y spam) para cambiar tu contraseña.");
-                } catch (error) {
-                    console.error(error);
-                    alert("Error al enviar el correo: " + error.message);
-                }
-            }
-        };
 
         window.renderFutureClasses = function() {
             const container = document.getElementById('misReservas');
