@@ -86,8 +86,9 @@
         .logout-btn { display: block; width: 100%; max-width: 100%; margin: 0; padding: 15px; background: #333; color: white; text-align: center; text-decoration: none; border-radius: 5px; transition: 0.3s; font-size: 0.9rem; }
         .logout-btn:hover { background: #ff4444; }
 
+        /* NUEVO: ESTILOS PARA LA CAJA DE MEMORIA LEGAL */
         .gdpr-box {
-            background: rgba(255, 68, 68, 0.05);
+            background: rgba(255, 68, 68, 0.05); /* Rojo suave por defecto */
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
@@ -95,6 +96,12 @@
             align-items: center;
             gap: 10px;
             border: 1px solid #ff4444;
+            transition: 0.3s;
+        }
+        /* Clase cuando ya está aceptado */
+        .gdpr-box.accepted {
+            background: rgba(37, 211, 102, 0.1) !important; /* Verde suave */
+            border-color: #25D366 !important;
         }
         .gdpr-text { color: white; font-size: 0.85rem; margin: 0; }
 
@@ -192,9 +199,9 @@
             </div>
         </div>
 
-        <div class="gdpr-box">
+        <div id="boxGDPR" class="gdpr-box">
             <input class="form-check-input" type="checkbox" id="checkGDPR" style="cursor: pointer; border-color: #ff4444;">
-            <p class="gdpr-text">
+            <p id="labelGDPR" class="gdpr-text">
                 <strong>Requerido:</strong> He leído y acepto la 
                 <a href="politica-privacidad.html" target="_blank" style="color: #ff007f; text-decoration: underline; font-weight:bold;">
                     Política de Privacidad y Protección de Datos
@@ -340,6 +347,8 @@
         import { doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc, arrayRemove, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         let currentUser = null;
+        let userGdprAccepted = false; // VARIABLE DE MEMORIA LEGAL
+        
         let allFutureClasses = []; 
         let currentPage = 1;
         const itemsPerPage = 10;
@@ -347,31 +356,27 @@
         let historialMedidas = [];
         let myChart = null; 
 
-        // --- 1. GENERAR TABLA DE HORARIOS (NUEVO) ---
+        // --- 1. GENERAR TABLA DE HORARIOS ---
         function renderTablaHorarios() {
             const tbody = document.getElementById('tablaHorariosCuerpo');
             let html = "";
             const dias = ['L', 'Ma', 'X', 'J', 'V', 'S'];
             
-            // Bucle de horas: 7:00 a 22:00
             for (let h = 7; h <= 22; h++) {
                 let horaStr = h < 10 ? `0${h}:00` : `${h}:00`;
                 html += `<tr>`;
                 html += `<td class="row-hour">${horaStr}</td>`;
-                
                 dias.forEach(d => {
-                    // Identificador único: Día-Hora (Ej: L-7, Ma-18)
-                    let disabled = (d === 'S' && h > 13) ? 'disabled style="opacity:0.2"' : ''; // Sábados tarde cerrado (opcional)
+                    let disabled = (d === 'S' && h > 13) ? 'disabled style="opacity:0.2"' : ''; 
                     html += `<td><input type="checkbox" class="pref-check" ${disabled} data-code="${d}-${h}"></td>`;
                 });
                 html += `</tr>`;
             }
             tbody.innerHTML = html;
         }
-        // Ejecutamos al inicio
         renderTablaHorarios();
 
-        // --- 2. AUTH CHANGED ---
+        // --- 2. AUTH CHANGED & CARGA INTELIGENTE ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -383,17 +388,40 @@
                 cargarReservas(user.uid);
                 cargarMedidas(user.uid); 
                 
-                // NUEVO: COMPROBAR SI ESTÁ CONFIRMADO EL HORARIO
+                // LEER PERFIL PARA HORARIOS Y GDPR
                 const userSnap = await getDoc(doc(db, "usuarios", user.uid));
                 if(userSnap.exists()) {
                     const data = userSnap.data();
+                    
+                    // A. COMPROBAR MEMORIA LEGAL (GDPR)
+                    if(data.gdpr_aceptado) {
+                        userGdprAccepted = true; // Recordamos que ya firmó
+                        
+                        // Modificar la caja visualmente
+                        const box = document.getElementById('boxGDPR');
+                        const check = document.getElementById('checkGDPR');
+                        const label = document.getElementById('labelGDPR');
+                        
+                        box.classList.add('accepted'); // Pone el fondo verde (definido en CSS)
+                        check.checked = true;
+                        check.disabled = true; // Bloqueado para que no lo quite
+                        
+                        // Formatear la fecha
+                        let fechaTexto = "antiguamente";
+                        if(data.gdpr_fecha && data.gdpr_fecha.seconds) {
+                            fechaTexto = new Date(data.gdpr_fecha.seconds * 1000).toLocaleDateString();
+                        }
+                        label.innerHTML = `✅ <strong>Política aceptada</strong> correctamente el día ${fechaTexto}.`;
+                    }
+
+                    // B. COMPROBAR ESTADO HORARIO
                     if(data.horario_confirmado) {
                         document.getElementById('statusHorario').innerHTML = `<span class="badge bg-success" style="vertical-align:middle; font-size:0.7rem;">✅ HORARIO CONFIRMADO</span>`;
                     } else {
                         document.getElementById('statusHorario').innerHTML = `<span class="badge bg-secondary" style="vertical-align:middle; font-size:0.7rem;">PENDIENTE</span>`;
                     }
                     
-                    // Cargar checks
+                    // C. CARGAR CASILLAS HORARIO
                     const prefs = data.preferencias_horario || [];
                     prefs.forEach(code => {
                         const check = document.querySelector(`.pref-check[data-code="${code}"]`);
@@ -406,21 +434,18 @@
             }
         });
 
-// --- 3. FUNCIONES DE PREFERENCIAS (MEJORADA) ---
+        // --- 3. FUNCIONES DE PREFERENCIAS ---
         window.guardarPreferencias = async () => {
             if(!currentUser) return;
-            
             const checks = document.querySelectorAll('.pref-check:checked');
-            const seleccion = Array.from(checks).map(c => c.dataset.code); // Array ["L-7", "X-18", ...]
+            const seleccion = Array.from(checks).map(c => c.dataset.code); 
             
             try {
-                // GUARDAMOS Y RESETEAMOS LA CONFIRMACIÓN
                 await updateDoc(doc(db, "usuarios", currentUser.uid), { 
                     preferencias_horario: seleccion,
-                    horario_confirmado: false // <--- ESTA ES LA CLAVE. Al guardar, pierde el "Verde".
+                    horario_confirmado: false 
                 });
 
-                // Actualizamos visualmente el estado a "Pendiente" al momento
                 const statusSpan = document.getElementById('statusHorario');
                 if(statusSpan) {
                     statusSpan.innerHTML = `<span class="badge bg-secondary" style="vertical-align:middle; font-size:0.7rem;">PENDIENTE DE REVISIÓN</span>`;
@@ -434,12 +459,14 @@
             }
         }
 
-        // --- 4. GESTIÓN DE ANTROPOMETRÍA ---
+        // --- 4. GESTIÓN DE ANTROPOMETRÍA CON LÓGICA GDPR ---
         window.guardarMedidas = async () => {
-            const checkGDPR = document.getElementById('checkGDPR');
-            if (!checkGDPR || !checkGDPR.checked) {
-                alert("⛔ ACCESO DENEGADO\n\nDebes aceptar la Política de Privacidad en la casilla roja de arriba.");
-                checkGDPR.scrollIntoView({behavior: "smooth", block: "center"}); 
+            const checkElement = document.getElementById('checkGDPR');
+            
+            // Si NO lo había aceptado antes Y NO lo ha marcado ahora -> BLOQUEAR
+            if (!userGdprAccepted && !checkElement.checked) {
+                alert("⛔ REQUERIDO: Debes aceptar la Política de Privacidad (casilla roja abajo) para guardar datos de salud.");
+                checkElement.scrollIntoView({behavior: "smooth", block: "center"}); 
                 return; 
             }
 
@@ -462,24 +489,40 @@
             };
 
             try {
+                // 1. Guardar la medida
                 await addDoc(collection(db, "medidas"), datos);
-                alert("✅ Medidas guardadas correctamente");
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modalMedidas'));
-                modal.hide();
-                cargarMedidas(currentUser.uid);
-                document.getElementById("formMedidas").reset();
-                document.getElementById('inputFecha').valueAsDate = new Date();
+
+                // 2. Si es la PRIMERA VEZ que acepta, guardar la aceptación en Firebase
+                if (!userGdprAccepted && checkElement.checked) {
+                    await updateDoc(doc(db, "usuarios", currentUser.uid), {
+                        gdpr_aceptado: true,
+                        gdpr_fecha: new Date()
+                    });
+                    userGdprAccepted = true; // Actualizamos la variable local para que no vuelva a preguntar
+                    alert("✅ Medidas guardadas y Política de Privacidad registrada con éxito.");
+                    
+                    // Recargamos la página para que se vea la caja verde bonita
+                    location.reload(); 
+                } else {
+                    alert("✅ Medidas guardadas correctamente");
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalMedidas'));
+                    modal.hide();
+                    cargarMedidas(currentUser.uid);
+                    document.getElementById("formMedidas").reset();
+                    document.getElementById('inputFecha').valueAsDate = new Date();
+                }
+
             } catch(e) {
                 console.error("Error guardando:", e);
                 alert("Error al guardar: " + e.message);
             }
         };
 
+        // --- RESTO DE FUNCIONES (GRÁFICAS, CRÉDITOS...) ---
         async function cargarMedidas(uid) {
             try {
                 const q = query(collection(db, "medidas"), where("userId", "==", uid), orderBy("timestamp", "asc"));
                 const querySnapshot = await getDocs(q);
-                
                 historialMedidas = [];
                 querySnapshot.forEach(doc => { historialMedidas.push(doc.data()); });
 
@@ -498,14 +541,11 @@
             } catch(e) { console.error("Error medidas:", e); }
         }
 
-        // --- 5. LÓGICA GRÁFICA ---
         function initChart() {
             const ctx = document.getElementById('evolutionChart').getContext('2d');
             if(myChart) myChart.destroy();
-
             const labels = historialMedidas.map(m => {
-                const d = new Date(m.timestamp);
-                return `${d.getDate()}/${d.getMonth()+1}`;
+                const d = new Date(m.timestamp); return `${d.getDate()}/${d.getMonth()+1}`;
             });
             const dataPeso = historialMedidas.map(m => m.peso);
 
@@ -513,27 +553,9 @@
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Peso (kg)',
-                        data: dataPeso,
-                        borderColor: '#ff007f',
-                        backgroundColor: 'rgba(255, 0, 127, 0.1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#ff007f',
-                        pointRadius: 5,
-                        tension: 0.4,
-                        fill: true
-                    }]
+                    datasets: [{ label: 'Peso (kg)', data: dataPeso, borderColor: '#ff007f', backgroundColor: 'rgba(255, 0, 127, 0.1)', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#ff007f', pointRadius: 5, tension: 0.4, fill: true }]
                 },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { labels: { color: 'white' } } },
-                    scales: {
-                        y: { grid: { color: '#333' }, ticks: { color: '#aaa' } },
-                        x: { grid: { color: '#333' }, ticks: { color: '#aaa' } }
-                    }
-                }
+                options: { responsive: true, plugins: { legend: { labels: { color: 'white' } } }, scales: { y: { grid: { color: '#333' }, ticks: { color: '#aaa' } }, x: { grid: { color: '#333' }, ticks: { color: '#aaa' } } } }
             });
         }
 
@@ -549,22 +571,18 @@
                 'muslo': { label: 'Muslo (cm)', color: '#5f27cd' },
                 'gemelo': { label: 'Gemelo (cm)', color: '#48dbfb' }
             };
-
             const cfg = config[tipo] || config['peso'];
             const newData = historialMedidas.map(m => m[tipo] || 0);
-
             myChart.data.datasets[0].label = cfg.label;
             myChart.data.datasets[0].data = newData;
             myChart.data.datasets[0].borderColor = cfg.color;
             myChart.data.datasets[0].pointBorderColor = cfg.color;
             myChart.data.datasets[0].backgroundColor = cfg.color + '1A';
             myChart.update();
-            
             document.querySelectorAll('.chart-controls button').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
         }
 
-        // --- 6. RESTO DE LÓGICA (Créditos, Reservas, Password) ---
         async function cargarCreditos(uid) {
             const userSnap = await getDoc(doc(db, "usuarios", uid));
             if (userSnap.exists()) {
