@@ -36,7 +36,6 @@
         .heat-table th { color: #ff007f; padding: 8px; border-bottom: 1px solid #444; font-family: 'Oswald'; }
         .heat-table td { padding: 8px; border: 1px solid #333; color: #555; cursor: pointer; transition: 0.2s; }
         .heat-table td:hover { border: 1px solid white; }
-        
         .h-low { background: rgba(255, 0, 127, 0.1); color: white !important; font-weight: bold; }
         .h-med { background: rgba(255, 0, 127, 0.4); color: white !important; font-weight: bold; }
         .h-high { background: rgba(255, 0, 127, 0.8); color: white !important; font-weight: bold; }
@@ -53,11 +52,11 @@
         input, select { width: 100%; padding: 8px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; }
         .btn-create { width: 100%; padding: 10px; background: #ff007f; border: none; color: white; font-weight: bold; cursor: pointer; }
         
-        /* MODAL */
+        /* MODALS */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; }
         .modal-content { background: #1a1a1a; padding: 30px; border: 1px solid #ff007f; border-radius: 10px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
         
-        /* CALENDARIO SOCIO (MODAL) */
+        /* CALENDARIO SOCIO */
         .socio-calendar-table { width: 100%; text-align: center; font-size: 0.8rem; }
         .socio-calendar-table th { color: #ff007f; font-family:'Oswald'; }
         .socio-calendar-table td { padding: 4px; border: 1px solid #333; }
@@ -66,6 +65,13 @@
         .status-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
         .badge-pending { background: #444; color: #aaa; }
         .badge-confirmed { background: #25D366; color: black; }
+
+        /* ITEM CLASE EN CALENDARIO */
+        .class-item-admin {
+            background:#222; padding:10px; margin-bottom:5px; border-left:3px solid #ff007f; cursor:pointer; transition:0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .class-item-admin:hover { background: #333; }
     </style>
 </head>
 <body>
@@ -87,12 +93,8 @@
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="heat-table">
-                        <thead>
-                            <tr><th>HORA</th><th>LUN</th><th>MAR</th><th>MIÉ</th><th>JUE</th><th>VIE</th><th>SÁB</th></tr>
-                        </thead>
-                        <tbody id="tablaCalor">
-                            <tr><td colspan="7">Cargando datos...</td></tr>
-                        </tbody>
+                        <thead><tr><th>HORA</th><th>LUN</th><th>MAR</th><th>MIÉ</th><th>JUE</th><th>VIE</th><th>SÁB</th></tr></thead>
+                        <tbody id="tablaCalor"><tr><td colspan="7">Cargando datos...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -111,7 +113,7 @@
                 <button class="btn-create" onclick="crearClase()">CREAR CLASE</button>
             </div>
             <div class="panel-card">
-                <div class="panel-title">CALENDARIO <button class="btn-mini" onclick="cargarCalendario()">Refrescar</button></div>
+                <div class="panel-title">CALENDARIO (Clic para gestionar) <button class="btn-mini" onclick="cargarCalendario()">Refrescar</button></div>
                 <div id="calendarioContainer">Cargando...</div>
             </div>
         </div>
@@ -126,9 +128,7 @@
             </div>
             <div class="panel-card mt-4">
                 <div class="panel-title">LEADS (WEB) <button class="btn-mini" onclick="cargarInteresados()">Refrescar</button></div>
-                <table class="user-table">
-                    <tbody id="tablaLeads"></tbody>
-                </table>
+                <table class="user-table"><tbody id="tablaLeads"></tbody></table>
             </div>
         </div>
     </div>
@@ -137,6 +137,34 @@
         <div class="modal-content" style="max-width:400px;">
             <h3 id="modalUserNombre">Usuario</h3>
             <div id="creditEditors"></div>
+            <button class="btn-create" style="background:#444; margin-top:20px;" onclick="cerrarModales()">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="modalDetalleClase" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="detalleTitulo" style="color:#ff007f; font-family:'Oswald'; margin-bottom:5px;">Clase</h3>
+            <p id="detalleInfo" style="color:#aaa; font-size:0.9rem; margin-bottom:20px;"></p>
+            
+            <div style="background:#222; padding:15px; border-radius:5px; margin-bottom:20px;">
+                <h5 style="color:white; margin-top:0;">👥 Asistentes:</h5>
+                <ul id="listaAsistentes" style="list-style:none; padding:0; margin:0; color:#ccc;"></ul>
+            </div>
+
+            <div style="background:#111; padding:15px; border:1px dashed #555; border-radius:5px;">
+                <h5 style="color:#ff007f; margin-top:0;">➕ Añadir Alumno (Admin)</h5>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <select id="selectUsuarioAdd" style="flex:1; padding:8px; background:#222; color:white; border:1px solid #444;"></select>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <label style="color:#aaa; font-size:0.9rem; display:flex; align-items:center; gap:10px; cursor:pointer;">
+                        <input type="checkbox" id="checkRecurrenteAdd" style="width:18px; height:18px; accent-color:#ff007f;">
+                        <span>🔁 Apuntar también a las siguientes 8 semanas (si tiene saldo)</span>
+                    </label>
+                </div>
+                <button class="btn-create" id="btnAddUserClass" style="font-size:0.9rem;">INSCRIBIR AHORA</button>
+            </div>
+
             <button class="btn-create" style="background:#444; margin-top:20px;" onclick="cerrarModales()">CERRAR</button>
         </div>
     </div>
@@ -156,24 +184,21 @@
                 <h3 id="calSocioNombre" style="color:white; font-family:'Oswald'; margin:0;"></h3>
                 <span id="calSocioStatus"></span>
             </div>
-            <p style="color:#aaa; font-size:0.9rem;">Preferencias marcadas por el usuario:</p>
-            
+            <p style="color:#aaa; font-size:0.9rem;">Preferencias marcadas:</p>
             <div style="max-height:300px; overflow-y:auto; margin-bottom:20px;">
                 <table class="socio-calendar-table">
                     <thead><tr><th>H</th><th>L</th><th>M</th><th>X</th><th>J</th><th>V</th><th>S</th></tr></thead>
                     <tbody id="calSocioBody"></tbody>
                 </table>
             </div>
-
             <div style="background:#222; padding:15px; border-radius:5px; margin-bottom:15px; border:1px dashed #555;">
                 <label style="font-size:0.8rem; color:#aaa; display:block; margin-bottom:5px;">¿QUÉ CLASES CREAR/ASIGNAR?</label>
                 <select id="selectTipoConfirmacion" style="width:100%; padding:10px; background:#111; color:white; border:1px solid #444;">
                     <option value="fuerza">Grupos Fuerza (Max 4)</option>
                     <option value="pilates">Grupos Pilates (Max 4)</option>
                 </select>
-                <small style="color:#666; font-size:0.75rem;">Se crearán clases para los próximos 2 meses si no existen.</small>
+                <small style="color:#666; font-size:0.75rem;">Se revisará el saldo del cliente antes de apuntarlo.</small>
             </div>
-
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <button class="btn-create" style="background:#444;" onclick="cerrarModales()">CANCELAR</button>
                 <button id="btnConfirmarHorario" class="btn-create" style="background:#25D366; color:black;">✅ CONFIRMAR Y GENERAR</button>
@@ -183,7 +208,7 @@
 
     <script type="module">
         import { db } from "./firebase-config.js";
-        import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, arrayRemove, getDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, arrayRemove, getDoc, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         let allUsersGlobal = []; 
 
@@ -204,10 +229,10 @@
             cargarInteresados();
         }
 
+        // --- 1. USUARIOS ---
         window.cargarUsuarios = async () => {
             const tbody = document.getElementById('tablaUsuarios');
             if(tbody) tbody.innerHTML = '<tr><td>Cargando...</td></tr>';
-            
             try {
                 const snap = await getDocs(collection(db, "usuarios"));
                 allUsersGlobal = [];
@@ -229,215 +254,7 @@
             } catch(e) { console.error(e); }
         };
 
-        window.cargarMapaCalor = () => {
-            const tbody = document.getElementById('tablaCalor');
-            if(!tbody) return;
-            let heatMap = {}; 
-            const dias = ['L', 'Ma', 'X', 'J', 'V', 'S'];
-            for(let h=7; h<=22; h++) { dias.forEach(d => { heatMap[`${d}-${h}`] = []; }); }
-
-            allUsersGlobal.forEach(u => {
-                if(u.preferencias_horario && Array.isArray(u.preferencias_horario)) {
-                    u.preferencias_horario.forEach(voto => { if(heatMap[voto] !== undefined) heatMap[voto].push(u.nombre || u.email); });
-                }
-            });
-
-            let html = "";
-            for(let h=7; h<=22; h++) {
-                let horaStr = h < 10 ? `0${h}:00` : `${h}:00`;
-                html += `<tr><td style="color:#ff007f; font-weight:bold;">${horaStr}</td>`;
-                dias.forEach(d => {
-                    const lista = heatMap[`${d}-${h}`];
-                    const val = lista.length;
-                    let clase = "";
-                    let clickFn = "";
-                    if(val > 0) {
-                        if(val <= 3) clase = "h-low"; else if(val <= 7) clase = "h-med"; else clase = "h-high";
-                        const nombresSafe = JSON.stringify(lista).replace(/"/g, '&quot;');
-                        clickFn = `onclick="verQuien('${d}', ${h}, ${nombresSafe})"`;
-                    }
-                    html += `<td class="${clase}" ${clickFn}>${val > 0 ? val : '-'}</td>`;
-                });
-                html += `</tr>`;
-            }
-            tbody.innerHTML = html;
-        };
-
-        window.verQuien = (dia, hora, listaNombres) => {
-            const diasFull = {'L':'Lunes', 'Ma':'Martes', 'X':'Miércoles', 'J':'Jueves', 'V':'Viernes', 'S':'Sábado'};
-            document.getElementById('modalQuienTitulo').innerText = `${diasFull[dia]} a las ${hora}:00`;
-            const ul = document.getElementById('listaInteresados');
-            ul.innerHTML = "";
-            listaNombres.forEach(nom => { ul.innerHTML += `<li style="padding:5px; border-bottom:1px solid #444;">👤 ${nom}</li>`; });
-            document.getElementById('modalQuien').style.display = 'flex';
-        }
-
-        // --- LÓGICA POTENTE: CONFIRMAR Y GENERAR CLASES ---
-        window.verCalendarioSocio = (uid) => {
-            const u = allUsersGlobal.find(x => x.id === uid);
-            if(!u) return;
-
-            document.getElementById('calSocioNombre').innerText = u.nombre || "Socio";
-            const statusSpan = document.getElementById('calSocioStatus');
-            statusSpan.innerHTML = u.horario_confirmado ? '<span class="status-badge badge-confirmed">CONFIRMADO</span>' : '<span class="status-badge badge-pending">PENDIENTE</span>';
-            
-            document.getElementById('btnConfirmarHorario').onclick = () => confirmarHorario(uid);
-
-            const tbody = document.getElementById('calSocioBody');
-            const dias = ['L', 'Ma', 'X', 'J', 'V', 'S'];
-            const prefs = u.preferencias_horario || [];
-            let html = "";
-            for(let h=7; h<=22; h++) {
-                html += `<tr><td>${h}</td>`;
-                dias.forEach(d => {
-                    const code = `${d}-${h}`;
-                    const isSelected = prefs.includes(code);
-                    const bg = isSelected ? 'cell-selected' : '';
-                    html += `<td class="${bg}">${isSelected ? '✓' : ''}</td>`;
-                });
-                html += `</tr>`;
-            }
-            tbody.innerHTML = html;
-            document.getElementById('modalCalendarioSocio').style.display = 'flex';
-        }
-
-        window.confirmarHorario = async (uid) => {
-            const tipoClase = document.getElementById('selectTipoConfirmacion').value;
-            const btn = document.getElementById('btnConfirmarHorario');
-            const user = allUsersGlobal.find(x => x.id === uid);
-            
-            if(!user || !user.preferencias_horario || user.preferencias_horario.length === 0) {
-                alert("Este usuario no ha marcado ninguna hora.");
-                return;
-            }
-
-            if(!confirm(`⚠️ ATENCIÓN: \n\nEsto va a generar clases automáticas para los próximos 2 MESES en los horarios seleccionados y apuntará a ${user.nombre} en ellas.\n\n¿Estás segura?`)) return;
-
-            btn.innerText = "⏳ Generando...";
-            btn.disabled = true;
-
-            try {
-                // 1. Confirmar al usuario
-                await updateDoc(doc(db, "usuarios", uid), { horario_confirmado: true });
-
-                // 2. GENERAR CLASES (Lógica de los 2 meses)
-                const diasMapa = {'L':1, 'Ma':2, 'X':3, 'J':4, 'V':5, 'S':6}; // JS: 1=Lun, 6=Sab
-                const hoy = new Date();
-                const limite = new Date();
-                limite.setDate(hoy.getDate() + 60); // 60 días a futuro
-
-                // Preparamos los slots requeridos por el usuario: [{dia: 1, hora: "10:00"}, ...]
-                const slotsRequeridos = [];
-                user.preferencias_horario.forEach(pref => {
-                    const [dLetra, hNum] = pref.split('-');
-                    const diaNum = diasMapa[dLetra];
-                    const horaStr = parseInt(hNum) < 10 ? `0${hNum}:00` : `${hNum}:00`;
-                    if(diaNum) slotsRequeridos.push({ dia: diaNum, hora: horaStr });
-                });
-
-                // Recorremos cada día desde mañana hasta dentro de 60 días
-                let cursor = new Date(hoy);
-                cursor.setDate(cursor.getDate() + 1); // Empezamos mañana
-
-                let clasesCreadas = 0;
-                let clasesApuntadas = 0;
-
-                while(cursor <= limite) {
-                    const diaSemana = cursor.getDay(); // 0=Dom, 1=Lun...
-                    
-                    // Miramos si este día de la semana coincide con algún slot del usuario
-                    const matches = slotsRequeridos.filter(s => s.dia === diaSemana);
-                    
-                    for (const slot of matches) {
-                        const fechaStr = cursor.toISOString().split('T')[0]; // "2023-10-25"
-                        
-                        // Buscamos si existe clase ese día y hora
-                        const q = query(collection(db, "clases"), 
-                            where("fecha", "==", fechaStr), 
-                            where("hora", "==", slot.hora),
-                            where("tipo", "==", tipoClase) // Solo miramos del mismo tipo
-                        );
-                        const snaps = await getDocs(q);
-
-                        if(snaps.empty) {
-                            // NO EXISTE -> CREARLA Y APUNTAR
-                            await addDoc(collection(db, "clases"), {
-                                nombre: (tipoClase === 'fuerza' ? 'Grupo Fuerza' : 'Grupo Pilates'),
-                                tipo: tipoClase,
-                                fecha: fechaStr,
-                                hora: slot.hora,
-                                plazas_totales: 4,
-                                apuntados: [uid],
-                                timestamp: new Date(`${fechaStr}T${slot.hora}`).getTime()
-                            });
-                            clasesCreadas++;
-                        } else {
-                            // SI EXISTE -> APUNTAR SI CABE
-                            snaps.forEach(async (docClase) => {
-                                const datosClase = docClase.data();
-                                const apuntados = datosClase.apuntados || [];
-                                if(!apuntados.includes(uid) && apuntados.length < datosClase.plazas_totales) {
-                                    apuntados.push(uid);
-                                    await updateDoc(doc(db, "clases", docClase.id), { apuntados: apuntados });
-                                    clasesApuntadas++;
-                                }
-                            });
-                        }
-                    }
-                    // Siguiente día
-                    cursor.setDate(cursor.getDate() + 1);
-                }
-
-                alert(`✅ PROCESO COMPLETADO:\n\n- Horario confirmado al usuario.\n- Se han creado ${clasesCreadas} clases nuevas.\n- Se ha apuntado al usuario a ${clasesApuntadas} clases existentes.`);
-                
-                cerrarModales();
-                cargarTodo();
-
-            } catch(e) {
-                console.error(e);
-                alert("Error crítico: " + e.message);
-            } finally {
-                btn.innerText = "✅ CONFIRMAR Y GENERAR";
-                btn.disabled = false;
-            }
-        }
-
-        window.cerrarModales = () => { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
-        window.borrarUsuario = async (uid) => { if(confirm("¿Eliminar usuario?")) { await deleteDoc(doc(db, "usuarios", uid)); cargarTodo(); } };
-
-        window.abrirModalCreditos = (uid) => {
-            const u = allUsersGlobal.find(x => x.id === uid); if(!u) return;
-            document.getElementById('modalUserNombre').innerText = u.nombre || 'Usuario';
-            const div = document.getElementById('creditEditors'); div.innerHTML = "";
-            const tipos = ['fuerza', 'pilates', 'personal', 'nutri'];
-            let c = u.creditos_detalle || {}; if(typeof u.creditos === 'number' && !c.fuerza) c.fuerza = u.creditos;
-            tipos.forEach(t => {
-                div.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span style="text-transform:uppercase;">${t}</span><div><button class="btn-mini" onclick="cambiarSaldo('${uid}','${t}',-1)">-</button><span style="margin:0 10px; font-weight:bold;">${c[t]||0}</span><button class="btn-mini" onclick="cambiarSaldo('${uid}','${t}',1)">+</button></div></div>`;
-            });
-            document.getElementById('modalCreditos').style.display = 'flex';
-        };
-
-        window.cambiarSaldo = async (uid, tipo, delta) => {
-            const ref = doc(db, "usuarios", uid);
-            const u = allUsersGlobal.find(x => x.id === uid);
-            let c = u.creditos_detalle || {}; if(typeof u.creditos === 'number' && !c.fuerza) c.fuerza = u.creditos;
-            c[tipo] = (c[tipo] || 0) + delta; if(c[tipo] < 0) c[tipo] = 0;
-            await updateDoc(ref, { creditos_detalle: c, creditos: c.fuerza });
-            u.creditos_detalle = c; abrirModalCreditos(uid); cargarUsuarios();
-        };
-
-        window.crearClase = async () => {
-            const nom = document.getElementById('nombreClase').value;
-            const fecha = document.getElementById('fechaClase').value;
-            const hora = document.getElementById('horaClase').value;
-            const tipo = document.getElementById('tipoClase').value;
-            if(!nom || !fecha || !hora) return alert("Faltan datos");
-            await addDoc(collection(db, "clases"), {
-                nombre: nom, tipo, fecha, hora, plazas_totales: 6, apuntados: [], timestamp: new Date(fecha+'T'+hora).getTime()
-            });
-            alert("Clase creada"); cargarCalendario();
-        };
-
+        // --- 2. GESTIÓN DE CLASES (DETALLE Y ALTA ADMIN) ---
         window.cargarCalendario = async () => {
             const div = document.getElementById('calendarioContainer'); div.innerHTML = "Cargando...";
             const q = query(collection(db, "clases"), orderBy("timestamp", "asc"));
@@ -447,24 +264,333 @@
             snap.forEach(d => {
                 const c = d.data();
                 const ocupados = c.apuntados ? c.apuntados.length : 0;
-                html += `<div style="background:#222; padding:10px; margin-bottom:5px; border-left:3px solid #ff007f;"><strong>${c.fecha} ${c.hora}</strong> - ${c.nombre} (${ocupados}/${c.plazas_totales}) <button class="btn-del" onclick="borrarClase('${d.id}')" style="float:right;">🗑️</button></div>`;
+                //  logic placeholder
+                html += `<div class="class-item-admin" onclick="verDetalleClase('${d.id}')">
+                    <div>
+                        <strong>${c.fecha} ${c.hora}</strong> - ${c.nombre} 
+                        <span style="color:${ocupados>=c.plazas_totales?'red':'#25D366'}">(${ocupados}/${c.plazas_totales})</span>
+                    </div>
+                    <button class="btn-del" onclick="event.stopPropagation(); borrarClase('${d.id}')" title="Borrar Clase">🗑️</button>
+                </div>`;
             });
             div.innerHTML = html;
         };
-        window.borrarClase = async(id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db,"clases",id)); cargarCalendario(); } }
+
+        window.verDetalleClase = async (idClase) => {
+            const claseRef = doc(db, "clases", idClase);
+            const claseSnap = await getDoc(claseRef);
+            if(!claseSnap.exists()) return;
+            const c = claseSnap.data();
+            
+            document.getElementById('detalleTitulo').innerText = `${c.nombre}`;
+            document.getElementById('detalleInfo').innerText = `${c.fecha} a las ${c.hora} (${c.tipo || 'General'})`;
+            
+            // Listar asistentes
+            const lista = document.getElementById('listaAsistentes');
+            lista.innerHTML = "";
+            if(c.apuntados && c.apuntados.length > 0) {
+                c.apuntados.forEach(uid => {
+                    const u = allUsersGlobal.find(user => user.id === uid);
+                    const nombre = u ? u.nombre : "Usuario desconocido";
+                    lista.innerHTML += `<li style="padding:5px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
+                        <span>👤 ${nombre}</span>
+                        <button class="btn-del" style="width:20px; height:20px;" onclick="expulsarDeClase('${idClase}', '${uid}')">x</button>
+                    </li>`;
+                });
+            } else { lista.innerHTML = "<li>Sin inscritos</li>"; }
+
+            // Preparar selector para añadir
+            const select = document.getElementById('selectUsuarioAdd');
+            select.innerHTML = "<option value=''>Seleccionar Alumno...</option>";
+            allUsersGlobal.forEach(u => {
+                select.innerHTML += `<option value="${u.id}">${u.nombre || u.email}</option>`;
+            });
+
+            // Configurar botón añadir
+            document.getElementById('btnAddUserClass').onclick = () => adminInscribirUsuario(idClase, c);
+            
+            document.getElementById('modalDetalleClase').style.display = 'flex';
+        }
+
+        window.adminInscribirUsuario = async (idClase, datosClase) => {
+            const uid = document.getElementById('selectUsuarioAdd').value;
+            const recurrente = document.getElementById('checkRecurrenteAdd').checked;
+            
+            if(!uid) return alert("Selecciona un usuario.");
+            
+            const usuario = allUsersGlobal.find(u => u.id === uid);
+            const tipo = datosClase.tipo || 'fuerza';
+            
+            // 1. Inscribir en ESTA clase
+            if(!checkCreditosYRestar(usuario, tipo)) {
+                return alert(`❌ ${usuario.nombre} no tiene créditos suficientes de ${tipo}.`);
+            }
+            
+            try {
+                // Actualizar usuario (restar crédito)
+                await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: usuario.creditos_detalle, creditos: usuario.creditos_detalle.fuerza });
+                
+                // Actualizar clase
+                const nuevosApuntados = datosClase.apuntados || [];
+                if(!nuevosApuntados.includes(uid)) {
+                    nuevosApuntados.push(uid);
+                    await updateDoc(doc(db, "clases", idClase), { apuntados: nuevosApuntados });
+                }
+
+                alert(`✅ ${usuario.nombre} inscrito en la clase del ${datosClase.fecha}.`);
+
+                // 2. Si es RECURRENTE (8 semanas)
+                if(recurrente) {
+                    await procesarRecurrenciaAdmin(usuario, datosClase, uid);
+                }
+
+                verDetalleClase(idClase); // Refrescar modal
+                cargarCalendario();
+                cargarUsuarios(); // Refrescar saldos visuales
+
+            } catch(e) { alert("Error: " + e.message); }
+        }
+
+        async function procesarRecurrenciaAdmin(usuario, claseOriginal, uid) {
+            const diasMapa = {'L':1, 'Ma':2, 'X':3, 'J':4, 'V':5, 'S':6}; 
+            const fechaOriginal = new Date(claseOriginal.fecha + 'T' + claseOriginal.hora);
+            const diaSemana = fechaOriginal.getDay(); // Día de la semana de la clase base
+            
+            const limite = new Date();
+            limite.setDate(limite.getDate() + 60); // 2 meses vista
+            
+            let cursor = new Date(fechaOriginal);
+            cursor.setDate(cursor.getDate() + 7); // Empezamos la semana siguiente
+
+            let inscritas = 0;
+
+            while(cursor <= limite) {
+                // Verificar saldo antes de cada inscripción futura
+                if(!checkCreditosYRestar(usuario, claseOriginal.tipo)) {
+                    alert(`⚠️ Saldo agotado tras inscribir ${inscritas + 1} clases recurrentes.`);
+                    // Guardar el saldo restante del usuario en BD antes de salir
+                    await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: usuario.creditos_detalle, creditos: usuario.creditos_detalle.fuerza });
+                    return;
+                }
+
+                const fechaStr = cursor.toISOString().split('T')[0];
+                
+                // Buscar si existe la clase futura
+                const q = query(collection(db, "clases"), 
+                    where("fecha", "==", fechaStr), 
+                    where("hora", "==", claseOriginal.hora),
+                    where("tipo", "==", claseOriginal.tipo)
+                );
+                const snaps = await getDocs(q);
+
+                if(snaps.empty) {
+                    // Crear y apuntar
+                    await addDoc(collection(db, "clases"), {
+                        nombre: claseOriginal.nombre,
+                        tipo: claseOriginal.tipo,
+                        fecha: fechaStr,
+                        hora: claseOriginal.hora,
+                        plazas_totales: claseOriginal.plazas_totales,
+                        apuntados: [uid],
+                        timestamp: new Date(`${fechaStr}T${claseOriginal.hora}`).getTime()
+                    });
+                } else {
+                    // Apuntar a existente
+                    snaps.forEach(async (docClase) => {
+                        const d = docClase.data();
+                        const ap = d.apuntados || [];
+                        if(!ap.includes(uid) && ap.length < d.plazas_totales) {
+                            ap.push(uid);
+                            await updateDoc(doc(db, "clases", docClase.id), { apuntados: ap });
+                        }
+                    });
+                }
+                
+                inscritas++;
+                cursor.setDate(cursor.getDate() + 7); // Siguiente semana
+            }
+            // Actualizar saldo final en BD tras el bucle
+            await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: usuario.creditos_detalle, creditos: usuario.creditos_detalle.fuerza });
+            alert(`🔄 Se han inscrito ${inscritas} clases recurrentes adicionales.`);
+        }
+
+        function checkCreditosYRestar(usuario, tipo) {
+            let creds = usuario.creditos_detalle || {};
+            if(typeof usuario.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = usuario.creditos;
+            
+            if(creds[tipo] > 0) {
+                creds[tipo]--;
+                return true;
+            }
+            return false;
+        }
+
+        window.expulsarDeClase = async (cid, uid) => {
+            if(!confirm("¿Quitar usuario de la clase? (No devuelve crédito automático aquí)")) return;
+            await updateDoc(doc(db, "clases", cid), { apuntados: arrayRemove(uid) });
+            verDetalleClase(cid);
+        }
+
+        // --- 3. GENERACIÓN AUTOMÁTICA DESDE CONFIRMACIÓN (CON CONTROL DE CRÉDITOS) ---
+        window.confirmarHorario = async (uid) => {
+            const tipoClase = document.getElementById('selectTipoConfirmacion').value;
+            const btn = document.getElementById('btnConfirmarHorario');
+            const user = allUsersGlobal.find(x => x.id === uid);
+            
+            if(!user || !user.preferencias_horario || user.preferencias_horario.length === 0) return alert("Sin preferencias.");
+            if(!confirm(`⚠️ ¿Generar horario para ${user.nombre}? \nSolo se le inscribirá si tiene saldo.`)) return;
+
+            btn.innerText = "⏳ Procesando..."; btn.disabled = true;
+
+            try {
+                await updateDoc(doc(db, "usuarios", uid), { horario_confirmado: true });
+
+                const diasMapa = {'L':1, 'Ma':2, 'X':3, 'J':4, 'V':5, 'S':6};
+                const hoy = new Date();
+                const limite = new Date(); limite.setDate(hoy.getDate() + 60);
+
+                const slots = [];
+                user.preferencias_horario.forEach(pref => {
+                    const [d, h] = pref.split('-');
+                    const horaStr = parseInt(h) < 10 ? `0${h}:00` : `${h}:00`;
+                    if(diasMapa[d]) slots.push({ dia: diasMapa[d], hora: horaStr });
+                });
+
+                let cursor = new Date(hoy); cursor.setDate(cursor.getDate() + 1);
+                let clasesCreadas = 0; let inscripciones = 0;
+
+                while(cursor <= limite) {
+                    const diaSemana = cursor.getDay();
+                    const matches = slots.filter(s => s.dia === diaSemana);
+                    
+                    for (const slot of matches) {
+                        // CHECK CRÉDITOS ANTES DE CADA CLASE
+                        const tieneSaldo = checkCreditosYRestar(user, tipoClase);
+                        const listaApuntados = tieneSaldo ? [uid] : []; // Si no tiene saldo, lista vacía
+                        if(tieneSaldo) inscripciones++;
+
+                        const fechaStr = cursor.toISOString().split('T')[0];
+                        const q = query(collection(db, "clases"), where("fecha", "==", fechaStr), where("hora", "==", slot.hora), where("tipo", "==", tipoClase));
+                        const snaps = await getDocs(q);
+
+                        if(snaps.empty) {
+                            // Crear clase (apuntado solo si tenía saldo)
+                            await addDoc(collection(db, "clases"), {
+                                nombre: (tipoClase==='fuerza'?'Grupo Fuerza':'Grupo Pilates'), tipo: tipoClase,
+                                fecha: fechaStr, hora: slot.hora, plazas_totales: 4,
+                                apuntados: listaApuntados,
+                                timestamp: new Date(`${fechaStr}T${slot.hora}`).getTime()
+                            });
+                            clasesCreadas++;
+                        } else {
+                            // Clase existe, intentar apuntar si tenía saldo
+                            if(tieneSaldo) {
+                                snaps.forEach(async (docClase) => {
+                                    const d = docClase.data();
+                                    const ap = d.apuntados || [];
+                                    if(!ap.includes(uid) && ap.length < d.plazas_totales) {
+                                        ap.push(uid);
+                                        await updateDoc(doc(db, "clases", docClase.id), { apuntados: ap });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    cursor.setDate(cursor.getDate() + 1);
+                }
+
+                // Guardar el saldo final actualizado en la BD
+                await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: user.creditos_detalle, creditos: user.creditos_detalle.fuerza });
+
+                alert(`✅ HECHO:\n- Horario confirmado.\n- ${clasesCreadas} clases nuevas generadas.\n- Usuario inscrito en ${inscripciones} sesiones (según su saldo).`);
+                cerrarModales(); cargarTodo();
+
+            } catch(e) { console.error(e); alert("Error: " + e.message); } 
+            finally { btn.innerText = "✅ CONFIRMAR Y GENERAR"; btn.disabled = false; }
+        }
+
+        // --- RESTO DE FUNCIONES (Heatmap, Modales, etc) ---
+        window.cargarMapaCalor = () => {
+            const tbody = document.getElementById('tablaCalor'); if(!tbody) return;
+            let heatMap = {}; const dias = ['L', 'Ma', 'X', 'J', 'V', 'S'];
+            for(let h=7; h<=22; h++) { dias.forEach(d => { heatMap[`${d}-${h}`] = []; }); }
+            allUsersGlobal.forEach(u => {
+                if(u.preferencias_horario) u.preferencias_horario.forEach(v => { if(heatMap[v]) heatMap[v].push(u.nombre||u.email); });
+            });
+            let html = "";
+            for(let h=7; h<=22; h++) {
+                let hStr = h<10?`0${h}:00`:`${h}:00`; html+=`<tr><td style="color:#ff007f;font-weight:bold;">${hStr}</td>`;
+                dias.forEach(d => {
+                    const l = heatMap[`${d}-${h}`]; const val = l.length;
+                    let cls="", clk="";
+                    if(val>0) { cls=val<=3?"h-low":val<=7?"h-med":"h-high"; clk=`onclick="verQuien('${d}',${h},${JSON.stringify(l).replace(/"/g,'&quot;')})"`; }
+                    html+=`<td class="${cls}" ${clk}>${val>0?val:'-'}</td>`;
+                }); html+="</tr>";
+            }
+            tbody.innerHTML = html;
+        };
+
+        window.verQuien = (d, h, l) => {
+            const diasF = {'L':'Lunes','Ma':'Martes','X':'Miércoles','J':'Jueves','V':'Viernes','S':'Sábado'};
+            document.getElementById('modalQuienTitulo').innerText = `${diasF[d]} a las ${h}:00`;
+            document.getElementById('listaInteresados').innerHTML = l.map(n=>`<li style="padding:5px;border-bottom:1px solid #444;">👤 ${n}</li>`).join('');
+            document.getElementById('modalQuien').style.display='flex';
+        }
+
+        window.verCalendarioSocio = (uid) => {
+            const u = allUsersGlobal.find(x => x.id === uid); if(!u) return;
+            document.getElementById('calSocioNombre').innerText = u.nombre || "Socio";
+            document.getElementById('calSocioStatus').innerHTML = u.horario_confirmado ? '<span class="status-badge badge-confirmed">CONFIRMADO</span>' : '<span class="status-badge badge-pending">PENDIENTE</span>';
+            document.getElementById('btnConfirmarHorario').onclick = () => confirmarHorario(uid);
+            
+            const dias = ['L', 'Ma', 'X', 'J', 'V', 'S']; const prefs = u.preferencias_horario || [];
+            let html = "";
+            for(let h=7; h<=22; h++) {
+                html += `<tr><td>${h}</td>`;
+                dias.forEach(d => {
+                    html += `<td class="${prefs.includes(`${d}-${h}`)?'cell-selected':''}">${prefs.includes(`${d}-${h}`)?'✓':''}</td>`;
+                }); html += `</tr>`;
+            }
+            document.getElementById('calSocioBody').innerHTML = html;
+            document.getElementById('modalCalendarioSocio').style.display = 'flex';
+        }
+
+        window.cerrarModales = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+        
+        window.borrarUsuario = async (uid) => { if(confirm("¿Eliminar?")) { await deleteDoc(doc(db,"usuarios",uid)); cargarTodo(); } };
+        window.borrarClase = async(id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db,"clases",id)); cargarCalendario(); } };
+        
+        window.abrirModalCreditos = (uid) => {
+            const u = allUsersGlobal.find(x=>x.id===uid); if(!u)return;
+            document.getElementById('modalUserNombre').innerText=u.nombre||'Usuario';
+            const div=document.getElementById('creditEditors'); div.innerHTML="";
+            const tip=['fuerza','pilates','personal','nutri'];
+            let c=u.creditos_detalle||{}; if(typeof u.creditos==='number'&&!c.fuerza)c.fuerza=u.creditos;
+            tip.forEach(t=>{ div.innerHTML+=`<div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span style="text-transform:uppercase;">${t}</span><div><button class="btn-mini" onclick="cambiarSaldo('${uid}','${t}',-1)">-</button><span style="margin:0 10px;font-weight:bold;">${c[t]||0}</span><button class="btn-mini" onclick="cambiarSaldo('${uid}','${t}',1)">+</button></div></div>`; });
+            document.getElementById('modalCreditos').style.display='flex';
+        }
+        window.cambiarSaldo=async(uid,t,d)=>{
+            const u=allUsersGlobal.find(x=>x.id===uid); let c=u.creditos_detalle||{};
+            if(typeof u.creditos==='number'&&!c.fuerza)c.fuerza=u.creditos;
+            c[t]=(c[t]||0)+d; if(c[t]<0)c[t]=0;
+            await updateDoc(doc(db,"usuarios",uid),{creditos_detalle:c,creditos:c.fuerza});
+            u.creditos_detalle=c; abrirModalCreditos(uid); cargarUsuarios();
+        }
+
+        window.crearClase = async () => {
+            const nom=document.getElementById('nombreClase').value; const fec=document.getElementById('fechaClase').value; const hor=document.getElementById('horaClase').value; const tip=document.getElementById('tipoClase').value;
+            if(!nom||!fec||!hor)return alert("Faltan datos");
+            await addDoc(collection(db,"clases"),{nombre:nom,tipo:tip,fecha:fec,hora:hor,plazas_totales:6,apuntados:[],timestamp:new Date(fec+'T'+hor).getTime()});
+            alert("Creada"); cargarCalendario();
+        }
 
         window.cargarInteresados = async () => {
-            const tbody = document.getElementById('tablaLeads'); if(!tbody) return;
-            const q = query(collection(db, "interesados"), orderBy("fecha", "desc"));
-            const snap = await getDocs(q);
-            let html = "";
-            snap.forEach(d => {
-                const l = d.data();
-                html += `<tr><td>${new Date(l.fecha.seconds*1000).toLocaleDateString()}</td><td>${l.nombre}</td><td>${l.telefono||'-'}</td><td><button class="btn-del" onclick="borrarLead('${d.id}')">🗑️</button></td></tr>`;
-            });
-            tbody.innerHTML = html;
+            const tb=document.getElementById('tablaLeads'); if(!tb)return;
+            const s=await getDocs(query(collection(db,"interesados"),orderBy("fecha","desc")));
+            let h=""; s.forEach(d=>{ const l=d.data(); h+=`<tr><td>${new Date(l.fecha.seconds*1000).toLocaleDateString()}</td><td>${l.nombre}</td><td>${l.telefono||'-'}</td><td><button class="btn-del" onclick="borrarLead('${d.id}')">🗑️</button></td></tr>`; });
+            tb.innerHTML=h;
         }
-        window.borrarLead = async(id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db,"interesados",id)); cargarInteresados(); } }
+        window.borrarLead=async(id)=>{if(confirm("¿Borrar?")) {await deleteDoc(doc(db,"interesados",id)); cargarInteresados();}}
 
         window.onload = () => { cargarTodo(); };
     </script>
