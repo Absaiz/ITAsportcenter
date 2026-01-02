@@ -406,15 +406,28 @@
             }
         });
 
-        // --- 3. FUNCIONES DE PREFERENCIAS (NUEVO) ---
+// --- 3. FUNCIONES DE PREFERENCIAS (MEJORADA) ---
         window.guardarPreferencias = async () => {
             if(!currentUser) return;
+            
             const checks = document.querySelectorAll('.pref-check:checked');
             const seleccion = Array.from(checks).map(c => c.dataset.code); // Array ["L-7", "X-18", ...]
             
             try {
-                await updateDoc(doc(db, "usuarios", currentUser.uid), { preferencias_horario: seleccion });
-                alert("✅ Horario guardado. ¡Gracias por ayudarnos a organizar!");
+                // GUARDAMOS Y RESETEAMOS LA CONFIRMACIÓN
+                await updateDoc(doc(db, "usuarios", currentUser.uid), { 
+                    preferencias_horario: seleccion,
+                    horario_confirmado: false // <--- ESTA ES LA CLAVE. Al guardar, pierde el "Verde".
+                });
+
+                // Actualizamos visualmente el estado a "Pendiente" al momento
+                const statusSpan = document.getElementById('statusHorario');
+                if(statusSpan) {
+                    statusSpan.innerHTML = `<span class="badge bg-secondary" style="vertical-align:middle; font-size:0.7rem;">PENDIENTE DE REVISIÓN</span>`;
+                }
+
+                alert("✅ Horario actualizado.\n\n⚠️ Nota: Al haber hecho cambios, tu horario ha pasado a estado 'Pendiente' hasta que el centro te lo vuelva a confirmar.");
+                
             } catch(e) { 
                 console.error(e);
                 alert("Error: " + e.message); 
