@@ -40,7 +40,7 @@
         .h-med { background: rgba(255, 0, 127, 0.4); color: white !important; font-weight: bold; }
         .h-high { background: rgba(255, 0, 127, 0.8); color: white !important; font-weight: bold; }
 
-        /* TABLAS SOCIOS */
+        /* TABLAS */
         .user-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .user-table th, .user-table td { padding: 10px; text-align: left; border-bottom: 1px solid #333; }
         .btn-mini { padding: 5px 10px; border-radius: 4px; background: #444; color: white; border: none; cursor: pointer; font-size: 0.8rem; margin-right: 5px; }
@@ -66,7 +66,7 @@
         .badge-pending { background: #444; color: #aaa; }
         .badge-confirmed { background: #25D366; color: black; }
 
-        /* ITEM CLASE EN CALENDARIO */
+        /* ITEM CLASE EN CALENDARIO ADMIN */
         .class-item-admin {
             background:#222; padding:10px; margin-bottom:5px; border-left:3px solid #ff007f; cursor:pointer; transition:0.2s;
             display: flex; justify-content: space-between; align-items: center;
@@ -88,7 +88,7 @@
         <div id="vista-demanda" class="view-section active">
             <div class="panel-card" style="border-color: #ff007f;">
                 <div class="panel-title">
-                    <span>🔥 PREFERENCIAS (Haz clic en un nº para ver quiénes son)</span>
+                    <span>🔥 PREFERENCIAS (Clic en nº para detalles)</span>
                     <button class="btn-mini" onclick="cargarTodo()">Actualizar</button>
                 </div>
                 <div style="overflow-x:auto;">
@@ -159,12 +159,11 @@
                 <div style="margin-bottom:10px;">
                     <label style="color:#aaa; font-size:0.9rem; display:flex; align-items:center; gap:10px; cursor:pointer;">
                         <input type="checkbox" id="checkRecurrenteAdd" style="width:18px; height:18px; accent-color:#ff007f;">
-                        <span>🔁 Apuntar también a las siguientes 8 semanas (si tiene saldo)</span>
+                        <span>🔁 Apuntar a las siguientes 8 semanas (si tiene saldo)</span>
                     </label>
                 </div>
                 <button class="btn-create" id="btnAddUserClass" style="font-size:0.9rem;">INSCRIBIR AHORA</button>
             </div>
-
             <button class="btn-create" style="background:#444; margin-top:20px;" onclick="cerrarModales()">CERRAR</button>
         </div>
     </div>
@@ -184,7 +183,7 @@
                 <h3 id="calSocioNombre" style="color:white; font-family:'Oswald'; margin:0;"></h3>
                 <span id="calSocioStatus"></span>
             </div>
-            <p style="color:#aaa; font-size:0.9rem;">Preferencias marcadas:</p>
+            <p style="color:#aaa; font-size:0.9rem;">Preferencias:</p>
             <div style="max-height:300px; overflow-y:auto; margin-bottom:20px;">
                 <table class="socio-calendar-table">
                     <thead><tr><th>H</th><th>L</th><th>M</th><th>X</th><th>J</th><th>V</th><th>S</th></tr></thead>
@@ -192,12 +191,12 @@
                 </table>
             </div>
             <div style="background:#222; padding:15px; border-radius:5px; margin-bottom:15px; border:1px dashed #555;">
-                <label style="font-size:0.8rem; color:#aaa; display:block; margin-bottom:5px;">¿QUÉ CLASES CREAR/ASIGNAR?</label>
+                <label style="font-size:0.8rem; color:#aaa; display:block; margin-bottom:5px;">TIPO DE CLASES:</label>
                 <select id="selectTipoConfirmacion" style="width:100%; padding:10px; background:#111; color:white; border:1px solid #444;">
-                    <option value="fuerza">Grupos Fuerza (Max 4)</option>
-                    <option value="pilates">Grupos Pilates (Max 4)</option>
+                    <option value="fuerza">Fuerza</option>
+                    <option value="pilates">Pilates</option>
                 </select>
-                <small style="color:#666; font-size:0.75rem;">Se revisará el saldo del cliente antes de apuntarlo.</small>
+                <small style="color:#666; font-size:0.75rem;">Se crearán clases para 2 meses. Si el usuario se queda sin saldo, la clase se crea igual pero no se le apunta.</small>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <button class="btn-create" style="background:#444;" onclick="cerrarModales()">CANCELAR</button>
@@ -264,7 +263,6 @@
             snap.forEach(d => {
                 const c = d.data();
                 const ocupados = c.apuntados ? c.apuntados.length : 0;
-                //  logic placeholder
                 html += `<div class="class-item-admin" onclick="verDetalleClase('${d.id}')">
                     <div>
                         <strong>${c.fecha} ${c.hora}</strong> - ${c.nombre} 
@@ -285,13 +283,12 @@
             document.getElementById('detalleTitulo').innerText = `${c.nombre}`;
             document.getElementById('detalleInfo').innerText = `${c.fecha} a las ${c.hora} (${c.tipo || 'General'})`;
             
-            // Listar asistentes
             const lista = document.getElementById('listaAsistentes');
             lista.innerHTML = "";
             if(c.apuntados && c.apuntados.length > 0) {
                 c.apuntados.forEach(uid => {
                     const u = allUsersGlobal.find(user => user.id === uid);
-                    const nombre = u ? u.nombre : "Usuario desconocido";
+                    const nombre = u ? u.nombre : "Desconocido";
                     lista.innerHTML += `<li style="padding:5px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
                         <span>👤 ${nombre}</span>
                         <button class="btn-del" style="width:20px; height:20px;" onclick="expulsarDeClase('${idClase}', '${uid}')">x</button>
@@ -299,16 +296,11 @@
                 });
             } else { lista.innerHTML = "<li>Sin inscritos</li>"; }
 
-            // Preparar selector para añadir
             const select = document.getElementById('selectUsuarioAdd');
             select.innerHTML = "<option value=''>Seleccionar Alumno...</option>";
-            allUsersGlobal.forEach(u => {
-                select.innerHTML += `<option value="${u.id}">${u.nombre || u.email}</option>`;
-            });
+            allUsersGlobal.forEach(u => { select.innerHTML += `<option value="${u.id}">${u.nombre || u.email}</option>`; });
 
-            // Configurar botón añadir
             document.getElementById('btnAddUserClass').onclick = () => adminInscribirUsuario(idClase, c);
-            
             document.getElementById('modalDetalleClase').style.display = 'flex';
         }
 
@@ -321,61 +313,57 @@
             const usuario = allUsersGlobal.find(u => u.id === uid);
             const tipo = datosClase.tipo || 'fuerza';
             
-            // 1. Inscribir en ESTA clase
-            if(!checkCreditosYRestar(usuario, tipo)) {
+            // 1. Inscribir en ESTA clase (solo si tiene saldo)
+            let creds = usuario.creditos_detalle || {};
+            if(typeof usuario.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = usuario.creditos;
+            
+            if(!creds[tipo] || creds[tipo] <= 0) {
                 return alert(`❌ ${usuario.nombre} no tiene créditos suficientes de ${tipo}.`);
             }
             
             try {
-                // Actualizar usuario (restar crédito)
-                await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: usuario.creditos_detalle, creditos: usuario.creditos_detalle.fuerza });
+                // Restar 1 crédito
+                creds[tipo]--;
+                await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: creds, creditos: creds.fuerza });
                 
-                // Actualizar clase
+                // Meter en clase
                 const nuevosApuntados = datosClase.apuntados || [];
                 if(!nuevosApuntados.includes(uid)) {
                     nuevosApuntados.push(uid);
                     await updateDoc(doc(db, "clases", idClase), { apuntados: nuevosApuntados });
                 }
 
-                alert(`✅ ${usuario.nombre} inscrito en la clase del ${datosClase.fecha}.`);
+                alert(`✅ Inscrito en la clase del ${datosClase.fecha}. Saldo restante: ${creds[tipo]}`);
 
                 // 2. Si es RECURRENTE (8 semanas)
                 if(recurrente) {
-                    await procesarRecurrenciaAdmin(usuario, datosClase, uid);
+                    await procesarRecurrenciaAdmin(usuario, datosClase, uid, creds, tipo);
                 }
 
-                verDetalleClase(idClase); // Refrescar modal
-                cargarCalendario();
-                cargarUsuarios(); // Refrescar saldos visuales
+                verDetalleClase(idClase); cargarCalendario(); cargarUsuarios();
 
             } catch(e) { alert("Error: " + e.message); }
         }
 
-        async function procesarRecurrenciaAdmin(usuario, claseOriginal, uid) {
-            const diasMapa = {'L':1, 'Ma':2, 'X':3, 'J':4, 'V':5, 'S':6}; 
+        async function procesarRecurrenciaAdmin(usuario, claseOriginal, uid, credsActualizados, tipo) {
             const fechaOriginal = new Date(claseOriginal.fecha + 'T' + claseOriginal.hora);
-            const diaSemana = fechaOriginal.getDay(); // Día de la semana de la clase base
-            
-            const limite = new Date();
-            limite.setDate(limite.getDate() + 60); // 2 meses vista
+            const limite = new Date(); limite.setDate(limite.getDate() + 60); 
             
             let cursor = new Date(fechaOriginal);
-            cursor.setDate(cursor.getDate() + 7); // Empezamos la semana siguiente
+            cursor.setDate(cursor.getDate() + 7); 
 
             let inscritas = 0;
+            let saldoLocal = credsActualizados[tipo];
 
             while(cursor <= limite) {
-                // Verificar saldo antes de cada inscripción futura
-                if(!checkCreditosYRestar(usuario, claseOriginal.tipo)) {
-                    alert(`⚠️ Saldo agotado tras inscribir ${inscritas + 1} clases recurrentes.`);
-                    // Guardar el saldo restante del usuario en BD antes de salir
-                    await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: usuario.creditos_detalle, creditos: usuario.creditos_detalle.fuerza });
-                    return;
+                // CHECK SALDO
+                if(saldoLocal <= 0) {
+                    alert(`⚠️ Saldo agotado tras inscribir ${inscritas} clases extra.`);
+                    break;
                 }
 
                 const fechaStr = cursor.toISOString().split('T')[0];
                 
-                // Buscar si existe la clase futura
                 const q = query(collection(db, "clases"), 
                     where("fecha", "==", fechaStr), 
                     where("hora", "==", claseOriginal.hora),
@@ -383,17 +371,17 @@
                 );
                 const snaps = await getDocs(q);
 
+                let apuntado = false;
+
                 if(snaps.empty) {
                     // Crear y apuntar
                     await addDoc(collection(db, "clases"), {
-                        nombre: claseOriginal.nombre,
-                        tipo: claseOriginal.tipo,
-                        fecha: fechaStr,
-                        hora: claseOriginal.hora,
-                        plazas_totales: claseOriginal.plazas_totales,
+                        nombre: claseOriginal.nombre, tipo: claseOriginal.tipo,
+                        fecha: fechaStr, hora: claseOriginal.hora, plazas_totales: claseOriginal.plazas_totales,
                         apuntados: [uid],
                         timestamp: new Date(`${fechaStr}T${claseOriginal.hora}`).getTime()
                     });
+                    apuntado = true;
                 } else {
                     // Apuntar a existente
                     snaps.forEach(async (docClase) => {
@@ -402,27 +390,21 @@
                         if(!ap.includes(uid) && ap.length < d.plazas_totales) {
                             ap.push(uid);
                             await updateDoc(doc(db, "clases", docClase.id), { apuntados: ap });
+                            apuntado = true;
                         }
                     });
                 }
                 
-                inscritas++;
-                cursor.setDate(cursor.getDate() + 7); // Siguiente semana
+                if(apuntado) {
+                    inscritas++;
+                    saldoLocal--;
+                }
+                cursor.setDate(cursor.getDate() + 7);
             }
-            // Actualizar saldo final en BD tras el bucle
-            await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: usuario.creditos_detalle, creditos: usuario.creditos_detalle.fuerza });
-            alert(`🔄 Se han inscrito ${inscritas} clases recurrentes adicionales.`);
-        }
-
-        function checkCreditosYRestar(usuario, tipo) {
-            let creds = usuario.creditos_detalle || {};
-            if(typeof usuario.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = usuario.creditos;
             
-            if(creds[tipo] > 0) {
-                creds[tipo]--;
-                return true;
-            }
-            return false;
+            // Guardar saldo final
+            credsActualizados[tipo] = saldoLocal;
+            await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: credsActualizados, creditos: credsActualizados.fuerza });
         }
 
         window.expulsarDeClase = async (cid, uid) => {
@@ -431,14 +413,14 @@
             verDetalleClase(cid);
         }
 
-        // --- 3. GENERACIÓN AUTOMÁTICA DESDE CONFIRMACIÓN (CON CONTROL DE CRÉDITOS) ---
+        // --- 3. GENERACIÓN AUTOMÁTICA DESDE CONFIRMACIÓN (LÓGICA MEJORADA) ---
         window.confirmarHorario = async (uid) => {
             const tipoClase = document.getElementById('selectTipoConfirmacion').value;
             const btn = document.getElementById('btnConfirmarHorario');
             const user = allUsersGlobal.find(x => x.id === uid);
             
             if(!user || !user.preferencias_horario || user.preferencias_horario.length === 0) return alert("Sin preferencias.");
-            if(!confirm(`⚠️ ¿Generar horario para ${user.nombre}? \nSolo se le inscribirá si tiene saldo.`)) return;
+            if(!confirm(`⚠️ ¿Generar horario para ${user.nombre}? \nSe crearán clases para 2 meses.\nSolo se le inscribirá si tiene saldo.`)) return;
 
             btn.innerText = "⏳ Procesando..."; btn.disabled = true;
 
@@ -456,6 +438,11 @@
                     if(diasMapa[d]) slots.push({ dia: diasMapa[d], hora: horaStr });
                 });
 
+                // LEER CRÉDITOS ACTUALES
+                let creds = user.creditos_detalle || {};
+                if(typeof user.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = user.creditos;
+                let saldoDisponible = creds[tipoClase] || 0;
+
                 let cursor = new Date(hoy); cursor.setDate(cursor.getDate() + 1);
                 let clasesCreadas = 0; let inscripciones = 0;
 
@@ -464,27 +451,30 @@
                     const matches = slots.filter(s => s.dia === diaSemana);
                     
                     for (const slot of matches) {
-                        // CHECK CRÉDITOS ANTES DE CADA CLASE
-                        const tieneSaldo = checkCreditosYRestar(user, tipoClase);
-                        const listaApuntados = tieneSaldo ? [uid] : []; // Si no tiene saldo, lista vacía
-                        if(tieneSaldo) inscripciones++;
+                        // LÓGICA CRÍTICA: La clase se crea SIEMPRE. El usuario entra SI TIENE SALDO.
+                        let meterUsuario = false;
+                        if(saldoDisponible > 0) {
+                            meterUsuario = true;
+                            saldoDisponible--;
+                            inscripciones++;
+                        }
 
                         const fechaStr = cursor.toISOString().split('T')[0];
                         const q = query(collection(db, "clases"), where("fecha", "==", fechaStr), where("hora", "==", slot.hora), where("tipo", "==", tipoClase));
                         const snaps = await getDocs(q);
 
                         if(snaps.empty) {
-                            // Crear clase (apuntado solo si tenía saldo)
+                            // NO EXISTE -> CREARLA (con o sin usuario)
                             await addDoc(collection(db, "clases"), {
                                 nombre: (tipoClase==='fuerza'?'Grupo Fuerza':'Grupo Pilates'), tipo: tipoClase,
                                 fecha: fechaStr, hora: slot.hora, plazas_totales: 4,
-                                apuntados: listaApuntados,
+                                apuntados: meterUsuario ? [uid] : [],
                                 timestamp: new Date(`${fechaStr}T${slot.hora}`).getTime()
                             });
                             clasesCreadas++;
                         } else {
-                            // Clase existe, intentar apuntar si tenía saldo
-                            if(tieneSaldo) {
+                            // EXISTE -> METER SOLO SI TENÍA SALDO
+                            if(meterUsuario) {
                                 snaps.forEach(async (docClase) => {
                                     const d = docClase.data();
                                     const ap = d.apuntados || [];
@@ -499,10 +489,11 @@
                     cursor.setDate(cursor.getDate() + 1);
                 }
 
-                // Guardar el saldo final actualizado en la BD
-                await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: user.creditos_detalle, creditos: user.creditos_detalle.fuerza });
+                // Guardar saldo restante
+                creds[tipoClase] = saldoDisponible;
+                await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: creds, creditos: creds.fuerza });
 
-                alert(`✅ HECHO:\n- Horario confirmado.\n- ${clasesCreadas} clases nuevas generadas.\n- Usuario inscrito en ${inscripciones} sesiones (según su saldo).`);
+                alert(`✅ HECHO:\n- Horario confirmado.\n- Se han generado/revisado las clases de 2 meses.\n- Usuario inscrito en ${inscripciones} sesiones (hasta agotar su saldo).`);
                 cerrarModales(); cargarTodo();
 
             } catch(e) { console.error(e); alert("Error: " + e.message); } 
