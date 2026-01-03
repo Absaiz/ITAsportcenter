@@ -80,6 +80,28 @@
         .chart-controls { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
         .chart-controls::-webkit-scrollbar { height: 4px; }
         .chart-controls::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+
+        /* ESTILOS RADAR (NUEVO) */
+        .radar-box {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 15px;
+        }
+        .radar-box::-webkit-scrollbar { height: 6px; }
+        .radar-box::-webkit-scrollbar-thumb { background: #ff4444; border-radius: 3px; }
+        
+        .radar-card {
+            min-width: 220px;
+            background: #222;
+            border: 1px solid #555;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .radar-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #ff4444; border-top-left-radius: 8px; border-bottom-left-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -127,6 +149,15 @@
         </div>
 
         <div id="vista-socios" class="view-section">
+            
+            <div class="panel-card" style="border: 1px solid #ff4444; background: rgba(255, 68, 68, 0.02); margin-bottom: 30px;">
+                <div class="panel-title" style="color: #ff4444; border-bottom-color: #ff4444;">
+                    🚨 RADAR DE CLIENTES SIN SALDO
+                </div>
+                <div id="radarContainer" class="radar-box">
+                    <p style="color:#aaa; padding:10px;">Cargando radar...</p>
+                </div>
+            </div>
             <div class="panel-card">
                 <div class="panel-title">LISTA DE SOCIOS <button class="btn-mini" onclick="cargarTodo()">Refrescar</button></div>
                 <table class="user-table">
@@ -256,9 +287,9 @@
         import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, arrayRemove, getDoc, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         let allUsersGlobal = []; 
-        let currentAdminUser = null; // Usuario seleccionado en el modal perfil
-        let currentAdminChart = null; // Instancia de la gráfica
-        let currentAdminMedidas = []; // Datos de medidas del usuario actual
+        let currentAdminUser = null; 
+        let currentAdminChart = null; 
+        let currentAdminMedidas = []; 
 
         window.cambiarPestana = (p) => {
             document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
@@ -277,7 +308,7 @@
             cargarInteresados();
         }
 
-        // --- 1. USUARIOS ---
+        // --- 1. USUARIOS Y RADAR ---
         window.cargarUsuarios = async () => {
             const tbody = document.getElementById('tablaUsuarios');
             if(tbody) tbody.innerHTML = '<tr><td>Cargando...</td></tr>';
@@ -300,32 +331,72 @@
                     </tr>`;
                 });
                 if(tbody) tbody.innerHTML = html;
+                
+                // LLAMAMOS AL RADAR AL TERMINAR DE CARGAR USUARIOS
+                cargarRadar();
+
             } catch(e) { console.error(e); }
         };
 
-        // --- 1.5 PERFIL DE SOCIO (NUEVO) ---
+        // --- LÓGICA DEL RADAR ---
+        window.cargarRadar = () => {
+            const container = document.getElementById('radarContainer');
+            if(!container) return;
+            container.innerHTML = "";
+
+            // FILTRO: Usuarios con CERO créditos en TODO (o nulos)
+            const enPeligro = allUsersGlobal.filter(u => {
+                let c = u.creditos_detalle || {};
+                let fuerza = c.fuerza !== undefined ? c.fuerza : (typeof u.creditos === 'number' ? u.creditos : 0);
+                let pilates = c.pilates || 0;
+                // Si ambos son 0 o menos, es una baja potencial
+                return (fuerza <= 0 && pilates <= 0);
+            });
+
+            if(enPeligro.length === 0) {
+                container.innerHTML = "<p style='color:#888; padding:10px;'>✅ Todo en orden. Todos los clientes tienen saldo.</p>";
+                return;
+            }
+
+            let html = "";
+            enPeligro.forEach(u => {
+                let tlf = u.telefono ? u.telefono.replace(/\D/g,'') : '';
+                // Mensaje pre-rellenado amigable
+                let msg = `Hola ${u.nombre || 'compi'}, he visto que se te han agotado los bonos. ¿Quieres que te renueve para no perder tu plaza?`;
+                let waLink = tlf ? `https://wa.me/${tlf}?text=${encodeURIComponent(msg)}` : '#';
+                
+                html += `
+                <div class="radar-card">
+                    <div style="font-weight:bold; color: white; margin-bottom:5px;">${u.nombre || 'Usuario'}</div>
+                    <div style="font-size: 0.8rem; color: #ff4444; margin-bottom: 10px;">⚠️ Saldo Agotado</div>
+                    ${tlf ? 
+                        `<a href="${waLink}" target="_blank" class="btn-mini" style="background:#25D366; text-decoration:none; display:block; text-align:center; padding:8px;">
+                            <i class="bi bi-whatsapp"></i> Contactar
+                        </a>` 
+                        : '<span style="font-size:0.8rem; color:#666; display:block; text-align:center;">Sin teléfono</span>'
+                    }
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- 1.5 PERFIL DE SOCIO ---
         window.verPerfilSocio = async (uid) => {
             const u = allUsersGlobal.find(x => x.id === uid);
             if(!u) return;
             currentAdminUser = u;
 
-            // 1. Datos cabecera
             document.getElementById('perfilNombre').innerText = u.nombre || 'Socio';
             document.getElementById('perfilEmail').innerText = u.email;
             
-            // Botón WA
             const btnWa = document.getElementById('btnPerfilWA');
             if(u.telefono) {
                 btnWa.style.display = 'block';
                 btnWa.href = `https://wa.me/${u.telefono.replace(/\D/g,'')}`;
-            } else {
-                btnWa.style.display = 'none';
-            }
+            } else { btnWa.style.display = 'none'; }
 
-            // 2. Cargar Medidas para la gráfica
             document.getElementById('adminInputFecha').valueAsDate = new Date();
             await cargarMedidasAdmin(uid);
-
             document.getElementById('modalPerfilCompleto').style.display = 'flex';
         }
 
@@ -334,29 +405,17 @@
             const s = await getDocs(q);
             currentAdminMedidas = [];
             s.forEach(d => currentAdminMedidas.push(d.data()));
-            renderAdminChart('peso'); // Por defecto peso
+            renderAdminChart('peso'); 
         }
 
         window.renderAdminChart = (tipo) => {
             const ctx = document.getElementById('adminChart').getContext('2d');
             if(currentAdminChart) currentAdminChart.destroy();
-
             const labels = currentAdminMedidas.map(m => new Date(m.timestamp).toLocaleDateString());
             const data = currentAdminMedidas.map(m => m[tipo] || 0);
-
             currentAdminChart = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: tipo.toUpperCase(),
-                        data: data,
-                        borderColor: '#ff007f',
-                        backgroundColor: 'rgba(255, 0, 127, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
+                data: { labels: labels, datasets: [{ label: tipo.toUpperCase(), data: data, borderColor: '#ff007f', backgroundColor: 'rgba(255, 0, 127, 0.1)', fill: true, tension: 0.4 }] },
                 options: { responsive: true, plugins: { legend: { display:false } }, scales: { y:{grid:{color:'#333'}}, x:{grid:{color:'#333'}} } }
             });
         }
@@ -366,28 +425,18 @@
             if(!currentAdminUser) return;
             const fecha = document.getElementById('adminInputFecha').value;
             if(!fecha) return alert("Pon fecha");
-
             const datos = {
-                userId: currentAdminUser.id,
-                fecha: fecha,
-                timestamp: new Date(fecha).getTime(),
+                userId: currentAdminUser.id, fecha: fecha, timestamp: new Date(fecha).getTime(),
                 peso: parseFloat(document.getElementById('adminInputPeso').value) || 0,
                 altura: parseFloat(document.getElementById('adminInputAltura').value) || 0,
                 biceps: parseFloat(document.getElementById('adminInputBiceps').value) || 0,
                 cintura: parseFloat(document.getElementById('adminInputCintura').value) || 0
-                // Añadir más si quieres
             };
-
             try {
                 await addDoc(collection(db, "medidas"), datos);
-                alert("Medida guardada al usuario.");
-                // Limpiar inputs
-                document.getElementById('adminInputPeso').value = "";
-                // Recargar gráfica
-                await cargarMedidasAdmin(currentAdminUser.id);
+                alert("Medida guardada."); document.getElementById('adminInputPeso').value = ""; await cargarMedidasAdmin(currentAdminUser.id);
             } catch(e) { alert("Error: " + e.message); }
         }
-
 
         // --- 2. GESTIÓN DE CLASES ---
         window.cargarCalendario = async () => {
@@ -400,10 +449,7 @@
                 const c = d.data();
                 const ocupados = c.apuntados ? c.apuntados.length : 0;
                 html += `<div class="class-item-admin" onclick="verDetalleClase('${d.id}')">
-                    <div>
-                        <strong>${c.fecha} ${c.hora}</strong> - ${c.nombre} 
-                        <span style="color:${ocupados>=c.plazas_totales?'red':'#25D366'}">(${ocupados}/${c.plazas_totales})</span>
-                    </div>
+                    <div><strong>${c.fecha} ${c.hora}</strong> - ${c.nombre} <span style="color:${ocupados>=c.plazas_totales?'red':'#25D366'}">(${ocupados}/${c.plazas_totales})</span></div>
                     <button class="btn-del" onclick="event.stopPropagation(); borrarClase('${d.id}')" title="Borrar Clase">🗑️</button>
                 </div>`;
             });
@@ -415,27 +461,20 @@
             const claseSnap = await getDoc(claseRef);
             if(!claseSnap.exists()) return;
             const c = claseSnap.data();
-            
             document.getElementById('detalleTitulo').innerText = `${c.nombre}`;
             document.getElementById('detalleInfo').innerText = `${c.fecha} a las ${c.hora} (${c.tipo || 'General'})`;
-            
             const lista = document.getElementById('listaAsistentes');
             lista.innerHTML = "";
             if(c.apuntados && c.apuntados.length > 0) {
                 c.apuntados.forEach(uid => {
                     const u = allUsersGlobal.find(user => user.id === uid);
                     const nombre = u ? u.nombre : "Desconocido";
-                    lista.innerHTML += `<li style="padding:5px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
-                        <span>👤 ${nombre}</span>
-                        <button class="btn-del" style="width:20px; height:20px;" onclick="expulsarDeClase('${idClase}', '${uid}')">x</button>
-                    </li>`;
+                    lista.innerHTML += `<li style="padding:5px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><span>👤 ${nombre}</span><button class="btn-del" style="width:20px; height:20px;" onclick="expulsarDeClase('${idClase}', '${uid}')">x</button></li>`;
                 });
             } else { lista.innerHTML = "<li>Sin inscritos</li>"; }
-
             const select = document.getElementById('selectUsuarioAdd');
             select.innerHTML = "<option value=''>Seleccionar Alumno...</option>";
             allUsersGlobal.forEach(u => { select.innerHTML += `<option value="${u.id}">${u.nombre || u.email}</option>`; });
-
             document.getElementById('btnAddUserClass').onclick = () => adminInscribirUsuario(idClase, c);
             document.getElementById('modalDetalleClase').style.display = 'flex';
         }
@@ -443,37 +482,23 @@
         window.adminInscribirUsuario = async (idClase, datosClase) => {
             const uid = document.getElementById('selectUsuarioAdd').value;
             const recurrente = document.getElementById('checkRecurrenteAdd').checked;
-            
             if(!uid) return alert("Selecciona un usuario.");
-            
             const usuario = allUsersGlobal.find(u => u.id === uid);
             const tipo = datosClase.tipo || 'fuerza';
-            
             let creds = usuario.creditos_detalle || {};
             if(typeof usuario.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = usuario.creditos;
-            
-            if(!creds[tipo] || creds[tipo] <= 0) {
-                return alert(`❌ ${usuario.nombre} no tiene créditos suficientes de ${tipo}.`);
-            }
-            
+            if(!creds[tipo] || creds[tipo] <= 0) return alert(`❌ ${usuario.nombre} no tiene créditos suficientes de ${tipo}.`);
             try {
                 creds[tipo]--;
                 await updateDoc(doc(db, "usuarios", uid), { creditos_detalle: creds, creditos: creds.fuerza });
-                
                 const nuevosApuntados = datosClase.apuntados || [];
                 if(!nuevosApuntados.includes(uid)) {
                     nuevosApuntados.push(uid);
                     await updateDoc(doc(db, "clases", idClase), { apuntados: nuevosApuntados });
                 }
-
                 alert(`✅ Inscrito en la clase del ${datosClase.fecha}. Saldo restante: ${creds[tipo]}`);
-
-                if(recurrente) {
-                    await procesarRecurrenciaAdmin(usuario, datosClase, uid, creds, tipo);
-                }
-
+                if(recurrente) await procesarRecurrenciaAdmin(usuario, datosClase, uid, creds, tipo);
                 verDetalleClase(idClase); cargarCalendario(); cargarUsuarios();
-
             } catch(e) { alert("Error: " + e.message); }
         }
 
@@ -484,17 +509,12 @@
             cursor.setDate(cursor.getDate() + 7); 
             let inscritas = 0;
             let saldoLocal = credsActualizados[tipo];
-
             while(cursor <= limite) {
-                if(saldoLocal <= 0) {
-                    alert(`⚠️ Saldo agotado tras inscribir ${inscritas} clases extra.`);
-                    break;
-                }
+                if(saldoLocal <= 0) { alert(`⚠️ Saldo agotado tras inscribir ${inscritas} clases extra.`); break; }
                 const fechaStr = cursor.toISOString().split('T')[0];
                 const q = query(collection(db, "clases"), where("fecha", "==", fechaStr), where("hora", "==", claseOriginal.hora), where("tipo", "==", claseOriginal.tipo));
                 const snaps = await getDocs(q);
                 let apuntado = false;
-
                 if(snaps.empty) {
                     await addDoc(collection(db, "clases"), {
                         nombre: claseOriginal.nombre, tipo: claseOriginal.tipo,
@@ -532,12 +552,9 @@
             const tipoClase = document.getElementById('selectTipoConfirmacion').value;
             const btn = document.getElementById('btnConfirmarHorario');
             const user = allUsersGlobal.find(x => x.id === uid);
-            
             if(!user || !user.preferencias_horario || user.preferencias_horario.length === 0) return alert("Sin preferencias.");
             if(!confirm(`⚠️ ¿Generar horario para ${user.nombre}?`)) return;
-
             btn.innerText = "⏳ Procesando..."; btn.disabled = true;
-
             try {
                 await updateDoc(doc(db, "usuarios", uid), { horario_confirmado: true });
                 const diasMapa = {'L':1, 'Ma':2, 'X':3, 'J':4, 'V':5, 'S':6};
@@ -549,25 +566,20 @@
                     const horaStr = parseInt(h) < 10 ? `0${h}:00` : `${h}:00`;
                     if(diasMapa[d]) slots.push({ dia: diasMapa[d], hora: horaStr });
                 });
-
                 let creds = user.creditos_detalle || {};
                 if(typeof user.creditos === 'number' && creds.fuerza === undefined) creds.fuerza = user.creditos;
                 let saldoDisponible = creds[tipoClase] || 0;
-
                 let cursor = new Date(hoy); cursor.setDate(cursor.getDate() + 1);
                 let clasesCreadas = 0; let inscripciones = 0;
-
                 while(cursor <= limite) {
                     const diaSemana = cursor.getDay();
                     const matches = slots.filter(s => s.dia === diaSemana);
                     for (const slot of matches) {
                         let meterUsuario = false;
                         if(saldoDisponible > 0) { meterUsuario = true; saldoDisponible--; inscripciones++; }
-
                         const fechaStr = cursor.toISOString().split('T')[0];
                         const q = query(collection(db, "clases"), where("fecha", "==", fechaStr), where("hora", "==", slot.hora), where("tipo", "==", tipoClase));
                         const snaps = await getDocs(q);
-
                         if(snaps.empty) {
                             await addDoc(collection(db, "clases"), {
                                 nombre: (tipoClase==='fuerza'?'Grupo Fuerza':'Grupo Pilates'), tipo: tipoClase,
@@ -630,7 +642,6 @@
             document.getElementById('calSocioNombre').innerText = u.nombre || "Socio";
             document.getElementById('calSocioStatus').innerHTML = u.horario_confirmado ? '<span class="status-badge badge-confirmed">CONFIRMADO</span>' : '<span class="status-badge badge-pending">PENDIENTE</span>';
             document.getElementById('btnConfirmarHorario').onclick = () => confirmarHorario(uid);
-            
             const dias = ['L', 'Ma', 'X', 'J', 'V', 'S']; const prefs = u.preferencias_horario || [];
             let html = "";
             for(let h=7; h<=22; h++) {
