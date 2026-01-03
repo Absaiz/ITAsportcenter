@@ -45,10 +45,8 @@
         /* 1. LAYOUT GENERAL */
         .profile-container { max-width: 1200px; margin: 40px auto; padding: 20px; }
         .profile-header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 20px; }
-        
-        /* Modificamos altura para evitar saltos al cargar */
-        .user-name { font-family: 'Oswald'; font-size: 2.5rem; color: white; margin: 0; min-height: 3.5rem; display: flex; justify-content: center; align-items: center; }
-        .user-email { color: #888; margin-top: 5px; min-height: 1.5rem; display: flex; justify-content: center; align-items: center; }
+        .user-name { font-family: 'Oswald'; font-size: 2.5rem; color: white; margin: 0; }
+        .user-email { color: #888; margin-top: 5px; }
 
         /* CONTACTO */
         .contact-card { background: #222; border: 1px solid #444; border-radius: 10px; padding: 15px; margin-bottom: 30px; }
@@ -59,7 +57,7 @@
         /* GRID CRÉDITOS */
         .credits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 50px; }
         .credit-card { background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333; border-top: 4px solid #555; }
-        .credit-number { font-family: 'Oswald'; font-size: 2.5rem; color: white; display: block; min-height: 3.5rem; } /* Altura mínima para skeleton */
+        .credit-number { font-family: 'Oswald'; font-size: 2.5rem; color: white; display: block; }
         .credit-label { font-size: 0.8rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
         
         .border-fuerza { border-top-color: #ff007f; } .text-fuerza { color: #ff007f; }
@@ -95,30 +93,6 @@
         .logout-btn:hover { background: #ff4444; }
         .chart-controls { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
         .card { background-color: #212529; }
-
-        /* =========================================
-           🎨 SKELETON LOADERS (ESTILOS)
-           ========================================= */
-        .skeleton {
-            background: #2a2a2a;
-            background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            border-radius: 4px;
-            display: inline-block;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* Variantes de tamaño */
-        .sk-text { height: 1.5rem; width: 100%; }
-        .sk-title { height: 2.5rem; width: 60%; }
-        .sk-number { height: 2.5rem; width: 40%; margin: 0 auto; }
-        .sk-card-line { height: 12px; width: 70%; margin-bottom: 8px; }
-        .sk-card-line-short { height: 12px; width: 40%; }
     </style>
 </head>
 <body>
@@ -126,12 +100,8 @@
     <div class="profile-container">
         
         <div class="profile-header">
-            <h1 class="user-name" id="userName">
-                <span class="skeleton sk-title"></span>
-            </h1>
-            <p class="user-email" id="userEmail">
-                <span class="skeleton sk-card-line-short"></span>
-            </p>
+            <h1 class="user-name" id="userName">Cargando...</h1>
+            <p class="user-email" id="userEmail">...</p>
         </div>
 
         <div class="profile-header" style="border:none; padding-bottom:0; margin-bottom:20px;">
@@ -162,22 +132,10 @@
 
         <h3 style="color:white; font-family:'Oswald'; margin-bottom:15px;">MI SALDO</h3>
         <div class="credits-grid">
-            <div class="credit-card border-fuerza">
-                <span class="credit-number text-fuerza" id="credFuerza"><span class="skeleton sk-number"></span></span>
-                <span class="credit-label">Fuerza</span>
-            </div>
-            <div class="credit-card border-pilates">
-                <span class="credit-number text-pilates" id="credPilates"><span class="skeleton sk-number"></span></span>
-                <span class="credit-label">Pilates</span>
-            </div>
-            <div class="credit-card border-personal">
-                <span class="credit-number text-personal" id="credPersonal"><span class="skeleton sk-number"></span></span>
-                <span class="credit-label">Personal</span>
-            </div>
-            <div class="credit-card border-nutri">
-                <span class="credit-number text-nutri" id="credNutri"><span class="skeleton sk-number"></span></span>
-                <span class="credit-label">Nutrición</span>
-            </div>
+            <div class="credit-card border-fuerza"><span class="credit-number text-fuerza" id="credFuerza">-</span><span class="credit-label">Fuerza</span></div>
+            <div class="credit-card border-pilates"><span class="credit-number text-pilates" id="credPilates">-</span><span class="credit-label">Pilates</span></div>
+            <div class="credit-card border-personal"><span class="credit-number text-personal" id="credPersonal">-</span><span class="credit-label">Personal</span></div>
+            <div class="credit-card border-nutri"><span class="credit-number text-nutri" id="credNutri">-</span><span class="credit-label">Nutrición</span></div>
         </div>
 
         <div class="prefs-card">
@@ -186,9 +144,7 @@
             <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                 <table class="table table-dark table-custom">
                     <thead><tr><th>H</th><th>LUN</th><th>MAR</th><th>MIÉ</th><th>JUE</th><th>VIE</th><th>SÁB</th></tr></thead>
-                    <tbody id="tablaHorariosCuerpo">
-                        <tr><td colspan="7"><div class="skeleton sk-text" style="margin-bottom:5px;"></div><div class="skeleton sk-text"></div></td></tr>
-                    </tbody>
+                    <tbody id="tablaHorariosCuerpo"><tr><td colspan="7" class="text-center text-secondary">Cargando...</td></tr></tbody>
                 </table>
             </div>
             <button class="btn w-100 mt-3" style="background:#ff007f; color:white; font-weight:bold;" onclick="guardarPreferencias()">GUARDAR HORARIO PREFERIDO</button>
@@ -196,20 +152,7 @@
 
         <div class="reservations-section">
             <h3>PRÓXIMAS CLASES <button class="history-btn" onclick="toggleHistorial()">📜 Ver Historial</button></h3>
-            <div id="misReservas">
-                <div class="booking-card" style="border-left-color: #444;">
-                    <div class="booking-info" style="width:100%">
-                        <div class="skeleton sk-card-line"></div>
-                        <div class="skeleton sk-card-line-short"></div>
-                    </div>
-                </div>
-                <div class="booking-card" style="border-left-color: #444;">
-                    <div class="booking-info" style="width:100%">
-                        <div class="skeleton sk-card-line"></div>
-                        <div class="skeleton sk-card-line-short"></div>
-                    </div>
-                </div>
-            </div>
+            <div id="misReservas"><p class="empty-msg">Cargando reservas...</p></div>
             <div class="pagination-controls" id="paginationControls" style="display:none;">
                 <button class="btn-page" id="btnPrev" onclick="cambiarPagina(-1)">Anterior</button>
                 <span id="pageIndicator" style="color:white; margin: 0 10px;">Página 1</span>
@@ -305,13 +248,13 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                // Sustituimos los skeletons por texto real
                 document.getElementById('userName').innerText = user.displayName || "Socio ITA";
                 document.getElementById('userEmail').innerText = user.email;
                 document.getElementById('inputFecha').valueAsDate = new Date();
 
+                // CARGAMOS TODO
                 cargarCreditos(user.uid);
-                cargarReservas(user.uid);
+                cargarReservas(user.uid); // <--- ESTO CARGA LAS CLASES
                 cargarMedidas(user.uid); 
                 
                 const userSnap = await getDoc(doc(db, "usuarios", user.uid));
@@ -458,6 +401,7 @@
             }
         }
 
+        // --- LÓGICA DE RESERVAS (ESTA ES LA QUE CARGA LAS CLASES) ---
         function parseFechaInteligente(fechaStr, horaStr = "00:00") {
             if (!fechaStr) return null;
             let fechaLimpia = fechaStr.replace(/\//g, '-'); 
@@ -473,12 +417,10 @@
         async function cargarReservas(uid) {
             const container = document.getElementById('misReservas');
             const historyContainer = document.getElementById('listaHistorial');
-            // NO BORRAMOS EL SKELETON HASTA QUE CARGUE
+            container.innerHTML = '<p class="empty-msg">Cargando reservas...</p>';
             try {
                 const q = query(collection(db, "clases"), where("apuntados", "array-contains", uid));
                 const querySnapshot = await getDocs(q);
-                
-                // AHORA SÍ LIMPIAMOS EL SKELETON
                 if (querySnapshot.empty) { container.innerHTML = '<p class="empty-msg">Sin reservas activas.</p>'; return; }
 
                 const nowTs = new Date().setHours(0,0,0,0);
